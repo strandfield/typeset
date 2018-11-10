@@ -4,6 +4,8 @@
 
 #include "tex/defs.h"
 
+#include <typeinfo>
+
 namespace tex
 {
 
@@ -25,6 +27,8 @@ public:
   {
     return dynamic_cast<const T*>(this) != nullptr;
   }
+
+  bool isGlue() const;
 };
 
 } // namespace tex
