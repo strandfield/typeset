@@ -1,11 +1,17 @@
 
 #include "tex/node.h"
 
+#include "tex/box.h"
 #include "tex/glue.h"
 #include "tex/kern.h"
 
 namespace tex
 {
+
+bool Node::isBox() const
+{
+  return isDerivedFrom<Box>();
+}
 
 bool Node::isGlue() const
 {

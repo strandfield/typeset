@@ -28,6 +28,7 @@ public:
     return dynamic_cast<const T*>(this) != nullptr;
   }
 
+  bool isBox() const;
   bool isGlue() const;
   bool isKern() const;
 };
