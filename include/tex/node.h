@@ -29,6 +29,7 @@ public:
   }
 
   bool isGlue() const;
+  bool isKern() const;
 };
 
 } // namespace tex
