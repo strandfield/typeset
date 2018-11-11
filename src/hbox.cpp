@@ -129,6 +129,8 @@ std::shared_ptr<HBox> hbox(List && hlist, float w)
     }
     else
       box->setGlue(0.f, GlueOrder::Normal);
+
+    return box;
   }
 
   assert(naturalWidth == w);
