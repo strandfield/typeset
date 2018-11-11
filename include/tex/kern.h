@@ -4,6 +4,8 @@
 
 #include "tex/node.h"
 
+#include <memory>
+
 namespace tex
 {
 
@@ -18,6 +20,8 @@ public:
 private:
   float mSpace;
 };
+
+LIBLAYOUT_API std::shared_ptr<Kern> kern(float space);
 
 } // namespace tex
 

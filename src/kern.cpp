@@ -10,4 +10,9 @@ Kern::Kern(float s)
 
 }
 
+std::shared_ptr<Kern> kern(float space)
+{
+  return std::make_shared<Kern>(space);
+}
+
 } // namespace tex
