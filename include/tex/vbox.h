@@ -15,6 +15,9 @@ public:
 
 };
 
+LIBLAYOUT_API std::shared_ptr<VBox> vbox(List && list);
+LIBLAYOUT_API std::shared_ptr<VBox> vtop(List && list);
+
 } // namespace tex
 
 #endif // LIBLAYOUT_VBOX_H
