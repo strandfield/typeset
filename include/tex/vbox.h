@@ -7,7 +7,7 @@
 namespace tex
 {
 
-class LIBLAYOUT_API VBox : public ListBox
+class LIBLAYOUT_API VBox final : public ListBox
 {
 public:
   VBox(List && list, float w, float h, float d);
