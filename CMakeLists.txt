@@ -32,3 +32,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   add_compile_options(/wd4251)  
 endif()
 
+##################################################################
+####### Examples
+##################################################################
+
+add_subdirectory(examples)
