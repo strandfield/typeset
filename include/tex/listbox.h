@@ -28,6 +28,7 @@ public:
   inline void setWidth(float w) { mWidth = w; }
 
   inline float shiftAmount() const { return mShiftAmount; }
+  inline void setShiftAmount(float sa) { mShiftAmount = sa; }
 
   inline List & list() { return mList; }
   inline const List & list() const { return mList; }

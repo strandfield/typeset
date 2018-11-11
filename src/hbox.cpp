@@ -135,4 +135,14 @@ std::shared_ptr<HBox> hbox(List && hlist, float w)
   return box;
 }
 
+void raise(std::shared_ptr<HBox> box, float amount)
+{
+  box->setShiftAmount(-amount);
+}
+
+void lower(std::shared_ptr<HBox> box, float amount)
+{
+  box->setShiftAmount(amount);
+}
+
 } // namespace tex
