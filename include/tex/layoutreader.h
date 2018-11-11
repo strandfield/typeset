@@ -9,6 +9,7 @@
 #include "tex/vbox.h"
 
 #include <cassert>
+#include <type_traits>
 
 namespace tex
 {
@@ -143,14 +144,14 @@ void read_vbox(Reader && reader, const std::shared_ptr<VBox> & layout, Pos pos)
   }
 }
 
-template<typename Reader, typename = std::enable_if_t<std::is_base_of_v<LayoutReader, Reader>>> 
+template<typename Reader, typename = typename std::enable_if<std::is_base_of_v<LayoutReader, std::decay_t<Reader>>, void>::type>
 void read(Reader && reader, const std::shared_ptr<Box> & layout, Pos pos = { 0.f, 0.f })
 {
   if (layout->is<Rule>())
   {
     reader(std::static_pointer_cast<Rule>(layout), pos);
   }
-  else if (box->isDerivedFrom<ListBox>())
+  else if (layout->isDerivedFrom<ListBox>())
   {
     auto listbox = std::static_pointer_cast<ListBox>(layout);
     if (listbox->is<HBox>())
