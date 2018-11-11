@@ -4,12 +4,16 @@
 
 #include "mainwindow.h"
 
+#include "example.h"
 #include "example-tex.h"
+#include "example-single-line.h"
 
+#include <QHBoxLayout>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QSettings>
 #include <QTabWidget>
+#include <QVBoxLayout>
 
 MainWindow::MainWindow()
 {
@@ -21,6 +25,30 @@ MainWindow::MainWindow()
   mTabWidget->addTab(new TeXWidget(), "TeX");
 
   setCentralWidget(mTabWidget);
+
+  addExample(new SingleLineTextWidget());
+}
+
+void MainWindow::addExample(Example *ex)
+{
+  QWidget *controller = ex->getController();
+  if (controller == nullptr)
+  {
+    mTabWidget->addTab(ex, ex->getName());
+    return;
+  }
+
+  QWidget *widget = new QWidget();
+  QHBoxLayout *hbox = new QHBoxLayout(widget);
+
+  hbox->addWidget(ex, 1);
+
+  QVBoxLayout *sublayout = new QVBoxLayout();
+  sublayout->addWidget(controller);
+  sublayout->addStretch();
+  hbox->addLayout(sublayout);
+
+  mTabWidget->addTab(widget, ex->getName());
 }
 
 void MainWindow::showEvent(QShowEvent *e)

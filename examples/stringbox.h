@@ -29,4 +29,6 @@ private:
   float width_;
 };
 
+std::shared_ptr<StringBox> stringbox(const QString & text, const QFont & f = QFont());
+
 #endif // LIBLAYOUT_EXAMPLES_STRINGBOX_H

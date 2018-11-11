@@ -31,3 +31,8 @@ float StringBox::width() const
 {
   return width_;
 }
+
+std::shared_ptr<StringBox> stringbox(const QString & text, const QFont & f)
+{
+  return std::make_shared<StringBox>(text, f);
+}

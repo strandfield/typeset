@@ -7,6 +7,8 @@
 
 #include <QMainWindow>
 
+class Example;
+
 class QSettings;
 class QTabWidget;
 
@@ -18,6 +20,9 @@ public:
   ~MainWindow() = default;
 
 protected Q_SLOTS:
+
+protected:
+  void addExample(Example *ex);
 
 protected:
   void showEvent(QShowEvent *e);
