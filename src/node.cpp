@@ -4,6 +4,7 @@
 #include "tex/box.h"
 #include "tex/glue.h"
 #include "tex/kern.h"
+#include "tex/penalty.h"
 
 namespace tex
 {
@@ -21,6 +22,11 @@ bool Node::isGlue() const
 bool Node::isKern() const
 {
   return is<Kern>();
+}
+
+bool Node::isPenalty() const
+{
+  return is<Penalty>();
 }
 
 } // namespace tex

@@ -31,6 +31,7 @@ public:
   bool isBox() const;
   bool isGlue() const;
   bool isKern() const;
+  bool isPenalty() const;
 };
 
 } // namespace tex
