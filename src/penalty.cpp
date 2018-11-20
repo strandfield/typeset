@@ -4,6 +4,12 @@
 namespace tex
 {
 
+Penalty::Penalty(int val)
+  : mValue(val)
+{
+
+}
+
 std::shared_ptr<Penalty> penalty(int p)
 {
   return std::make_shared<Penalty>(p);

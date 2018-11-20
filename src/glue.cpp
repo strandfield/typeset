@@ -13,6 +13,27 @@ GlueShrinkStretch::GlueShrinkStretch(float n, float l, float ll, float lll)
 
 }
 
+GlueOrder GlueShrinkStretch::order() const
+{
+  if (fill != 0.f)
+    return GlueOrder::Filll;
+  else if (fill != 0.f)
+    return GlueOrder::Fill;
+  else if (fil != 0.f)
+    return GlueOrder::Fil;
+  return GlueOrder::Normal;
+}
+
+GlueShrinkStretch operator-(const GlueShrinkStretch & lhs, const GlueShrinkStretch & rhs)
+{
+  return GlueShrinkStretch{
+    lhs.normal - rhs.normal,
+    lhs.fil - rhs.fil,
+    lhs.fill - rhs.fill,
+    lhs.filll - rhs.filll
+  };
+}
+
 Glue::Glue(float spc, float shrnk, float strtch, GlueOrder shrnkOrder, GlueOrder strtchOrder)
   : mGlue(GlueSpec{ spc, shrnk, strtch, shrnkOrder, strtchOrder })
 {

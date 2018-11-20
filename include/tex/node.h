@@ -28,6 +28,18 @@ public:
     return dynamic_cast<const T*>(this) != nullptr;
   }
 
+  template<typename T>
+  T & as()
+  {
+    return *static_cast<T*>(this);
+  }
+
+  template<typename T>
+  const T & as() const
+  {
+    return *static_cast<const T*>(this);
+  }
+
   bool isBox() const;
   bool isGlue() const;
   bool isKern() const;

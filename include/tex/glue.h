@@ -32,7 +32,11 @@ struct LIBLAYOUT_API GlueShrinkStretch
   float fil;
   float fill;
   float filll;
+
+  GlueOrder order() const;
 };
+
+LIBLAYOUT_API GlueShrinkStretch operator-(const GlueShrinkStretch & lhs, const GlueShrinkStretch & rhs);
 
 struct GlueShrink : GlueShrinkStretch
 {
