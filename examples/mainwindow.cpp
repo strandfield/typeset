@@ -7,6 +7,7 @@
 #include "example.h"
 #include "example-tex.h"
 #include "example-single-line.h"
+#include "example-paragraph.h"
 
 #include <QHBoxLayout>
 #include <QMenuBar>
@@ -27,6 +28,7 @@ MainWindow::MainWindow()
   setCentralWidget(mTabWidget);
 
   addExample(new SingleLineTextWidget());
+  addExample(new ParagraphTextWidget());
 }
 
 void MainWindow::addExample(Example *ex)
