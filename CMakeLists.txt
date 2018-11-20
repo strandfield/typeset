@@ -2,6 +2,16 @@ cmake_minimum_required(VERSION 3.9)
 project(liblayout)
 
 ##################################################################
+####### Misc
+##################################################################
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  # disables warning about DLL export 
+  # this is annoying when using C++ STL
+  add_compile_options(/wd4251)  
+endif()
+
+##################################################################
 ####### liblayout library
 ##################################################################
 
@@ -21,16 +31,6 @@ foreach(_source IN ITEMS ${LIBLAYOUT_HDR_FILES} ${LIBLAYOUT_SRC_FILES})
 endforeach()
 
 target_compile_definitions(liblayout PUBLIC -DLIBLAYOUT_BUILD_LIB)
-
-##################################################################
-####### Misc
-##################################################################
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  # disables warning about DLL export 
-  # this is annoying when using C++ STL
-  add_compile_options(/wd4251)  
-endif()
 
 ##################################################################
 ####### Examples
