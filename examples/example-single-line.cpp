@@ -5,6 +5,7 @@
 #include "example-single-line.h"
 
 #include "textpainter.h"
+#include "textprocessor.h"
 
 #include <QPaintEvent>
 #include <QSpinBox>
@@ -17,7 +18,7 @@ SingleLineTextWidget::SingleLineTextWidget(QWidget *parent)
 
 QString SingleLineTextWidget::getName() const
 {
-  return "The senate will decide your fate";
+  return "A New Hope";
 }
 
 QWidget* SingleLineTextWidget::getController()
@@ -31,27 +32,14 @@ QWidget* SingleLineTextWidget::getController()
 
 void SingleLineTextWidget::recomputeLayout(int pagewidth)
 {
-  QStringList words = QString("I am the senate").split(' ');
+  QString input = "Help me, Obi-Wan Kenobi. You're my only hope.";
 
   QFont font = QFont{ "Times New Roman" };
-  font.setPointSize(48);
+  font.setPointSize(26);
 
-  QFontMetricsF metrics{ font };
-  const float xHeight = metrics.xHeight();
-  const float em = metrics.width(QChar('M'));
-  const float space = metrics.width(QChar(' '));
+  TextProcessor tp{ font };
 
-  auto spacenode = std::make_shared<tex::Glue>(space, 0.25f * space, 1.f);
-
-  tex::List list;
-  for (const auto & w : words)
-  {
-    list.push_back(stringbox(w, font));
-    list.push_back(spacenode);
-  }
-
-  list.pop_back();
-  list.push_back(stringbox(".", font));
+  tex::List list = tp.process(input);
 
   if (pagewidth == -1)
   {
