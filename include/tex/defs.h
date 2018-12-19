@@ -5,7 +5,7 @@
 #ifndef LIBLAYOUT_DEFS_H
 #define LIBLAYOUT_DEFS_H
 
-#if defined(WIN32) || defined(_WIN32)
+#if (defined(WIN32) || defined(_WIN32)) && !defined(LIBLAYOUT_STATIC_LINKING)
 
 #if defined(LIBLAYOUT_BUILD_LIB)
 #  define LIBLAYOUT_API __declspec(dllexport)
