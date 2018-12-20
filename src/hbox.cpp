@@ -17,6 +17,7 @@ HBox::HBox(List && list, float w, float h, float d, float shift)
 {
 
 }
+
 std::shared_ptr<HBox> hbox(List && hlist)
 {
   float height = 0;
@@ -99,44 +100,8 @@ std::shared_ptr<HBox> hbox(List && hlist, float w)
 
   auto box = std::make_shared<HBox>(std::move(hlist), naturalWidth, height, depth);
 
-
-  if (naturalWidth < w)
-  {
-    if (stretch.filll != 0.f)
-      box->setGlue((w - naturalWidth) / stretch.filll, GlueOrder::Filll);
-    else if (stretch.fill != 0.f)
-      box->setGlue((w - naturalWidth) / stretch.fill, GlueOrder::Fill);
-    else if (stretch.fil != 0.f)
-      box->setGlue((w - naturalWidth) / stretch.fil, GlueOrder::Fil);
-    else if (stretch.normal != 0.f)
-      box->setGlue((w - naturalWidth) / stretch.normal, GlueOrder::Normal);
-    else
-      box->setGlue(0.f, GlueOrder::Normal);
-
-    return box;
-  }
-  else if (naturalWidth > w)
-  {
-    if (shrink.filll != 0.f)
-      box->setGlue((w - naturalWidth) / shrink.filll, GlueOrder::Filll);
-    else if (shrink.fill != 0.f)
-      box->setGlue((w - naturalWidth) / shrink.fill, GlueOrder::Fill);
-    else if (shrink.fil != 0.f)
-      box->setGlue((w - naturalWidth) / shrink.fil, GlueOrder::Fil);
-    else if (shrink.normal != 0.f)
-    {
-      float r = (w - naturalWidth) / shrink.normal;
-      if (r < -1.f)
-        r = -1.f;
-      box->setGlue(r, GlueOrder::Normal);
-    }
-    else
-      box->setGlue(0.f, GlueOrder::Normal);
-
-    return box;
-  }
-
-  assert(naturalWidth == w);
+  const float final_width = box->setGlue(naturalWidth, w, shrink, stretch);
+  box->setWidth(final_width);
   return box;
 }
 

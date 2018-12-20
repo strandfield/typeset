@@ -19,7 +19,9 @@ public:
 };
 
 LIBLAYOUT_API std::shared_ptr<VBox> vbox(List && list);
+LIBLAYOUT_API std::shared_ptr<VBox> vbox(List && list, float h);
 LIBLAYOUT_API std::shared_ptr<VBox> vtop(List && list);
+LIBLAYOUT_API std::shared_ptr<VBox> vtop(List && list, float h);
 
 } // namespace tex
 

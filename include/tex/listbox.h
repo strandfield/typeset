@@ -39,6 +39,7 @@ public:
   inline float glueRatio() const { return mGlueSettings.ratio; }
   inline GlueOrder glueOrder() const { return mGlueSettings.order; }
   void setGlue(float ratio, GlueOrder order); 
+  float setGlue(float x, float desired, const GlueShrink & shrink, const GlueStretch & stretch);
 
 private:
   List mList;
@@ -48,6 +49,9 @@ private:
   float mShiftAmount;
   GlueSettings mGlueSettings;
 };
+
+LIBLAYOUT_API float naturalWidth(const List & l);
+LIBLAYOUT_API float naturalWidth(const List & l, GlueShrink & shrink, GlueStretch & stretch);
 
 } // namespace tex
 

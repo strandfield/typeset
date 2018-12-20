@@ -63,10 +63,78 @@ std::shared_ptr<VBox> vbox(List && list)
   return std::make_shared<VBox>(std::move(list), width, height, depth);
 }
 
+std::shared_ptr<VBox> vbox(List && list, float h)
+{
+  float height = 0;
+  float width = 0;
+  GlueStretch stretch;
+  GlueShrink shrink;
+
+  auto last_box_it = list.end();
+  for (auto it = list.begin(); it != list.end(); ++it)
+  {
+    if ((*it)->isBox())
+    {
+      last_box_it = it;
+      height += std::static_pointer_cast<Box>(*it)->totalHeight();
+      width = std::max(std::static_pointer_cast<Box>(*it)->width(), width);
+    }
+    else if ((*it)->isKern())
+    {
+      height += std::static_pointer_cast<Kern>(*it)->space();
+    }
+    else if ((*it)->isGlue())
+    {
+      auto glue = std::static_pointer_cast<Glue>(*it);
+      height += std::static_pointer_cast<Glue>(*it)->space();
+      glue->accumulate(shrink, stretch);
+    }
+  }
+
+  float depth;
+  if (last_box_it == list.end())
+  {
+    depth = 0.f;
+  }
+  else
+  {
+    auto it = last_box_it;
+    if (++it != list.end()) // the box is followed by kern or glue
+    {
+      depth = 0.f;
+    }
+    else
+    {
+      depth = std::static_pointer_cast<Box>(*last_box_it)->depth();
+      height -= depth;
+    }
+  }
+
+  auto box = std::make_shared<VBox>(std::move(list), width, height, depth);
+
+  float final_height = box->setGlue(height, h, shrink, stretch);
+  box->setHeight(final_height);
+
+  return box;
+}
 
 std::shared_ptr<VBox> vtop(List && list)
 {
   auto box = vbox(std::move(list));
+
+  float h = box->height();
+  float d = box->depth();
+
+  float x = (*box->list().begin())->isBox() ? std::static_pointer_cast<Box>(*box->list().begin())->height() : 0.f;
+  box->setHeight(x);
+  box->setDepth(h + d - x);
+
+  return box;
+}
+
+std::shared_ptr<VBox> vtop(List && list, float dimh)
+{
+  auto box = vbox(std::move(list), dimh);
 
   float h = box->height();
   float d = box->depth();
