@@ -11,139 +11,193 @@
 namespace tex
 {
 
-VBox::VBox(List && list, float w, float h, float d)
-  : ListBox(std::move(list), w, h, d)
+VBox::VBox(List && list)
+  : ListBox(std::move(list))
 {
-
+  rebox_vbox();
 }
 
-std::shared_ptr<VBox> vbox(List && list)
+VBox::VBox(List && list, float desiredHeight)
+  : ListBox(std::move(list))
 {
-  float height = 0;
-  float width = 0;
+  rebox_vbox(desiredHeight);
+}
 
-  auto last_box_it = list.end();
-  for (auto it = list.begin(); it != list.end(); ++it)
+void VBox::getBoxingInfo(float *width, float *height, float *depth, GlueShrink *shrink, GlueStretch *stretch) const
+{
+  float h = 0;
+  float w = 0;
+
+  auto last_box_it = list().end();
+  for (auto it = list().begin(); it != list().end(); ++it)
   {
     if ((*it)->isBox())
     {
       last_box_it = it;
-      height += std::static_pointer_cast<Box>(*it)->totalHeight();
-      width = std::max(std::static_pointer_cast<Box>(*it)->width(), width);
+      h += std::static_pointer_cast<Box>(*it)->totalHeight();
+      w = std::max(std::static_pointer_cast<Box>(*it)->width(), w);
     }
     else if ((*it)->isKern())
     {
-      height += std::static_pointer_cast<Kern>(*it)->space();
-    }
-    else if ((*it)->isGlue()) 
-    {
-      height += std::static_pointer_cast<Glue>(*it)->space();
-    }
-  }
-
-  float depth;
-  if (last_box_it == list.end())
-  {
-    depth = 0.f;
-  }
-  else
-  {
-    auto it = last_box_it;
-    if (++it != list.end()) // the box is followed by kern or glue
-    {
-      depth = 0.f;
-    }
-    else
-    {
-      depth = std::static_pointer_cast<Box>(*last_box_it)->depth();
-      height -= depth;
-    }
-  }
-
-  return std::make_shared<VBox>(std::move(list), width, height, depth);
-}
-
-std::shared_ptr<VBox> vbox(List && list, float h)
-{
-  float height = 0;
-  float width = 0;
-  GlueStretch stretch;
-  GlueShrink shrink;
-
-  auto last_box_it = list.end();
-  for (auto it = list.begin(); it != list.end(); ++it)
-  {
-    if ((*it)->isBox())
-    {
-      last_box_it = it;
-      height += std::static_pointer_cast<Box>(*it)->totalHeight();
-      width = std::max(std::static_pointer_cast<Box>(*it)->width(), width);
-    }
-    else if ((*it)->isKern())
-    {
-      height += std::static_pointer_cast<Kern>(*it)->space();
+      h += std::static_pointer_cast<Kern>(*it)->space();
     }
     else if ((*it)->isGlue())
     {
       auto glue = std::static_pointer_cast<Glue>(*it);
-      height += std::static_pointer_cast<Glue>(*it)->space();
-      glue->accumulate(shrink, stretch);
+      h += std::static_pointer_cast<Glue>(*it)->space();
+      glue->accumulate(*shrink, *stretch);
     }
   }
 
-  float depth;
-  if (last_box_it == list.end())
+  float d;
+  if (last_box_it == list().end())
   {
-    depth = 0.f;
+    d = 0.f;
   }
   else
   {
     auto it = last_box_it;
-    if (++it != list.end()) // the box is followed by kern or glue
+    if (++it != list().end()) // the box is followed by kern or glue
     {
-      depth = 0.f;
+      d = 0.f;
     }
     else
     {
-      depth = std::static_pointer_cast<Box>(*last_box_it)->depth();
-      height -= depth;
+      d = std::static_pointer_cast<Box>(*last_box_it)->depth();
+      h -= d;
     }
   }
 
-  auto box = std::make_shared<VBox>(std::move(list), width, height, depth);
+  if (height)
+    *height = h;
+  if (depth)
+    *depth = d;
+  if (width)
+    *width = w;
+}
 
-  float final_height = box->setGlue(height, h, shrink, stretch);
-  box->setHeight(final_height);
+void VBox::rebox_vbox()
+{
+  float width, height, depth;
+  GlueShrink shrink;
+  GlueStretch stretch;
 
-  return box;
+  getBoxingInfo(&width, &height, &depth, &shrink, &stretch);
+
+  setHeight(height);
+  setDepth(depth);
+  setWidth(width);
+}
+
+BoxingResult VBox::rebox_vbox(float desiredHeight)
+{
+  float width, height, depth;
+  GlueShrink shrink;
+  GlueStretch stretch;
+
+  getBoxingInfo(&width, &height, &depth, &shrink, &stretch);
+
+  setWidth(width);
+  setDepth(depth);
+
+  float final_height = setGlue(height, desiredHeight, shrink, stretch);
+  setHeight(final_height);
+
+  if (final_height < desiredHeight)
+    return BoxingResult::UnderfullBox;
+  else if (final_height > desiredHeight)
+    return BoxingResult::OverfullBox;
+  return BoxingResult::NormalBox;
+}
+
+void VBox::rebox_vtop()
+{
+  rebox_vbox();
+  make_vtop();
+}
+
+BoxingResult VBox::rebox_vtop(float desiredHeight)
+{
+  BoxingResult ret = rebox_vbox(desiredHeight);
+  make_vtop();
+  return ret;
+}
+
+void VBox::make_vtop()
+{
+  float h = height();
+  float d = depth();
+
+  float x = (*list().begin())->isBox() ? std::static_pointer_cast<Box>(*list().begin())->height() : 0.f;
+  setHeight(x);
+  setDepth(h + d - x);
+}
+
+
+std::shared_ptr<VBox> vbox(List && list)
+{
+  return std::make_shared<VBox>(std::move(list));
+}
+
+std::shared_ptr<VBox> vbox(List && list, float h)
+{
+  return std::make_shared<VBox>(std::move(list), h);
 }
 
 std::shared_ptr<VBox> vtop(List && list)
 {
   auto box = vbox(std::move(list));
-
-  float h = box->height();
-  float d = box->depth();
-
-  float x = (*box->list().begin())->isBox() ? std::static_pointer_cast<Box>(*box->list().begin())->height() : 0.f;
-  box->setHeight(x);
-  box->setDepth(h + d - x);
-
+  box->make_vtop();
   return box;
 }
 
 std::shared_ptr<VBox> vtop(List && list, float dimh)
 {
   auto box = vbox(std::move(list), dimh);
-
-  float h = box->height();
-  float d = box->depth();
-
-  float x = (*box->list().begin())->isBox() ? std::static_pointer_cast<Box>(*box->list().begin())->height() : 0.f;
-  box->setHeight(x);
-  box->setDepth(h + d - x);
-
+  box->make_vtop();
   return box;
+}
+
+VBoxEditor::VBoxEditor(VBox & box)
+  : mReboxDone(false)
+  , mVbox(&box)
+{
+
+}
+
+VBoxEditor::~VBoxEditor()
+{
+  if (!mReboxDone)
+    mVbox->rebox_vbox();
+}
+
+List & VBoxEditor::list()
+{
+  return mVbox->mutableList();
+}
+
+void VBoxEditor::rebox()
+{
+  mReboxDone = true;
+  mVbox->rebox_vbox();
+}
+
+BoxingResult VBoxEditor::rebox(float desiredHeight)
+{
+  mReboxDone = true;
+  return mVbox->rebox_vbox(desiredHeight);
+}
+
+void VBoxEditor::rebox_vtop()
+{
+  mReboxDone = true;
+  mVbox->rebox_vtop();
+}
+
+BoxingResult VBoxEditor::rebox_vtop(float desiredHeight)
+{
+  mReboxDone = true;
+  return mVbox->rebox_vtop(desiredHeight);
 }
 
 } // namespace tex

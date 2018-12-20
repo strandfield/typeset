@@ -10,10 +10,12 @@
 #include <QPaintEvent>
 #include <QSpinBox>
 
+#include <QDebug>
+
 SingleLineTextWidget::SingleLineTextWidget(QWidget *parent)
   : Example(parent)
 {
-  recomputeLayout(-1);
+  constructLayout();
 }
 
 QString SingleLineTextWidget::getName() const
@@ -30,7 +32,7 @@ QWidget* SingleLineTextWidget::getController()
   return spinbox;
 }
 
-void SingleLineTextWidget::recomputeLayout(int pagewidth)
+void SingleLineTextWidget::constructLayout()
 {
   QString input = "Help me, Obi-Wan Kenobi. You're my only hope.";
 
@@ -41,14 +43,23 @@ void SingleLineTextWidget::recomputeLayout(int pagewidth)
 
   tex::List list = tp.process(input);
 
-  if (pagewidth == -1)
+  layout_ = tex::hbox(std::move(list));
+  pagewidth_ = layout_->width();
+}
+
+void SingleLineTextWidget::recomputeLayout(int pagewidth)
+{
+  tex::HBoxEditor editor{ *layout_ };
+  if (pagewidth < 0)
   {
-    layout_ = tex::hbox(std::move(list));
+    editor.rebox();
     pagewidth_ = layout_->width();
   }
   else
   {
-    layout_ = tex::hbox(std::move(list), pagewidth);
+    auto result = editor.rebox(pagewidth);
+    if (result == tex::BoxingResult::OverfullBox)
+      qDebug() << "Overfull box : layoutwidth =" << layout_->width() << ", pagewidth=" << pagewidth;
     pagewidth_ = pagewidth;
   }
 

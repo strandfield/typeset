@@ -9,12 +9,12 @@
 namespace tex
 {
 
-ListBox::ListBox(List && list, float w, float h, float d, float shift)
+ListBox::ListBox(List && list)
   : mList(std::move(list))
-  , mWidth(w)
-  , mHeight(h)
-  , mDepth(d)
-  , mShiftAmount(shift)
+  , mWidth(0)
+  , mHeight(0)
+  , mDepth(0)
+  , mShiftAmount(0)
   , mGlueSettings{0.f, GlueOrder::Normal}
 {
 
@@ -89,57 +89,6 @@ float ListBox::setGlue(float x, float desired, const GlueShrink & shrink, const 
   }
 
   return x;
-}
-
-float naturalWidth(const List & l)
-{
-  float result = 0;
-
-  for (auto it = l.begin(); it != l.end(); ++it)
-  {
-    if ((*it)->isBox())
-    {
-      auto box = std::static_pointer_cast<Box>(*it);
-      result += box->width();
-    }
-    else if ((*it)->isKern())
-    {
-      result += std::static_pointer_cast<Kern>(*it)->space();
-    }
-    else if ((*it)->isGlue())
-    {
-      auto glue = std::static_pointer_cast<Glue>(*it);
-      result += glue->space();
-    }
-  }
-
-  return result;
-}
-
-float naturalWidth(const List & l, GlueShrink & shrink, GlueStretch & stretch)
-{
-  float result = 0;
-
-  for (auto it = l.begin(); it != l.end(); ++it)
-  {
-    if ((*it)->isBox())
-    {
-      auto box = std::static_pointer_cast<Box>(*it);
-      result += box->width();
-    }
-    else if ((*it)->isKern())
-    {
-      result += std::static_pointer_cast<Kern>(*it)->space();
-    }
-    else if ((*it)->isGlue())
-    {
-      auto glue = std::static_pointer_cast<Glue>(*it);
-      result += glue->space();
-      glue->accumulate(shrink, stretch);
-    }
-  }
-
-  return result;
 }
 
 } // namespace tex

@@ -9,7 +9,7 @@
 
 namespace tex
 {
-class Box;
+class HBox;
 } // namespace tex
 
 class SingleLineTextWidget : public Example
@@ -23,13 +23,14 @@ public:
   QWidget* getController() override;
 
 public Q_SLOTS:
+  void constructLayout();
   void recomputeLayout(int pagewidth = -1);
 
 protected:
   void paintEvent(QPaintEvent *e) override;
 
 private:
-  std::shared_ptr<tex::Box> layout_;
+  std::shared_ptr<tex::HBox> layout_;
   int pagewidth_;
 };
 
