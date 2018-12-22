@@ -76,4 +76,29 @@ void Glue::accumulate(GlueShrink & shrink, GlueStretch & stretch) const
   }
 }
 
+std::shared_ptr<Glue> glue(float space)
+{
+  return std::make_shared<Glue>(space, 0.f, 0.f);
+}
+
+std::shared_ptr<Glue> glue(float space, const Shrink & shrink)
+{
+  return std::make_shared<Glue>(space, shrink.amount, 0.f, shrink.order, GlueOrder::Normal);
+}
+
+std::shared_ptr<Glue> glue(float space, const Stretch & stretch)
+{
+  return std::make_shared<Glue>(space, 0.f, stretch.amount, GlueOrder::Normal, stretch.order);
+}
+
+std::shared_ptr<Glue> glue(float space, const Stretch & stretch, const Shrink & shrink)
+{
+  return std::make_shared<Glue>(space, shrink.amount, stretch.amount, shrink.order, stretch.order);
+}
+
+std::shared_ptr<Glue> glue(float space, const Shrink & shrink, const Stretch & stretch)
+{
+  return std::make_shared<Glue>(space, shrink.amount, stretch.amount, shrink.order, stretch.order);
+}
+
 } // namespace tex

@@ -7,6 +7,8 @@
 
 #include "tex/node.h"
 
+#include <memory>
+
 namespace tex
 {
 
@@ -51,6 +53,9 @@ struct GlueStretch : GlueShrinkStretch
   using GlueShrinkStretch::GlueShrinkStretch;
 };
 
+typedef GlueShrink ShrinkTotals;
+typedef GlueStretch StretchTotals;
+
 struct GlueSettings
 {
   float ratio;
@@ -76,6 +81,38 @@ public:
 private:
   const GlueSpec mGlue;
 };
+
+struct LIBLAYOUT_API Shrink
+{
+  float amount;
+  GlueOrder order;
+
+  Shrink(float a, GlueOrder o = GlueOrder::Normal)
+    : amount(a)
+    , order(o)
+  {
+
+  }
+};
+
+struct LIBLAYOUT_API Stretch
+{
+  float amount;
+  GlueOrder order;
+
+  Stretch(float a, GlueOrder o = GlueOrder::Normal)
+    : amount(a)
+    , order(o)
+  {
+
+  }
+};
+
+LIBLAYOUT_API std::shared_ptr<Glue> glue(float space);
+LIBLAYOUT_API std::shared_ptr<Glue> glue(float space, const Shrink & shrink);
+LIBLAYOUT_API std::shared_ptr<Glue> glue(float space, const Stretch & stretch);
+LIBLAYOUT_API std::shared_ptr<Glue> glue(float space, const Stretch & stretch, const Shrink & shrink);
+LIBLAYOUT_API std::shared_ptr<Glue> glue(float space, const Shrink & shrink, const Stretch & stretch);
 
 } // namespace tex
 
