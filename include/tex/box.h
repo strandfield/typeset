@@ -6,6 +6,7 @@
 #define LIBLAYOUT_BOX_H
 
 #include "tex/node.h"
+#include "tex/boxmetrics.h"
 
 namespace tex
 {
@@ -21,6 +22,8 @@ public:
   {
     return height() + depth();
   }
+
+  inline BoxMetrics metrics() const { return BoxMetrics{ height(), depth(), width() }; }
 };
 
 } // namespace tex
