@@ -33,7 +33,8 @@ endforeach()
 target_compile_definitions(liblayout PUBLIC -DLIBLAYOUT_BUILD_LIB)
 
 ##################################################################
-####### Examples
+####### Examples & Tests
 ##################################################################
 
 add_subdirectory(examples)
+add_subdirectory(tests)
