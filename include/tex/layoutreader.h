@@ -160,9 +160,10 @@ void read_vbox_full(Reader && reader, const std::shared_ptr<VBox> & layout, Pos 
 }
 
 template<typename Reader>
-void read_hbox_partial(Reader && reader, const std::shared_ptr<HBox> & layout, Pos pos)
+bool read_hbox_partial(Reader && reader, const std::shared_ptr<HBox> & layout, Pos pos)
 {
-  reader(layout, pos);
+  if(reader(layout, pos))
+    return PartialLayoutReader::Done;
 
   const float baseline = pos.y + layout->height();
 
@@ -228,9 +229,10 @@ void read_hbox_partial(Reader && reader, const std::shared_ptr<HBox> & layout, P
 }
 
 template<typename Reader>
-void read_vbox_partial(Reader && reader, const std::shared_ptr<VBox> & layout, Pos pos)
+bool read_vbox_partial(Reader && reader, const std::shared_ptr<VBox> & layout, Pos pos)
 {
-  reader(layout, pos);
+  if (reader(layout, pos))
+    return PartialLayoutReader::Done;
 
   for (auto node : layout->list())
   {
