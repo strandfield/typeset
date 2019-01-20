@@ -126,6 +126,11 @@ FontSize Style::sizeForStyle(FontSize currentSize) const
   return mSize < 2 ? currentSize : FontSize{ sizeStyleMap[currentSize.value() - 1][mSize - 1] };
 }
 
+Style Style::fromId(int id)
+{
+  return StyleTables::style_table[id];
+}
+
 } // namespace math
 
 } // namespace tex

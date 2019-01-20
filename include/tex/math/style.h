@@ -45,6 +45,8 @@ public:
   inline int id() const { return mId; }
   inline bool isCramped() const { return mCramped; }
 
+  static Style fromId(int id);
+
   Style & operator=(const Style &) = default;
 
 protected:
