@@ -1,23 +1,23 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_MATH_ON_OFF_H
-#define LIBLAYOUT_MATH_ON_OFF_H
+#ifndef LIBTYPESET_MATH_ON_OFF_H
+#define LIBTYPESET_MATH_ON_OFF_H
 
 #include "tex/node.h"
 
 namespace tex
 {
 
-class LIBLAYOUT_API MathOn : public Node
+class LIBTYPESET_API MathOn : public Node
 {
 public:
   MathOn() = default;
   ~MathOn() = default;
 };
 
-class LIBLAYOUT_API MathOff : public Node
+class LIBTYPESET_API MathOff : public Node
 {
 public:
   MathOff() = default;
@@ -26,4 +26,4 @@ public:
 
 } // namespace tex
 
-#endif // LIBLAYOUT_MATH_ON_OFF_H
+#endif // LIBTYPESET_MATH_ON_OFF_H

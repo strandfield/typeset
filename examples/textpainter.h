@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_EXAMPLES_TEXTPAINTER_H
-#define LIBLAYOUT_EXAMPLES_TEXTPAINTER_H
+#ifndef LIBTYPESET_EXAMPLES_TEXTPAINTER_H
+#define LIBTYPESET_EXAMPLES_TEXTPAINTER_H
 
 #include "stringbox.h"
 
@@ -55,4 +55,4 @@ struct TextPainter : tex::LayoutReader
   }
 };
 
-#endif // LIBLAYOUT_EXAMPLES_TEXTPAINTER_H
+#endif // LIBTYPESET_EXAMPLES_TEXTPAINTER_H

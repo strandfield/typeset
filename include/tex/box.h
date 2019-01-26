@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_BOX_H
-#define LIBLAYOUT_BOX_H
+#ifndef LIBTYPESET_BOX_H
+#define LIBTYPESET_BOX_H
 
 #include "tex/node.h"
 #include "tex/boxmetrics.h"
@@ -11,7 +11,7 @@
 namespace tex
 {
 
-class LIBLAYOUT_API Box : public Node
+class LIBTYPESET_API Box : public Node
 {
 public:
   virtual float height() const = 0;
@@ -28,4 +28,4 @@ public:
 
 } // namespace tex
 
-#endif // LIBLAYOUT_BOX_H
+#endif // LIBTYPESET_BOX_H

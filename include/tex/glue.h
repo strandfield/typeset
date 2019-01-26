@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_GLUE_H
-#define LIBLAYOUT_GLUE_H
+#ifndef LIBTYPESET_GLUE_H
+#define LIBTYPESET_GLUE_H
 
 #include "tex/node.h"
 
@@ -29,7 +29,7 @@ struct GlueSpec
   GlueOrder stretchOrder;
 };
 
-struct LIBLAYOUT_API GlueShrinkStretch
+struct LIBTYPESET_API GlueShrinkStretch
 {
   GlueShrinkStretch(float n = 0.f, float l = 0.f, float ll = 0.f, float lll = 0.f);
 
@@ -41,7 +41,7 @@ struct LIBLAYOUT_API GlueShrinkStretch
   GlueOrder order() const;
 };
 
-LIBLAYOUT_API GlueShrinkStretch operator-(const GlueShrinkStretch & lhs, const GlueShrinkStretch & rhs);
+LIBTYPESET_API GlueShrinkStretch operator-(const GlueShrinkStretch & lhs, const GlueShrinkStretch & rhs);
 
 struct GlueShrink : GlueShrinkStretch
 {
@@ -62,7 +62,7 @@ struct GlueSettings
   GlueOrder order;
 };
 
-class LIBLAYOUT_API Glue final : public Node
+class LIBTYPESET_API Glue final : public Node
 {
 public:
   Glue(float spc, float shrnk, float strtch, GlueOrder shrnkOrder = GlueOrder::Normal, GlueOrder strtchOrder = GlueOrder::Normal);
@@ -82,7 +82,7 @@ private:
   const GlueSpec mGlue;
 };
 
-struct LIBLAYOUT_API Shrink
+struct LIBTYPESET_API Shrink
 {
   float amount;
   GlueOrder order;
@@ -95,7 +95,7 @@ struct LIBLAYOUT_API Shrink
   }
 };
 
-struct LIBLAYOUT_API Stretch
+struct LIBTYPESET_API Stretch
 {
   float amount;
   GlueOrder order;
@@ -108,12 +108,12 @@ struct LIBLAYOUT_API Stretch
   }
 };
 
-LIBLAYOUT_API std::shared_ptr<Glue> glue(float space);
-LIBLAYOUT_API std::shared_ptr<Glue> glue(float space, const Shrink & shrink);
-LIBLAYOUT_API std::shared_ptr<Glue> glue(float space, const Stretch & stretch);
-LIBLAYOUT_API std::shared_ptr<Glue> glue(float space, const Stretch & stretch, const Shrink & shrink);
-LIBLAYOUT_API std::shared_ptr<Glue> glue(float space, const Shrink & shrink, const Stretch & stretch);
+LIBTYPESET_API std::shared_ptr<Glue> glue(float space);
+LIBTYPESET_API std::shared_ptr<Glue> glue(float space, const Shrink & shrink);
+LIBTYPESET_API std::shared_ptr<Glue> glue(float space, const Stretch & stretch);
+LIBTYPESET_API std::shared_ptr<Glue> glue(float space, const Stretch & stretch, const Shrink & shrink);
+LIBTYPESET_API std::shared_ptr<Glue> glue(float space, const Shrink & shrink, const Stretch & stretch);
 
 } // namespace tex
 
-#endif // LIBLAYOUT_GLUE_H
+#endif // LIBTYPESET_GLUE_H

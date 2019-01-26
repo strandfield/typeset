@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_MATH_ATOM_H
-#define LIBLAYOUT_MATH_ATOM_H
+#ifndef LIBTYPESET_MATH_ATOM_H
+#define LIBTYPESET_MATH_ATOM_H
 
 #include "tex/symbol.h"
 #include "tex/math/mathonoff.h"
@@ -16,7 +16,7 @@ namespace tex
 namespace math
 {
 
-class LIBLAYOUT_API Atom : public Node
+class LIBTYPESET_API Atom : public Node
 {
 public:
   enum Type
@@ -97,4 +97,4 @@ private:
 
 } // namespace tex
 
-#endif // LIBLAYOUT_MATH_ATOM_H
+#endif // LIBTYPESET_MATH_ATOM_H

@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_BOXMETRICS_H
-#define LIBLAYOUT_BOXMETRICS_H
+#ifndef LIBTYPESET_BOXMETRICS_H
+#define LIBTYPESET_BOXMETRICS_H
 
 #include "tex/node.h"
 
@@ -19,4 +19,4 @@ struct BoxMetrics
 
 } // namespace tex
 
-#endif // LIBLAYOUT_BOXMETRICS_H
+#endif // LIBTYPESET_BOXMETRICS_H

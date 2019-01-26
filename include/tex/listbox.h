@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_LISTBOX_H
-#define LIBLAYOUT_LISTBOX_H
+#ifndef LIBTYPESET_LISTBOX_H
+#define LIBTYPESET_LISTBOX_H
 
 #include "tex/box.h"
 
@@ -23,7 +23,7 @@ enum BoxingResult {
   UnderfullBox,
 };
 
-class LIBLAYOUT_API ListBox : public Box
+class LIBTYPESET_API ListBox : public Box
 {
 public:
   ~ListBox() = default;
@@ -63,7 +63,7 @@ private:
   GlueSettings mGlueSettings;
 };
 
-class LIBLAYOUT_API ListBoxEditor
+class LIBTYPESET_API ListBoxEditor
 {
 private:
   ListBox* mListBox;
@@ -81,4 +81,4 @@ public:
 
 } // namespace tex
 
-#endif // LIBLAYOUT_LISTBOX_H
+#endif // LIBTYPESET_LISTBOX_H

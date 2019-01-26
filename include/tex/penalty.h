@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_PENALTY_H
-#define LIBLAYOUT_PENALTY_H
+#ifndef LIBTYPESET_PENALTY_H
+#define LIBTYPESET_PENALTY_H
 
 #include "tex/node.h"
 
@@ -12,7 +12,7 @@
 namespace tex
 {
 
-class LIBLAYOUT_API Penalty final : public Node
+class LIBTYPESET_API Penalty final : public Node
 {
 public:
   Penalty(int value);
@@ -26,9 +26,9 @@ protected:
   int mValue;
 };
 
-LIBLAYOUT_API std::shared_ptr<Penalty> penalty(int p);
-LIBLAYOUT_API std::shared_ptr<Penalty> infinitePenalty();
+LIBTYPESET_API std::shared_ptr<Penalty> penalty(int p);
+LIBTYPESET_API std::shared_ptr<Penalty> infinitePenalty();
 
 } // namespace tex
 
-#endif // LIBLAYOUT_PENALTY_H
+#endif // LIBTYPESET_PENALTY_H

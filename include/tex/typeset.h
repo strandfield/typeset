@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_TYPESET_H
-#define LIBLAYOUT_TYPESET_H
+#ifndef LIBTYPESET_TYPESET_H
+#define LIBTYPESET_TYPESET_H
 
 #include "tex/box.h"
 #include "tex/fontmetrics.h"
@@ -16,7 +16,7 @@ namespace math
 class Style;
 } // namespace math
 
-class LIBLAYOUT_API TypesetEngine
+class LIBTYPESET_API TypesetEngine
 {
 public:
   TypesetEngine() = default;
@@ -32,7 +32,7 @@ public:
   FontMetricsProdiver & operator=(const FontMetricsProdiver &) = delete;
 };
 
-class LIBLAYOUT_API Options
+class LIBTYPESET_API Options
 {
 public:
   explicit Options(const std::shared_ptr<TypesetEngine> & engine);
@@ -63,4 +63,4 @@ private:
 
 } // namespace tex
 
-#endif // LIBLAYOUT_TYPESET_H
+#endif // LIBTYPESET_TYPESET_H

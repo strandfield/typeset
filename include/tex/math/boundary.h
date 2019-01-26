@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_MATH_BOUNDARY_H
-#define LIBLAYOUT_MATH_BOUNDARY_H
+#ifndef LIBTYPESET_MATH_BOUNDARY_H
+#define LIBTYPESET_MATH_BOUNDARY_H
 
 #include "tex/symbol.h"
 
@@ -15,7 +15,7 @@ namespace tex
 namespace math
 {
 
-class LIBLAYOUT_API Boundary : public Node
+class LIBTYPESET_API Boundary : public Node
 {
 public:
   explicit Boundary(const std::shared_ptr<Symbol> & symbol) : mSymbol(symbol) { }
@@ -31,4 +31,4 @@ private:
 
 } // namespace tex
 
-#endif // LIBLAYOUT_MATH_BOUNDARY_H
+#endif // LIBTYPESET_MATH_BOUNDARY_H

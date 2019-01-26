@@ -1,16 +1,16 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_VBOX_H
-#define LIBLAYOUT_VBOX_H
+#ifndef LIBTYPESET_VBOX_H
+#define LIBTYPESET_VBOX_H
 
 #include "tex/listbox.h"
 
 namespace tex
 {
 
-class LIBLAYOUT_API VBox final : public ListBox
+class LIBTYPESET_API VBox final : public ListBox
 {
 public:
   explicit VBox(List && list);
@@ -21,8 +21,8 @@ public:
 
 protected:
   friend class VBoxEditor;
-  friend LIBLAYOUT_API std::shared_ptr<VBox> vtop(List && list);
-  friend LIBLAYOUT_API std::shared_ptr<VBox> vtop(List && list, float h);
+  friend LIBTYPESET_API std::shared_ptr<VBox> vtop(List && list);
+  friend LIBTYPESET_API std::shared_ptr<VBox> vtop(List && list, float h);
 
   void rebox_vbox();
   BoxingResult rebox_vbox(float desiredHeight);
@@ -31,12 +31,12 @@ protected:
   void make_vtop();
 };
 
-LIBLAYOUT_API std::shared_ptr<VBox> vbox(List && list);
-LIBLAYOUT_API std::shared_ptr<VBox> vbox(List && list, float h);
-LIBLAYOUT_API std::shared_ptr<VBox> vtop(List && list);
-LIBLAYOUT_API std::shared_ptr<VBox> vtop(List && list, float h);
+LIBTYPESET_API std::shared_ptr<VBox> vbox(List && list);
+LIBTYPESET_API std::shared_ptr<VBox> vbox(List && list, float h);
+LIBTYPESET_API std::shared_ptr<VBox> vtop(List && list);
+LIBTYPESET_API std::shared_ptr<VBox> vtop(List && list, float h);
 
-class LIBLAYOUT_API VBoxEditor final
+class LIBTYPESET_API VBoxEditor final
 {
 private:
   bool mReboxDone;
@@ -58,4 +58,4 @@ public:
 
 } // namespace tex
 
-#endif // LIBLAYOUT_VBOX_H
+#endif // LIBTYPESET_VBOX_H

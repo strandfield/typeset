@@ -1,16 +1,16 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_RULE_H
-#define LIBLAYOUT_RULE_H
+#ifndef LIBTYPESET_RULE_H
+#define LIBTYPESET_RULE_H
 
 #include "tex/box.h"
 
 namespace tex
 {
 
-class LIBLAYOUT_API Rule final : public Box
+class LIBTYPESET_API Rule final : public Box
 {
 public:
   Rule(float w, float h, float d);
@@ -25,8 +25,8 @@ private:
   float mDepth;
 };
 
-LIBLAYOUT_API std::shared_ptr<Rule> hrule(float width, float height, float depth = 0.f);
+LIBTYPESET_API std::shared_ptr<Rule> hrule(float width, float height, float depth = 0.f);
 
 } // namespace tex
 
-#endif // LIBLAYOUT_RULE_H
+#endif // LIBTYPESET_RULE_H

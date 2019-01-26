@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_EXAMPLES_STRINGBOX_H
-#define LIBLAYOUT_EXAMPLES_STRINGBOX_H
+#ifndef LIBTYPESET_EXAMPLES_STRINGBOX_H
+#define LIBTYPESET_EXAMPLES_STRINGBOX_H
 
 #include <tex/box.h>
 
@@ -32,4 +32,4 @@ private:
 
 std::shared_ptr<StringBox> stringbox(const QString & text, const QFont & f = QFont());
 
-#endif // LIBLAYOUT_EXAMPLES_STRINGBOX_H
+#endif // LIBTYPESET_EXAMPLES_STRINGBOX_H

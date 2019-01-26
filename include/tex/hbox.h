@@ -1,16 +1,16 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_HBOX_H
-#define LIBLAYOUT_HBOX_H
+#ifndef LIBTYPESET_HBOX_H
+#define LIBTYPESET_HBOX_H
 
 #include "tex/listbox.h"
 
 namespace tex
 {
 
-class LIBLAYOUT_API HBox final : public ListBox
+class LIBTYPESET_API HBox final : public ListBox
 {
 public:
   HBox(List && list);
@@ -26,14 +26,14 @@ protected:
   BoxingResult rebox(float desiredWidth);
 };
 
-LIBLAYOUT_API std::shared_ptr<HBox> hbox(List && hlist);
-LIBLAYOUT_API std::shared_ptr<HBox> hbox(std::initializer_list<std::shared_ptr<Node>> && nodes);
-LIBLAYOUT_API std::shared_ptr<HBox> hbox(List && hlist, float w);
+LIBTYPESET_API std::shared_ptr<HBox> hbox(List && hlist);
+LIBTYPESET_API std::shared_ptr<HBox> hbox(std::initializer_list<std::shared_ptr<Node>> && nodes);
+LIBTYPESET_API std::shared_ptr<HBox> hbox(List && hlist, float w);
 
-LIBLAYOUT_API void raise(std::shared_ptr<HBox> box, float amount);
-LIBLAYOUT_API void lower(std::shared_ptr<HBox> box, float amount);
+LIBTYPESET_API void raise(std::shared_ptr<HBox> box, float amount);
+LIBTYPESET_API void lower(std::shared_ptr<HBox> box, float amount);
 
-class LIBLAYOUT_API HBoxEditor final
+class LIBTYPESET_API HBoxEditor final
 {
 private:
   bool mReboxDone;
@@ -50,4 +50,4 @@ public:
 
 } // namespace tex
 
-#endif // LIBLAYOUT_HBOX_H
+#endif // LIBTYPESET_HBOX_H

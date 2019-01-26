@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_EXAMPLES_PARAGRAPH_H
-#define LIBLAYOUT_EXAMPLES_PARAGRAPH_H
+#ifndef LIBTYPESET_EXAMPLES_PARAGRAPH_H
+#define LIBTYPESET_EXAMPLES_PARAGRAPH_H
 
 #include "example.h"
 
@@ -36,4 +36,4 @@ private:
   QPlainTextEdit *text_;
 };
 
-#endif // LIBLAYOUT_EXAMPLES_PARAGRAPH_H
+#endif // LIBTYPESET_EXAMPLES_PARAGRAPH_H

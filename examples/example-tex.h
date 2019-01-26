@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_EXAMPLES_TEX_H
-#define LIBLAYOUT_EXAMPLES_TEX_H
+#ifndef LIBTYPESET_EXAMPLES_TEX_H
+#define LIBTYPESET_EXAMPLES_TEX_H
 
 #include <QWidget>
 
@@ -26,4 +26,4 @@ private:
   std::shared_ptr<tex::Box> layout_;
 };
 
-#endif // LIBLAYOUT_EXAMPLES_TEX_H
+#endif // LIBTYPESET_EXAMPLES_TEX_H

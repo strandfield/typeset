@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_MATH_FRACTION_H
-#define LIBLAYOUT_MATH_FRACTION_H
+#ifndef LIBTYPESET_MATH_FRACTION_H
+#define LIBTYPESET_MATH_FRACTION_H
 
 #include "tex/math/mathlist.h"
 
@@ -13,7 +13,7 @@ namespace tex
 namespace math
 {
 
-class LIBLAYOUT_API Fraction : public Node
+class LIBTYPESET_API Fraction : public Node
 {
 public:
   Fraction(MathList && n, MathList && d, bool bar = true)
@@ -37,4 +37,4 @@ private:
 
 } // namespace tex
 
-#endif // LIBLAYOUT_MATH_FRACTION_H
+#endif // LIBTYPESET_MATH_FRACTION_H

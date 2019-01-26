@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_NODE_H
-#define LIBLAYOUT_NODE_H
+#ifndef LIBTYPESET_NODE_H
+#define LIBTYPESET_NODE_H
 
 #include "tex/defs.h"
 
@@ -13,7 +13,7 @@
 namespace tex
 {
 
-class LIBLAYOUT_API Node
+class LIBTYPESET_API Node
 {
 public:
   Node() = default;
@@ -58,4 +58,4 @@ std::shared_ptr<T> cast(const std::shared_ptr<U> & node)
 
 } // namespace tex
 
-#endif // LIBLAYOUT_NODE_H
+#endif // LIBTYPESET_NODE_H

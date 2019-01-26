@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_LINEBREAKS_H
-#define LIBLAYOUT_LINEBREAKS_H
+#ifndef LIBTYPESET_LINEBREAKS_H
+#define LIBTYPESET_LINEBREAKS_H
 
 #include "tex/hbox.h"
 
@@ -19,7 +19,7 @@ enum class FitnessClass {
   VeryLoose = 3,
 };
 
-class LIBLAYOUT_API Paragraph final
+class LIBTYPESET_API Paragraph final
 {
 private:
   int tolerance_ = /* 200 */ 800;
@@ -110,4 +110,4 @@ protected:
 
 } // namespace tex
 
-#endif // LIBLAYOUT_LINEBREAKS_H
+#endif // LIBTYPESET_LINEBREAKS_H

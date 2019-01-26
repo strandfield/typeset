@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_FONTMETRICS_H
-#define LIBLAYOUT_FONTMETRICS_H
+#ifndef LIBTYPESET_FONTMETRICS_H
+#define LIBTYPESET_FONTMETRICS_H
 
 #include "tex/boxmetrics.h"
 #include "tex/font.h"
@@ -16,7 +16,7 @@ namespace tex
 
 struct FontPropertyUnavailable {};
 
-class LIBLAYOUT_API FontMetricsProdiver
+class LIBTYPESET_API FontMetricsProdiver
 {
 public:
   FontMetricsProdiver() = default;
@@ -54,7 +54,7 @@ public:
 };
 
 
-class LIBLAYOUT_API FontMetrics
+class LIBTYPESET_API FontMetrics
 {
 public:
   FontMetrics(Font font, FontSize size, std::shared_ptr<FontMetricsProdiver> mp);
@@ -103,4 +103,4 @@ private:
 
 } // namespace tex
 
-#endif // LIBLAYOUT_FONTMETRICS_H
+#endif // LIBTYPESET_FONTMETRICS_H

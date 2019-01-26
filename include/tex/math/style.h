@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_MATH_STYLE_H
-#define LIBLAYOUT_MATH_STYLE_H
+#ifndef LIBTYPESET_MATH_STYLE_H
+#define LIBTYPESET_MATH_STYLE_H
 
 #include "tex/font.h"
 
@@ -13,7 +13,7 @@ namespace tex
 namespace math
 {
 
-class LIBLAYOUT_API Style
+class LIBTYPESET_API Style
 {
 public:
   Style(const Style & ) = default;
@@ -71,4 +71,4 @@ inline bool operator>=(const Style & a, const Style & b) { return b <= a; }
 
 } // namespace tex
 
-#endif // LIBLAYOUT_MATH_STYLE_H
+#endif // LIBTYPESET_MATH_STYLE_H

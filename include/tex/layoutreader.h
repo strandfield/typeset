@@ -1,9 +1,9 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_LAYOUTREADER_H
-#define LIBLAYOUT_LAYOUTREADER_H
+#ifndef LIBTYPESET_LAYOUTREADER_H
+#define LIBTYPESET_LAYOUTREADER_H
 
 #include "tex/glue.h"
 #include "tex/hbox.h"
@@ -23,12 +23,12 @@ struct Pos
   float y;
 };
 
-struct LIBLAYOUT_API LayoutReader 
+struct LIBTYPESET_API LayoutReader 
 { 
   void operator()(std::shared_ptr<tex::Box> box, const Pos & p);
 };
 
-struct LIBLAYOUT_API PartialLayoutReader
+struct LIBTYPESET_API PartialLayoutReader
 {
   static const bool Done = true;
   static const bool Continue = false;
@@ -367,4 +367,4 @@ void read(Reader && reader, const std::shared_ptr<Box> & layout, Pos pos = { 0.f
 
 } // namespace tex
 
-#endif // LIBLAYOUT_LAYOUTREADER_H
+#endif // LIBTYPESET_LAYOUTREADER_H

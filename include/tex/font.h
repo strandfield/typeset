@@ -1,16 +1,16 @@
-// Copyright (C) 2018 Vincent Chambrin
-// This file is part of the liblayout project
+// Copyright (C) 2019 Vincent Chambrin
+// This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef LIBLAYOUT_FONT_H
-#define LIBLAYOUT_FONT_H
+#ifndef LIBTYPESET_FONT_H
+#define LIBTYPESET_FONT_H
 
 #include "tex/defs.h"
 
 namespace tex
 {
 
-class LIBLAYOUT_API Font
+class LIBTYPESET_API Font
 {
 public:
   explicit Font(int val) : mFont(val) { }
@@ -34,7 +34,7 @@ inline bool operator==(const Font & a, const Font & b) { return a.id() == b.id()
 inline bool operator!=(const Font & a, const Font & b) { return b.id() != a.id(); }
 
 
-class LIBLAYOUT_API FontSize
+class LIBTYPESET_API FontSize
 {
 public:
   explicit FontSize(int val) : mSize(val) { }
@@ -71,4 +71,4 @@ inline bool operator!=(const FontSize & a, const FontSize & b) { return a.value(
 
 } // namespace tex
 
-#endif // LIBLAYOUT_FONT_H
+#endif // LIBTYPESET_FONT_H

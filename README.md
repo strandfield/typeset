@@ -1,9 +1,8 @@
 
-# `liblayout` - A TeX-inspired C++ layouting library
+# `typeset` - A TeX-inspired C++ typesetting library
 
-`liblayout` is a C++ library that aims at providing an abstract layouting engine 
-suitable for many applications such as positioning widgets inside a window or 
-typesetting words on a text page.
+`libtypeset` is a C++ library that aims at providing an abstract layouting engine 
+suitable for typesetting complex documents.
 
 The library is heavily inspired by [TeX](https://en.wikipedia.org/wiki/TeX), the 
 typesetting system designed by [Donald Knuth](https://www-cs-faculty.stanford.edu/~knuth/).
@@ -33,7 +32,7 @@ faster after a period, hence making the space after a period almost twice
 as large as a regular space.
 
 
-`liblayout` also provides a basic implementation of TeX linebreaking algorithm.
+`libtypeset` also provides a basic implementation of TeX linebreaking algorithm.
 This algorithm is used to break a paragraph of text into a series of line. 
 
 ![Animation: linebreaking](https://raw.githubusercontent.com/RugessNome/liblayout/master/doc/assets/linebreaking.gif)
