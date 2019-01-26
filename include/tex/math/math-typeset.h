@@ -11,7 +11,7 @@
 namespace tex
 {
 
-LIBLAYOUT_API List mlist_to_hlist(MathList && mathlist, const Options & opts);
+LIBLAYOUT_API List mlist_to_hlist(MathList && mathlist, const Options & opts, int relpenalty = 500, int binoppenalty = 700);
 
 } // namespace tex
 

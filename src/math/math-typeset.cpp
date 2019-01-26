@@ -429,24 +429,35 @@ static void processFraction(MathList & mlist, MathList::iterator & current, cons
   float a = opts.fontMetrics().axisHeight();
   if ((u - x->depth()) - (a + 0.5f * theta) < phi)
   {
-    u += phi - (u - x->depth()) - (a + 0.5f * theta);
+    u += phi - ((u - x->depth()) - (a + 0.5f * theta));
   }
   if ((a - 0.5f * theta) - (z->height() - v) < phi)
   {
     v += phi - ((a - 0.5f * theta) - (z->height() - v));
   }
 
-  float h = x->height() + u;
-  float d = z->depth() + v;
+  const float h = x->height() + u;
+  const float d = z->depth() + v;
 
   List vlist;
   vlist.push_back(x);
-  vlist.push_back(kern((a - 0.5f * theta) - (h - x->totalHeight())));
+  vlist.push_back(kern(u - x->depth() - a - 0.5f * theta));
   vlist.push_back(hrule(w, theta));
-  vlist.push_back(kern(d - z->totalHeight() - (a - 0.5f * theta)));
+  vlist.push_back(kern(a - 0.5f * theta + v - z->height()));
   vlist.push_back(z);
 
-  *current = Atom::create<Atom::Inner>(tex::vbox(std::move(vlist)));
+  auto vbox = tex::vbox(std::move(vlist));
+  
+  {
+    tex::VBoxEditor editor{ *vbox };
+    editor.changeHeight(h);
+    editor.done();
+  }
+
+  assert(vbox->height() == h);
+  assert(vbox->depth() == d);
+
+  *current = Atom::create<Atom::Inner>(vbox);
 }
 
 static std::shared_ptr<Box> typesetDelimiter(const std::shared_ptr<Symbol> & ms, float minTotalHeight, const Options & opts)
@@ -553,7 +564,7 @@ static std::shared_ptr<Glue> thickmuskip(const Options & opts)
 void insertSpace(List & list, const std::shared_ptr<Atom> & preceding, const std::shared_ptr<Atom> & next, const Options & opts)
 {
   assert(static_cast<int>(preceding->type()) <= Atom::Inner);
-  assert(static_cast<int>(next->type()) < Atom::Inner);
+  assert(static_cast<int>(next->type()) <= Atom::Inner);
 
   int amount = SpacingTable::spacing[preceding->type()][next->type()];
   bool nonScript = SpacingTable::spacingNonScript[preceding->type()][next->type()];
@@ -667,7 +678,7 @@ void preprocess(MathList &mathlist, const Options & opts)
   processBoundary(mathlist, opts);
 }
 
-List mlist_to_hlist(MathList && mathlist, const Options & opts, int relpenalty, int binoppenalty)
+List mlist_to_hlist_impl(MathList && mathlist, const Options & opts, int relpenalty, int binoppenalty)
 {
   preprocess(mathlist, opts);
 
@@ -711,5 +722,10 @@ std::shared_ptr<HBox> typeset(MathList & mathlist, const Options & opts)
 }
 
 } // namespace math
+
+List mlist_to_hlist(MathList && mathlist, const Options & opts, int relpenalty, int binoppenalty)
+{
+  return tex::math::mlist_to_hlist_impl(std::move(mathlist), opts, relpenalty, binoppenalty);
+}
 
 } // namespace tex

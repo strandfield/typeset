@@ -23,25 +23,25 @@ public:
   virtual ~FontMetricsProdiver() = default;
 
   virtual BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) = 0;
-  virtual float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, Font font, FontSize size) = 0;
+  virtual float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) = 0;
 
-  virtual float xHeight(FontSize size) = 0;
-  virtual float quad(FontSize size) = 0;
-  virtual float num1(FontSize size) = 0;
-  virtual float num2(FontSize size) = 0;
-  virtual float num3(FontSize size) = 0;
-  virtual float denom1(FontSize size) = 0;
-  virtual float denom2(FontSize size) = 0;
-  virtual float sup1(FontSize size) = 0;
-  virtual float sup2(FontSize size) = 0;
-  virtual float sup3(FontSize size) = 0;
-  virtual float sub1(FontSize size) = 0;
-  virtual float sub2(FontSize size) = 0;
-  virtual float supDrop(FontSize size) = 0;
-  virtual float subDrop(FontSize size) = 0;
-  virtual float delim1(FontSize size) = 0;
-  virtual float delim2(FontSize size) = 0;
-  virtual float axisHeight(FontSize size) = 0;
+  virtual float xHeight(tex::FontSize size) = 0;
+  virtual float quad(tex::FontSize size) = 0;
+  virtual float num1(tex::FontSize size) = 0;
+  virtual float num2(tex::FontSize size) = 0;
+  virtual float num3(tex::FontSize size) = 0;
+  virtual float denom1(tex::FontSize size) = 0;
+  virtual float denom2(tex::FontSize size) = 0;
+  virtual float sup1(tex::FontSize size) = 0;
+  virtual float sup2(tex::FontSize size) = 0;
+  virtual float sup3(tex::FontSize size) = 0;
+  virtual float sub1(tex::FontSize size) = 0;
+  virtual float sub2(tex::FontSize size) = 0;
+  virtual float supDrop(tex::FontSize size) = 0;
+  virtual float subDrop(tex::FontSize size) = 0;
+  virtual float delim1(tex::FontSize size) = 0;
+  virtual float delim2(tex::FontSize size) = 0;
+  virtual float axisHeight(tex::FontSize size) = 0;
 
   virtual float defaultRuleThickness() = 0;
   virtual float bigOpSpacing1() = 0;

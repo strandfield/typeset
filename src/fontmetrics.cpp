@@ -7,6 +7,14 @@
 namespace tex
 {
 
+FontMetrics::FontMetrics(Font font, FontSize size, std::shared_ptr<FontMetricsProdiver> mp)
+  : mFont(font)
+  , mFontSize(size)
+  , mMetricsProvider(mp)
+{
+
+}
+
 BoxMetrics FontMetrics::metrics(const std::shared_ptr<tex::Symbol> & symbol) const
 {
   return metricsProvider()->metrics(symbol, font(), fontSize());

@@ -16,7 +16,7 @@ namespace math
 class LIBLAYOUT_API Fraction : public Node
 {
 public:
-  Fraction(MathList && n, MathList && d, bool bar)
+  Fraction(MathList && n, MathList && d, bool bar = true)
     : mNumer(std::move(n)), mDenom(std::move(d)), mBar(bar)
   {
 
