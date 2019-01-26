@@ -91,4 +91,40 @@ float ListBox::setGlue(float x, float desired, const GlueShrink & shrink, const 
   return x;
 }
 
+ListBoxEditor::ListBoxEditor(ListBox & box)
+  : mListBox(&box)
+{
+
+}
+
+ListBoxEditor::~ListBoxEditor()
+{
+
+}
+
+List & ListBoxEditor::list()
+{
+  return mListBox->mutableList();
+}
+
+void ListBoxEditor::enlarge(float amount)
+{
+  mListBox->setWidth(mListBox->width() + amount);
+}
+
+void ListBoxEditor::setHeight(float h)
+{
+  mListBox->setHeight(h);
+}
+
+void ListBoxEditor::increaseDepth(float amount)
+{
+  mListBox->setDepth(mListBox->depth() + amount);
+}
+
+void ListBoxEditor::setDepth(float d)
+{
+  mListBox->setDepth(d);
+}
+
 } // namespace tex

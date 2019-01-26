@@ -200,4 +200,16 @@ BoxingResult VBoxEditor::rebox_vtop(float desiredHeight)
   return mVbox->rebox_vtop(desiredHeight);
 }
 
+void VBoxEditor::changeHeight(float height)
+{
+  const auto tth = mVbox->totalHeight();
+  mVbox->setHeight(height);
+  mVbox->setDepth(tth - height);
+}
+
+void VBoxEditor::done()
+{
+  mReboxDone = true;
+}
+
 } // namespace tex

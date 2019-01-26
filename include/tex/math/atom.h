@@ -53,6 +53,9 @@ public:
   inline const std::shared_ptr<Node> & index() const { return mIndex; }
   inline LimitsFlag limits() const { return mLimits; }
 
+  void changeNucleus(const std::shared_ptr<Node> & nuc);
+  void clearSubSupscripts();
+
   template<Atom::Type T, typename = std::enable_if_t<T == Atom::Op>>
   static std::shared_ptr<Atom> create(std::shared_ptr<Node> nucleus, std::shared_ptr<Node> subscript = nullptr, std::shared_ptr<Node> superscript = nullptr, LimitsFlag limits = NoLimits)
   {

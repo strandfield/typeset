@@ -25,6 +25,8 @@ private:
   float mDepth;
 };
 
+LIBLAYOUT_API std::shared_ptr<Rule> hrule(float width, float height, float depth = 0.f);
+
 } // namespace tex
 
 #endif // LIBLAYOUT_RULE_H

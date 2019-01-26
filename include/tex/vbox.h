@@ -51,6 +51,9 @@ public:
   BoxingResult rebox(float desiredHeight);
   void rebox_vtop();
   BoxingResult rebox_vtop(float desiredHeight);
+
+  void changeHeight(float height);
+  void done();
 };
 
 } // namespace tex

@@ -7,6 +7,7 @@
 
 #include "tex/defs.h"
 
+#include <memory>
 #include <typeinfo>
 
 namespace tex
@@ -48,6 +49,12 @@ public:
   bool isKern() const;
   bool isPenalty() const;
 };
+
+template<typename T, typename U = Node>
+std::shared_ptr<T> cast(const std::shared_ptr<U> & node)
+{
+  return std::static_pointer_cast<T>(node);
+}
 
 } // namespace tex
 

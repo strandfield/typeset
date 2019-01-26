@@ -30,4 +30,9 @@ float Rule::width() const
   return mWidth;
 }
 
+std::shared_ptr<Rule> hrule(float width, float height, float depth)
+{
+  return std::make_shared<Rule>(width, height, depth);
+}
+
 } // namespace tex

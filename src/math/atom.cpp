@@ -28,6 +28,18 @@ void Atom::changeType(Type newtype)
   mType = newtype;
 }
 
+void Atom::changeNucleus(const std::shared_ptr<Node> & nuc)
+{
+  /// TODO: check that change is allowed
+  mNucleus = nuc;
+}
+
+void Atom::clearSubSupscripts()
+{
+  mSubscript = nullptr;
+  mSuperscript = nullptr;
+}
+
 } // namespace math
 
 } // namespace tex

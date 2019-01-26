@@ -34,6 +34,7 @@ public:
 
   inline float shiftAmount() const { return mShiftAmount; }
   inline void setShiftAmount(float sa) { mShiftAmount = sa; }
+  inline void shift(float amount) { mShiftAmount += amount; }
 
   inline const List & list() const { return mList; }
 
@@ -41,6 +42,8 @@ public:
   inline GlueOrder glueOrder() const { return mGlueSettings.order; }
 
 protected:
+  friend class ListBoxEditor;
+
   ListBox(List && list);
 
   inline List & mutableList() { return mList; }
@@ -58,6 +61,22 @@ private:
   float mDepth;
   float mShiftAmount;
   GlueSettings mGlueSettings;
+};
+
+class LIBLAYOUT_API ListBoxEditor
+{
+private:
+  ListBox* mListBox;
+public:
+  ListBoxEditor(ListBox & box);
+  ~ListBoxEditor();
+
+  List & list();
+
+  void enlarge(float amount);
+  void increaseDepth(float amount);
+  void setHeight(float h);
+  void setDepth(float d);
 };
 
 } // namespace tex

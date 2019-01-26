@@ -25,6 +25,9 @@ public:
   virtual std::shared_ptr<FontMetricsProdiver> metrics() const = 0;
 
   virtual std::shared_ptr<Box> typeset(const std::shared_ptr<Symbol> & symbol, Font font, FontSize size) = 0;
+  virtual std::shared_ptr<Box> typesetRadicalSign(float minTotalHeight, FontSize size) = 0;
+  virtual std::shared_ptr<Box> typesetDelimiter(const std::shared_ptr<Symbol> & symbol, float minTotalHeight, FontSize size) = 0;
+  virtual std::shared_ptr<Box> typesetLargeOp(const std::shared_ptr<Symbol> & symbol, FontSize size) = 0;
 
   FontMetricsProdiver & operator=(const FontMetricsProdiver &) = delete;
 };
