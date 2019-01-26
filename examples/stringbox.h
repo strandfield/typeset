@@ -17,6 +17,7 @@ public:
   QFont font;
 
   StringBox(const QString & t, const QFont & f = QFont());
+  StringBox(const QString & t, const QFont & f, tex::BoxMetrics metrics);
   ~StringBox() = default;
 
   float height() const override;
