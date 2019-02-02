@@ -42,8 +42,6 @@ void read_hbox_full(Reader && reader, const std::shared_ptr<HBox> & layout, Pos 
 {
   reader(layout, pos);
 
-  const float baseline = pos.y + layout->height();
-
   for (auto node : layout->list())
   {
     if (node->isBox())
@@ -52,25 +50,25 @@ void read_hbox_full(Reader && reader, const std::shared_ptr<HBox> & layout, Pos 
 
       if (box->is<Rule>())
       {
-        reader(std::static_pointer_cast<Rule>(box), Pos{ pos.x, baseline - box->height() });
+        reader(std::static_pointer_cast<Rule>(box), pos);
       }
       else if (box->isDerivedFrom<ListBox>())
       {
         auto listbox = std::static_pointer_cast<ListBox>(box);
-        const float shifted_baseline = baseline + listbox->shiftAmount();
+        const float shifted_baseline = pos.y + listbox->shiftAmount();
         if (listbox->is<HBox>())
         {
-          read_hbox_full(reader, std::static_pointer_cast<HBox>(listbox), Pos{ pos.x, shifted_baseline - listbox->height() });
+          read_hbox_full(reader, std::static_pointer_cast<HBox>(listbox), Pos{ pos.x, shifted_baseline });
         }
         else
         {
           assert(listbox->is<VBox>());
-          read_vbox_full(reader, std::static_pointer_cast<VBox>(listbox), Pos{ pos.x, shifted_baseline - listbox->height() });
+          read_vbox_full(reader, std::static_pointer_cast<VBox>(listbox), Pos{ pos.x, shifted_baseline });
         }
       }
       else
       {
-        reader(box, Pos{ pos.x, baseline - box->height() });
+        reader(box, pos);
       }
 
       pos.x += box->width();
@@ -104,15 +102,19 @@ void read_vbox_full(Reader && reader, const std::shared_ptr<VBox> & layout, Pos 
 {
   reader(layout, pos);
 
+  pos.y -= layout->height();
+
   for (auto node : layout->list())
   {
     if (node->isBox())
     {
       auto box = std::static_pointer_cast<Box>(node);
 
+      pos.y += box->height();
+
       if (box->is<Rule>())
       {
-        reader(std::static_pointer_cast<Rule>(box), Pos{ pos.x, pos.y });
+        reader(std::static_pointer_cast<Rule>(box), pos);
       }
       else if (box->isDerivedFrom<ListBox>())
       {
@@ -130,10 +132,10 @@ void read_vbox_full(Reader && reader, const std::shared_ptr<VBox> & layout, Pos 
       }
       else
       {
-        reader(box, Pos{ pos.x, pos.y });
+        reader(box, pos);
       }
 
-      pos.y += box->totalHeight();
+      pos.y += box->depth();
     }
     else if (node->is<Kern>())
     {
@@ -165,8 +167,6 @@ bool read_hbox_partial(Reader && reader, const std::shared_ptr<HBox> & layout, P
   if(reader(layout, pos))
     return PartialLayoutReader::Done;
 
-  const float baseline = pos.y + layout->height();
-
   for (auto node : layout->list())
   {
     if (node->isBox())
@@ -175,28 +175,28 @@ bool read_hbox_partial(Reader && reader, const std::shared_ptr<HBox> & layout, P
 
       if (box->is<Rule>())
       {
-        if (reader(std::static_pointer_cast<Rule>(box), Pos{ pos.x, baseline - box->height() }))
+        if (reader(std::static_pointer_cast<Rule>(box), pos))
           return PartialLayoutReader::Done;
       }
       else if (box->isDerivedFrom<ListBox>())
       {
         auto listbox = std::static_pointer_cast<ListBox>(box);
-        const float shifted_baseline = baseline + listbox->shiftAmount();
+        const float shifted_baseline = pos.y + listbox->shiftAmount();
         if (listbox->is<HBox>())
         {
-          if(read_hbox_partial(reader, std::static_pointer_cast<HBox>(listbox), Pos{ pos.x, shifted_baseline - listbox->height() }))
+          if(read_hbox_partial(reader, std::static_pointer_cast<HBox>(listbox), Pos{ pos.x, shifted_baseline }))
             return PartialLayoutReader::Done;
         }
         else
         {
           assert(listbox->is<VBox>());
-          if(read_vbox_partial(reader, std::static_pointer_cast<VBox>(listbox), Pos{ pos.x, shifted_baseline - listbox->height() }))
+          if(read_vbox_partial(reader, std::static_pointer_cast<VBox>(listbox), Pos{ pos.x, shifted_baseline }))
             return PartialLayoutReader::Done;
         }
       }
       else
       {
-        if(reader(box, Pos{ pos.x, baseline - box->height() }))
+        if(reader(box, pos))
           return PartialLayoutReader::Done;
       }
 
@@ -234,15 +234,19 @@ bool read_vbox_partial(Reader && reader, const std::shared_ptr<VBox> & layout, P
   if (reader(layout, pos))
     return PartialLayoutReader::Done;
 
+  pos.y -= layout->height();
+
   for (auto node : layout->list())
   {
     if (node->isBox())
     {
       auto box = std::static_pointer_cast<Box>(node);
 
+      pos.y += box->height();
+
       if (box->is<Rule>())
       {
-        if (reader(std::static_pointer_cast<Rule>(box), Pos{ pos.x, pos.y }))
+        if (reader(std::static_pointer_cast<Rule>(box), pos))
           return PartialLayoutReader::Done;
       }
       else if (box->isDerivedFrom<ListBox>())
@@ -263,11 +267,11 @@ bool read_vbox_partial(Reader && reader, const std::shared_ptr<VBox> & layout, P
       }
       else
       {
-        if(reader(box, Pos{ pos.x, pos.y }))
+        if(reader(box, pos))
           return PartialLayoutReader::Done;
       }
 
-      pos.y += box->totalHeight();
+      pos.y += box->depth();
     }
     else if (node->is<Kern>())
     {
@@ -360,7 +364,14 @@ struct layout_reader_impl<bool>
 };
 
 template<typename Reader>
-void read(Reader && reader, const std::shared_ptr<Box> & layout, Pos pos = { 0.f, 0.f })
+void read(Reader && reader, const std::shared_ptr<Box> & layout)
+{
+  Pos pos = Pos(0, layout->height());
+  layout_reader_impl< std::result_of_t<Reader(std::shared_ptr<Box>, Pos)> >::read(std::forward<Reader>(reader), layout, pos);
+}
+
+template<typename Reader>
+void read(Reader && reader, const std::shared_ptr<Box> & layout, Pos pos)
 {
   layout_reader_impl< std::result_of_t<Reader(std::shared_ptr<Box>, Pos)> >::read(std::forward<Reader>(reader), layout, pos);
 }

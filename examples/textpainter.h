@@ -23,14 +23,14 @@ struct TextPainter : tex::LayoutReader
 
   static QRectF getRect(tex::Pos pos, const std::shared_ptr<tex::Box> & box)
   {
-    QPointF topLeft{ pos.x, pos.y };
+    QPointF topLeft{ pos.x, pos.y - box->height() };
     QSizeF size{ box->width(), box->totalHeight() };
     return QRectF{ topLeft, size };
   }
 
-  static QPointF getReferencePoint(tex::Pos pos, const std::shared_ptr<tex::Box> & box)
+  inline static QPointF getReferencePoint(tex::Pos pos)
   {
-    return QPointF(pos.x, pos.y + box->height());
+    return QPointF(pos.x, pos.y);
   }
 
   void operator()(const std::shared_ptr<tex::Box> & box, tex::Pos pos)
@@ -41,7 +41,7 @@ struct TextPainter : tex::LayoutReader
     auto stringbox = std::static_pointer_cast<StringBox>(box);
     painter->setFont(stringbox->font);
     //painter->drawText(getRect(pos, box), stringbox->text);
-    painter->drawText(getReferencePoint(pos, box), stringbox->text);
+    painter->drawText(getReferencePoint(pos), stringbox->text);
   }
 
 
