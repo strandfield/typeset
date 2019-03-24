@@ -24,7 +24,7 @@ pages with different width.
 First the line is rendered on its ideal page width, then the page width is 
 increased respectively by 15% and 25%.
 
-![Image: single line text-typesetting](https://raw.githubusercontent.com/RugessNome/typeset/master/doc/assets/spacing.png)
+![Image: single line text-typesetting](https://raw.githubusercontent.com/bandicode/typeset/master/doc/assets/spacing.png)
 
 Notice how the spacing rules are different after a comma or a period. 
 Here, the interword space increase 50% faster after a comma and 100% 
@@ -35,7 +35,7 @@ as large as a regular space.
 `libtypeset` also provides a basic implementation of TeX linebreaking algorithm.
 This algorithm is used to break a paragraph of text into a series of line. 
 
-![Animation: linebreaking](https://raw.githubusercontent.com/RugessNome/typeset/master/doc/assets/linebreaking.gif)
+![Animation: linebreaking](https://raw.githubusercontent.com/bandicode/typeset/master/doc/assets/linebreaking.gif)
 
 Unlike a naive algorithm which would consider each line independently, 
 TeX linebreaking algorithm considers the paragraph as a whole to produce 
