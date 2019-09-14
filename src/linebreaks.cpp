@@ -8,6 +8,9 @@
 #include "tex/penalty.h"
 
 #include <algorithm>
+#include <cmath>
+#include <numeric>
+#include <stdexcept>
 #include <utility>
 
 namespace tex

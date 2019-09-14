@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <stdexcept>
 
 namespace tex
 {
