@@ -51,6 +51,12 @@ RetCode HorizontalMode::main_callback(HorizontalMode& self)
       throw std::runtime_error{ "No such control sequence in Horizontal mode" };
     }
 
+    if (self.typesetter().ready())
+    {
+      self.prepareTypesetter();
+      self.hlist().push_back(self.typesetter().print());
+    }
+
     return it->second(self);
   }
   else

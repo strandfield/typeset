@@ -108,9 +108,11 @@ inline void Machine::advance()
     m_preprocessor.write(std::move(t));
   }
 
-  while (!m_preprocessor.isDone())
+  RetCode rc = m_preprocessor.advance();
+
+  while (rc != RetCode::Await)
   {
-    m_preprocessor.advance();
+    rc = m_preprocessor.advance();
   }
 
   m_lexer.output().clear();
@@ -120,7 +122,7 @@ inline void Machine::advance()
     return;
   }
 
-  RetCode rc = m_modes.back()->advance();
+  rc = m_modes.back()->advance();
 
   while (rc == RetCode::Yield && !m_preprocessor.output().empty())
   {

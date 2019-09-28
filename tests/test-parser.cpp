@@ -4,7 +4,14 @@
 
 #include "test.h"
 
+#include "test-typeset.h"
+
 #include "tex/parser.h"
+
+#include "tex/hbox.h"
+
+#include "tex/parsing/verticalmode.h"
+#include "tex/parsing/typesetting-machine.h"
 
 void test_parser()
 {
@@ -38,3 +45,50 @@ void test_parser()
   ASSERT(typeid(*instr.at(13)) == typeid(typesetting::InsertInterwordGlue));
   ASSERT(typeid(*instr.at(14)) == typeid(typesetting::EndParagraph));
 }
+
+void test_machine_1()
+{
+  using namespace tex;
+
+  auto engine = std::make_shared<TestTypesetEngine>();
+
+  parsing::TypesettingMachine machine{ engine, tex::Options{engine} };
+
+  machine.inputStream().push_back(parsing::InputStream::Document::fromString("Hello {Bob} !\n\n"));
+
+  while (!machine.inputStream().atEnd())
+  {
+    machine.advance();
+  }
+
+  auto* vm = static_cast<tex::parsing::VerticalMode*>(machine.modes().front().get());
+
+  tex::List vlist = vm->vlist();
+
+  ASSERT(vlist.size() == 1);
+  ASSERT(vlist.front()->isDerivedFrom<tex::HBox>());
+}
+
+void test_machine_2()
+{
+  using namespace tex;
+
+  auto engine = std::make_shared<TestTypesetEngine>();
+
+  parsing::TypesettingMachine machine{ engine, tex::Options{engine} };
+
+  machine.inputStream().push_back(parsing::InputStream::Document::fromString("\\def\\foo{Hello World!} \\foo \n\n"));
+
+  while (!machine.inputStream().atEnd())
+  {
+    machine.advance();
+  }
+
+  auto* vm = static_cast<tex::parsing::VerticalMode*>(machine.modes().front().get());
+
+  tex::List vlist = vm->vlist();
+
+  ASSERT(vlist.size() == 1);
+  ASSERT(vlist.front()->isDerivedFrom<tex::HBox>());
+}
+

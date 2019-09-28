@@ -172,6 +172,7 @@ struct Matcher
       }
     }
 
+    r.result = Preprocessor::MatchResult::CompleteMatch;
     r.end = input_index;
     return r;
   }
@@ -199,7 +200,7 @@ const Macro* Preprocessor::find(const std::string& cs) const
   return nullptr;
 }
 
-bool Preprocessor::processControlSeq()
+RetCode Preprocessor::processControlSeq()
 {
   Token cs = peek(m_input);
 
@@ -214,7 +215,7 @@ bool Preprocessor::processControlSeq()
     if (m == nullptr)
     {
       m_output.push_back(read(m_input));
-      return true;
+      return RetCode::Yield;
     }
     else
     {
@@ -223,11 +224,11 @@ bool Preprocessor::processControlSeq()
   }
 }
 
-bool Preprocessor::readMacroDef()
+RetCode Preprocessor::readMacroDef()
 {
   if (m_input.size() < 4)
   {
-    return false;
+    return RetCode::Await;
   }
 
   Token csname = m_input.at(1);
@@ -244,7 +245,7 @@ bool Preprocessor::readMacroDef()
 
   if (pattern_end == m_input.size())
   {
-    return false;
+    return RetCode::Await;
   }
 
   /* Read replacement text */
@@ -269,7 +270,7 @@ bool Preprocessor::readMacroDef()
 
   if (repl_end == m_input.size())
   {
-    return false;
+    return RetCode::Await;
   }
 
   Macro mdef{ csname.controlSequence(), std::vector<Token>(m_input.begin() + pattern_begin, m_input.begin() + pattern_begin),
@@ -279,10 +280,10 @@ bool Preprocessor::readMacroDef()
 
   parsing::read(m_input, repl_end + 1);
   
-  return true;
+  return RetCode::Yield;
 }
 
-bool Preprocessor::expandMacro(const Macro& mdef, std::vector<Token>& toks, std::vector<Token>::iterator begin)
+RetCode Preprocessor::expandMacro(const Macro& mdef, std::vector<Token>& toks, std::vector<Token>::iterator begin)
 {
   Arguments args;
 
@@ -294,7 +295,7 @@ bool Preprocessor::expandMacro(const Macro& mdef, std::vector<Token>& toks, std:
   }
   else if (mr.result == MatchResult::PartialMatch)
   {
-    return false;
+    return RetCode::Await;
   }
  
   std::vector<Token> repl = mdef.replacementText();
@@ -318,10 +319,10 @@ bool Preprocessor::expandMacro(const Macro& mdef, std::vector<Token>& toks, std:
   auto it = toks.erase(begin, toks.begin() + mr.end);
   toks.insert(it, repl.begin(), repl.end());
 
-  return true;
+  return RetCode::Yield;
 }
 
-bool Preprocessor::expandMacro(const Macro& mdef, std::vector<Token>& toks)
+RetCode Preprocessor::expandMacro(const Macro& mdef, std::vector<Token>& toks)
 {
   return expandMacro(mdef, toks, toks.begin());
 }

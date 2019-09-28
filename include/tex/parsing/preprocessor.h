@@ -7,6 +7,8 @@
 
 #include "tex/tokstream.h"
 
+#include "tex/parsing/retcode.h"
+
 #include <list>
 #include <map>
 #include <vector>
@@ -62,13 +64,9 @@ public:
   void write(const Token& t);
   void write(Token&& t);
 
-  bool advance();
-
-  bool isDone() const;
+  RetCode advance();
 
   std::vector<Token>& output();
-
-
 
   struct MatchResult
   {
@@ -88,13 +86,13 @@ public:
 
   const Macro* find(const std::string& cs) const;
 
-  bool processControlSeq();
+  RetCode processControlSeq();
 
 protected:
-  bool readMacroDef();
+  RetCode readMacroDef();
 
-  bool expandMacro(const Macro& mdef, std::vector<Token>& toks, std::vector<Token>::iterator begin);
-  bool expandMacro(const Macro& mdef, std::vector<Token>& toks);
+  RetCode expandMacro(const Macro& mdef, std::vector<Token>& toks, std::vector<Token>::iterator begin);
+  RetCode expandMacro(const Macro& mdef, std::vector<Token>& toks);
 
 private:
   Memory* m_memory = nullptr;
@@ -172,17 +170,17 @@ inline void Preprocessor::write(Token&& t)
   m_input.emplace_back(std::move(t));
 }
 
-inline bool Preprocessor::advance()
+inline RetCode Preprocessor::advance()
 {
   if (m_input.empty())
   {
-    return true;
+    return RetCode::Await;
   }
 
   if (peek(m_input).isCharacterToken())
   {
     parsing::write(read(m_input), m_output);
-    return m_input.empty();
+    return m_input.empty() ? RetCode::Await : RetCode::Yield;
   }
   else if (peek(m_input).isControlSequence())
   {
@@ -192,11 +190,6 @@ inline bool Preprocessor::advance()
   {
     throw std::runtime_error{ "Illegal parameter token in token stream" };
   }
-}
-
-inline bool Preprocessor::isDone() const
-{
-  return m_input.empty();
 }
 
 inline std::vector<Token>& Preprocessor::output()
