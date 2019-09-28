@@ -18,17 +18,21 @@ void test_lexer()
       lex.write(c);
   };
 
-  write("a\\cmd b\n\n");
+  write("a\\cmd b\n\n#1##");
 
-  ASSERT(toks.size() == 5);
+  ASSERT(toks.size() == 7);
   ASSERT(toks.front().isCharacterToken());
   ASSERT(toks.at(1).isControlSequence());
   ASSERT(toks.at(1).controlSequence() == "cmd");
   ASSERT(toks.at(2).isCharacterToken());
   ASSERT(toks.at(3).isCharacterToken());
   ASSERT(toks.at(3).characterToken().value == ' ');
-  ASSERT(toks.back().isControlSequence());
-  ASSERT(toks.back().controlSequence() == "par");
+  ASSERT(toks.at(4).isControlSequence());
+  ASSERT(toks.at(4).controlSequence() == "par");
+  ASSERT(toks.at(5).isParameterToken());
+  ASSERT(toks.at(5).parameterNumber() == 1);
+  ASSERT(toks.at(6).isCharacterToken());
+  ASSERT(toks.at(6).characterToken().value == '#');
 
   toks.clear();
 

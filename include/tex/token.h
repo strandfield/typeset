@@ -10,7 +10,6 @@
 #include <array>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 namespace tex
 {
@@ -40,6 +39,7 @@ enum class CharCategory {
 enum class TokenType {
   CharacterToken,
   ControlSequenceToken,
+  ParameterToken,
 };
 
 struct CharacterToken
@@ -57,6 +57,7 @@ private:
   {
     CharacterToken character_token;
     std::string control_sequence;
+    int parameter_number;
 
     Data() { new (&character_token) CharacterToken;  }
     ~Data() { }
@@ -73,17 +74,22 @@ public:
 
   Token(const CharacterToken& ctok);
   explicit Token(const std::string& cseq);
+  explicit Token(int param_num);
 
   TokenType type() const { return m_type; }
   bool isControlSequence() const { return type() == TokenType::ControlSequenceToken; }
   bool isCharacterToken() const { return type() == TokenType::CharacterToken; }
+  bool isParameterToken() const { return type() == TokenType::ParameterToken; }
 
   const CharacterToken& characterToken() const;
   const std::string& controlSequence() const;
+  int parameterNumber() const;
 
   Token& operator=(const Token& other);
   Token& operator=(Token&& other);
 
+  bool operator==(CharCategory cc) const;
+  bool operator!=(CharCategory cc) const;
 };
 
 inline Token::~Token()
@@ -93,7 +99,7 @@ inline Token::~Token()
     using Str = std::string;
     (&m_data.control_sequence)->~Str();
   }
-  else
+  else if(isCharacterToken())
   {
     (&m_data.character_token)->~CharacterToken();
   }
@@ -106,6 +112,11 @@ inline Token::Token(const Token& other)
     m_type = TokenType::ControlSequenceToken;
     (&m_data.character_token)->~CharacterToken();
     new (&m_data.control_sequence) std::string(other.controlSequence());
+  }
+  else if (other.isParameterToken())
+  {
+    m_type = TokenType::ParameterToken;
+    m_data.parameter_number = other.parameterNumber();
   }
   else
   {
@@ -120,6 +131,11 @@ inline Token::Token(Token&& other)
     m_type = TokenType::ControlSequenceToken;
     (&m_data.character_token)->~CharacterToken();
     new (&m_data.control_sequence) std::string(std::move(other.m_data.control_sequence));
+  }
+  else if (other.isParameterToken())
+  {
+    m_type = TokenType::ParameterToken;
+    m_data.parameter_number = other.parameterNumber();
   }
   else
   {
@@ -139,6 +155,12 @@ inline Token::Token(const std::string& cseq)
   new (&m_data.control_sequence) std::string(cseq);
 }
 
+inline Token::Token(int param_num)
+  : m_type(TokenType::ParameterToken)
+{
+  m_data.parameter_number = param_num;
+}
+
 inline const CharacterToken& Token::characterToken() const 
 {
   return m_data.character_token;
@@ -147,6 +169,11 @@ inline const CharacterToken& Token::characterToken() const
 inline const std::string& Token::controlSequence() const
 {
   return m_data.control_sequence;
+}
+
+inline int Token::parameterNumber() const
+{
+  return m_data.parameter_number;
 }
 
 
@@ -158,25 +185,63 @@ inline Token& Token::operator=(const Token& other)
     {
       m_data.control_sequence = other.controlSequence();
     }
-    else
+    else 
     {
       using Str = std::string;
       (&m_data.control_sequence)->~Str();
-      new (&m_data.character_token) CharacterToken(other.characterToken());
-      m_type = TokenType::CharacterToken;
+
+      if (other.isParameterToken())
+      {
+        m_data.parameter_number = other.parameterNumber();
+        m_type = TokenType::ParameterToken;
+      }
+      else
+      {
+        new (&m_data.character_token) CharacterToken(other.characterToken());
+        m_type = TokenType::CharacterToken;
+      }
+    }
+  }
+  else if (isParameterToken())
+  {
+    if (other.isParameterToken())
+    {
+      m_data.parameter_number = other.parameterNumber();
+    }
+    else
+    {
+      if (other.isControlSequence())
+      {
+        new (&m_data.control_sequence) std::string(other.controlSequence());
+        m_type = TokenType::ControlSequenceToken;
+      }
+      else
+      {
+        new (&m_data.character_token) CharacterToken(other.characterToken());
+        m_type = TokenType::CharacterToken;
+      }
     }
   }
   else
   {
-    if (other.isControlSequence())
+    if (other.isCharacterToken())
     {
-      (&m_data.character_token)->~CharacterToken();
-      new (&m_data.control_sequence) std::string(other.controlSequence());
-      m_type = TokenType::ControlSequenceToken;
+      m_data.character_token = other.characterToken();
     }
     else
     {
-      m_data.character_token = other.characterToken();
+      (&m_data.character_token)->~CharacterToken();
+
+      if (other.isControlSequence())
+      {
+        new (&m_data.control_sequence) std::string(other.controlSequence());
+        m_type = TokenType::ControlSequenceToken;
+      }
+      else
+      {
+        m_data.parameter_number = other.parameterNumber();
+        m_type = TokenType::ParameterToken;
+      }
     }
   }
 
@@ -195,32 +260,81 @@ inline Token& Token::operator=(Token&& other)
     {
       using Str = std::string;
       (&m_data.control_sequence)->~Str();
-      new (&m_data.character_token) CharacterToken(other.characterToken());
-      m_type = TokenType::CharacterToken;
+
+      if (other.isParameterToken())
+      {
+        m_data.parameter_number = other.parameterNumber();
+        m_type = TokenType::ParameterToken;
+      }
+      else
+      {
+        new (&m_data.character_token) CharacterToken(other.characterToken());
+        m_type = TokenType::CharacterToken;
+      }
+    }
+  }
+  else if (isParameterToken())
+  {
+    if (other.isParameterToken())
+    {
+      m_data.parameter_number = other.parameterNumber();
+    }
+    else
+    {
+      if (other.isControlSequence())
+      {
+        new (&m_data.control_sequence) std::string(std::move(other.m_data.control_sequence));
+        m_type = TokenType::ControlSequenceToken;
+      }
+      else
+      {
+        new (&m_data.character_token) CharacterToken(other.characterToken());
+        m_type = TokenType::CharacterToken;
+      }
     }
   }
   else
   {
-    if (other.isControlSequence())
+    if (other.isCharacterToken())
     {
-      (&m_data.character_token)->~CharacterToken();
-      new (&m_data.control_sequence) std::string(std::move(other.m_data.control_sequence));
-      m_type = TokenType::ControlSequenceToken;
+      m_data.character_token = other.characterToken();
     }
     else
     {
-      m_data.character_token = other.characterToken();
+      (&m_data.character_token)->~CharacterToken();
+
+      if (other.isControlSequence())
+      {
+        new (&m_data.control_sequence) std::string(std::move(other.m_data.control_sequence));
+        m_type = TokenType::ControlSequenceToken;
+      }
+      else
+      {
+        m_data.parameter_number = other.parameterNumber();
+        m_type = TokenType::ParameterToken;
+      }
     }
   }
 
   return *this;
 }
 
+inline bool Token::operator==(CharCategory cc) const
+{
+  return isCharacterToken() && characterToken().category == cc;
+}
+
+inline bool Token::operator!=(CharCategory cc) const
+{
+  return !(*this == cc);
+}
+
 inline bool operator==(const Token& lhs, const Token& rhs)
 {
   return lhs.type() == rhs.type()
     && (lhs.type() == TokenType::CharacterToken ? lhs.characterToken() == rhs.characterToken() : true)
-    && (lhs.type() == TokenType::ControlSequenceToken ? lhs.controlSequence() == rhs.controlSequence() : true);
+    && (lhs.type() == TokenType::ControlSequenceToken ? lhs.controlSequence() == rhs.controlSequence() : true)
+    && (lhs.type() == TokenType::ParameterToken ? lhs.parameterNumber() == rhs.parameterNumber() : true);
 }
 
 inline bool operator!=(const Token& lhs, const Token& rhs)

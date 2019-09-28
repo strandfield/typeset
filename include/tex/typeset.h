@@ -24,6 +24,7 @@ public:
 
   virtual std::shared_ptr<tex::FontMetricsProdiver> metrics() const = 0;
 
+  virtual std::shared_ptr<tex::Box> typeset(const std::string& text, tex::Font font, tex::FontSize size) = 0;
   virtual std::shared_ptr<tex::Box> typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) = 0;
   virtual std::shared_ptr<tex::Box> typesetRadicalSign(float minTotalHeight, tex::FontSize size) = 0;
   virtual std::shared_ptr<tex::Box> typesetDelimiter(const std::shared_ptr<tex::Symbol> & symbol, float minTotalHeight, tex::FontSize size) = 0;

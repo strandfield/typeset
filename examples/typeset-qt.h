@@ -70,6 +70,12 @@ public:
   tex::BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) override;
   float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) override;
 
+  float slantPerPt(tex::Font font) override;
+  float interwordSpace(tex::Font font) override;
+  float interwordStretch(tex::Font font) override;
+  float interwordShrink(tex::Font font) override;
+  float extraSpace(tex::Font font) override;
+
   float xHeight(tex::FontSize size) override;
   float quad(tex::FontSize size) override;
   float num1(tex::FontSize size) override;
@@ -112,6 +118,7 @@ protected:
 
   std::shared_ptr<tex::FontMetricsProdiver> metrics() const override;
 
+  std::shared_ptr<tex::Box> typeset(const std::string& text, tex::Font font, tex::FontSize size) override;
   std::shared_ptr<tex::Box> typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) override;
   std::shared_ptr<tex::Box> typesetRadicalSign(float minTotalHeight, tex::FontSize size) override;
   std::shared_ptr<tex::Box> typesetDelimiter(const std::shared_ptr<tex::Symbol> & symbol, float minTotalHeight, tex::FontSize size) override;

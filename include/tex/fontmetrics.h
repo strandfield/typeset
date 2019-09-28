@@ -25,6 +25,12 @@ public:
   virtual BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) = 0;
   virtual float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) = 0;
 
+  virtual float slantPerPt(tex::Font font) = 0;
+  virtual float interwordSpace(tex::Font font) = 0;
+  virtual float interwordStretch(tex::Font font) = 0;
+  virtual float interwordShrink(tex::Font font) = 0;
+  virtual float extraSpace(tex::Font font) = 0;
+
   virtual float xHeight(tex::FontSize size) = 0;
   virtual float quad(tex::FontSize size) = 0;
   virtual float num1(tex::FontSize size) = 0;
@@ -67,6 +73,12 @@ public:
 
   BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol) const;
   float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol) const;
+
+  float slantPerPt() const;
+  float interwordSpace() const;
+  float interwordStretch() const;
+  float interwordShrink() const;
+  float extraSpace() const;
 
   float xHeight() const;
   float quad() const;

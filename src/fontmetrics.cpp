@@ -25,6 +25,31 @@ float FontMetrics::italicCorrection(const std::shared_ptr<tex::Symbol> & symbol)
   return metricsProvider()->italicCorrection(symbol, font(), fontSize());
 }
 
+float FontMetrics::slantPerPt() const
+{
+  return metricsProvider()->slantPerPt(font());
+}
+
+float FontMetrics::interwordSpace() const
+{
+  return metricsProvider()->interwordSpace(font());
+}
+
+float FontMetrics::interwordStretch() const
+{
+  return metricsProvider()->interwordStretch(font());
+}
+
+float FontMetrics::interwordShrink() const
+{
+  return metricsProvider()->interwordShrink(font());
+}
+
+float FontMetrics::extraSpace() const
+{
+  return metricsProvider()->extraSpace(font());
+}
+
 float FontMetrics::xHeight() const
 {
   return metricsProvider()->xHeight(fontSize());

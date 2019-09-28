@@ -65,6 +65,31 @@ float QtFontMetricsProdiver::italicCorrection(const std::shared_ptr<tex::Symbol>
   return 0;
 }
 
+float QtFontMetricsProdiver::slantPerPt(tex::Font font)
+{
+  return 0.f;
+}
+
+float QtFontMetricsProdiver::interwordSpace(tex::Font font)
+{
+  return info(font, tex::FontSize::Normal).width(' ');
+}
+
+float QtFontMetricsProdiver::interwordStretch(tex::Font font)
+{
+  return 0.25f * interwordSpace(font);
+}
+
+float QtFontMetricsProdiver::interwordShrink(tex::Font font)
+{
+  return 0.1f * interwordSpace(font);
+}
+
+float QtFontMetricsProdiver::extraSpace(tex::Font font)
+{
+  return interwordStretch(font);
+}
+
 float QtFontMetricsProdiver::xHeight(tex::FontSize size)
 {
   const float result = -info(tex::Font::MathRoman, size).boundingRect(QChar('x')).top();
@@ -224,6 +249,11 @@ QtTypesetEngine::QtTypesetEngine()
   mRadicalSign = std::make_shared<QCharSymbol>(c);
 
   mMetrics = std::make_shared<QtFontMetricsProdiver>(mFonts);
+}
+
+std::shared_ptr<tex::Box> QtTypesetEngine::typeset(const std::string& text, tex::Font font, tex::FontSize size)
+{
+  return stringbox(QString::fromUtf8(text.data(), text.size()), this->font(font, size));
 }
 
 std::shared_ptr<tex::Box> QtTypesetEngine::typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size)

@@ -7,6 +7,8 @@
 
 #include "tex/token.h"
 
+#include <vector>
+
 namespace tex
 {
 
@@ -18,6 +20,7 @@ enum class LexerState {
   StateM, // Middle of a line
   StateS, // Skipping blanks
   StateCS, // Control sequence
+  StateP, // Reading parameter
   StateCOM, // Comments
 };
 
@@ -31,7 +34,9 @@ public:
     LexerState state = LexerState::StateN;
   };
 
-  static constexpr std::array<CharCategory, 256> DefaultCatCodes = {
+  typedef std::array<CharCategory, 256> CatCodeTable;
+
+  static constexpr CatCodeTable DefaultCatCodes = {
     CharCategory::Invalid, // NUL
     CharCategory::Invalid, // SOH
     CharCategory::Invalid, // STX
@@ -321,6 +326,7 @@ protected:
   void parseCOM(char c, CharCategory cc);
   void produce(char c, CharCategory cc);
   void produceCSToken();
+  void produceParamToken(char c);
 };
 
 inline void Lexer::write(char c)
@@ -337,6 +343,20 @@ inline void Lexer::write(char c)
   {
     return parseCOM(c, cc);
   }
+  else if (s == LexerState::StateP)
+  {
+    if (cc == CharCategory::Parameter)
+    {
+      produce(c, cc);
+    }
+    else
+    {
+      produceParamToken(c);
+    }
+
+    s = LexerState::StateM;
+    return;
+  }
 
   switch (cc)
   {
@@ -346,11 +366,15 @@ inline void Lexer::write(char c)
     s = LexerState::StateCS;
   }
   break;
+  case CharCategory::Parameter:
+  {
+    s = LexerState::StateP;
+  }
+  break;
   case CharCategory::GroupBegin:
   case CharCategory::GroupEnd:
   case CharCategory::MathShift:
   case CharCategory::AlignmentTab:
-  case CharCategory::Parameter:
   case CharCategory::Superscript:
   case CharCategory::Subscript:
   case CharCategory::Letter:
@@ -450,6 +474,18 @@ inline void Lexer::produce(char c, CharCategory cc)
 inline void Lexer::produceCSToken()
 {
   m_tokens.push_back(Token{ m_csbuffer });
+}
+
+inline void Lexer::produceParamToken(char c)
+{
+  if (c >= '1' && c <= '9')
+  {
+    m_tokens.push_back(Token{ static_cast<int>(c - '0') });
+  }
+  else
+  {
+    throw std::runtime_error{ "Invalid param token" };
+  }
 }
 
 } // namespace parsing
