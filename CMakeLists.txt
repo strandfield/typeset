@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.9)
 project(typeset)
 
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 ##################################################################
 ####### Misc
 ##################################################################
@@ -9,6 +12,18 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   # disables warning about DLL export 
   # this is annoying when using C++ STL
   add_compile_options(/wd4251)  
+endif()
+
+##################################################################
+###### coverage build
+##################################################################
+
+if(ENABLE_COVERAGE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g ")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftest-coverage")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
 endif()
 
 ##################################################################
