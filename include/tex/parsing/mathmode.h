@@ -7,7 +7,6 @@
 
 #include "tex/parsing/mode.h"
 
-#include "tex/parsing/commands.h"
 #include "tex/parsing/typesetting-machine.h"
 
 #include "tex/fontmetrics.h"

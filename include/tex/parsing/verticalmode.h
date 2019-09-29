@@ -7,10 +7,11 @@
 
 #include "tex/parsing/mode.h"
 
-#include "tex/parsing/commands.h"
-
 #include "tex/vbox.h"
 #include "tex/typeset.h"
+
+#include <map>
+#include <vector>
 
 namespace tex
 {

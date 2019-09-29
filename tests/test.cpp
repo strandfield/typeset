@@ -21,7 +21,6 @@ int run_test(void(*f)(void))
 
 void test_atom_creation(); // test-atom.cpp
 void test_lexer(); // test-lexer.cpp
-void test_parser(); // test-parser.cpp
 void test_machine_1(); // test-parser.cpp
 void test_machine_2(); // test-parser.cpp
 
@@ -31,7 +30,6 @@ int main(int argc, char *argv[])
 
   ec += run_test(test_atom_creation);
   ec += run_test(test_lexer);
-  ec += run_test(test_parser);
   ec += run_test(test_machine_1);
   ec += run_test(test_machine_2);
 

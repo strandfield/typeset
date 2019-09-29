@@ -273,7 +273,7 @@ RetCode Preprocessor::readMacroDef()
     return RetCode::Await;
   }
 
-  Macro mdef{ csname.controlSequence(), std::vector<Token>(m_input.begin() + pattern_begin, m_input.begin() + pattern_begin),
+  Macro mdef{ csname.controlSequence(), std::vector<Token>(m_input.begin() + pattern_begin, m_input.begin() + pattern_end),
     std::vector<Token>(m_input.begin() + repl_begin + 1, m_input.begin() + repl_end) };
 
   m_defs.front().macros[mdef.controlSequence()] = std::move(mdef);
