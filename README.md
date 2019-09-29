@@ -1,6 +1,8 @@
 
 # `typeset` - A TeX-inspired C++ typesetting library
 
+[![Build Status](https://travis-ci.org/bandicode/typeset.svg?branch=master)](https://travis-ci.org/bandicode/typeset)
+
 `libtypeset` is a C++ library that aims at providing an abstract layouting engine 
 suitable for typesetting complex documents.
 
