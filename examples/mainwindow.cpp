@@ -20,7 +20,7 @@
 
 MainWindow::MainWindow()
 {
-  setWindowTitle("liblayout examples");
+  setWindowTitle("typeset examples");
 
   mSettings = new QSettings("settings.ini", QSettings::IniFormat, this);
 

@@ -10,6 +10,7 @@
 #include "tex/lexer.h"
 #include "tex/parsing/mode.h"
 
+#include <memory>
 #include <stack>
 #include <vector>
 

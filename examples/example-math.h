@@ -7,6 +7,8 @@
 
 #include "example.h"
 
+#include <memory>
+
 namespace tex
 {
 class Box;

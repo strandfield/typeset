@@ -8,6 +8,8 @@
 
 #include <QFontMetricsF>
 
+#include <cmath>
+
 QChar QCharSymbol::get(const tex::Symbol & s)
 {
   return static_cast<const QCharSymbol &>(s).character();

@@ -19,11 +19,6 @@ target_link_libraries(examples Qt5::Core)
 target_link_libraries(examples Qt5::Gui)
 target_link_libraries(examples Qt5::Widgets)
 
-set_target_properties(examples PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-set_target_properties(examples PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-
-target_include_directories(examples PUBLIC ".")
-
 endif()
 
 

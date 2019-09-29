@@ -19,7 +19,7 @@ public:
 
   }
 
-  TestBox(std::string str, tex::BoxMetrics& m)
+  TestBox(std::string str, const tex::BoxMetrics& m)
     : m_text(str), m_metrics(m)
   {
 

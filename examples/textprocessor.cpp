@@ -58,15 +58,15 @@ tex::List TextProcessor::process(const QString & text)
 
   while (!w.isNull())
   {
-    if (w.size() == 1 && w.front().isPunct())
+    if (w.size() == 1 && w.at(0).isPunct())
     {
       insert_space = false;
       result.push_back(stringbox(w, font_));
-      if (w.front() == ',')
+      if (w.at(0) == ',')
         result.push_back(commaglue);
-      else if (w.front() == '.')
+      else if (w.at(0) == '.')
         result.push_back(periodglue);
-      else if(w.front() != '-' && w.front() != '\'')
+      else if(w.at(0) != '-' && w.at(0) != '\'')
         result.push_back(spaceglue);
     }
     else if (w == "...")

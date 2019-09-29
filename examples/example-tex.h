@@ -7,6 +7,8 @@
 
 #include <QWidget>
 
+#include <memory>
+
 namespace tex
 {
 class Box;
