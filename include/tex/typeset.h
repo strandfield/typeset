@@ -50,6 +50,8 @@ public:
   Options & withStyle(math::Style style);
   Options withCrampedStyle() const;
   Options & withCrampedStyle();
+  Options withFont(Font f) const;
+  Options& withFont(Font f);
   Options withSize(FontSize size) const;
   Options & withSize(FontSize size);
 

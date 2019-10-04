@@ -12,8 +12,10 @@
 #include "tex/vbox.h"
 #include "tex/math/atom.h"
 #include "tex/math/boundary.h"
+#include "tex/math/fontchange.h"
 #include "tex/math/fraction.h"
 #include "tex/math/style.h"
+#include "tex/math/stylechange.h"
 
 #include <algorithm>
 #include <cassert>
@@ -585,41 +587,65 @@ inline static bool any_of(Atom::Type t, std::initializer_list<Atom::Type> types)
   return std::find(types.begin(), types.end(), t) != types.end();
 }
 
-void preprocess(MathList &mathlist, const Options & opts)
+void preprocess(MathList &mathlist, Options opts)
 {
-  auto it = mathlist.begin();
+  // Based on TeXbook, Appendix G
 
-  bool firstAtom = true;
   std::shared_ptr<Atom> mostRecentAtom = nullptr;
 
-  for (; it != mathlist.end(); ++it)
+  for (auto it = mathlist.begin(); it != mathlist.end();)
   {
     auto & elem = *it;
-    if (elem->isPenalty() || elem->is<Rule>() || elem->is<Boundary>())
-      continue;
+    if (elem->isPenalty() || elem->is<Rule>() || elem->is<Boundary>()) 
+    {
+      // Rule 1
+      ++it;
+    }
     else if (elem->isGlue() || elem->isKern())
-      continue;
+    {
+      // Rule 2 (incomplete)
+      ++it;
+    }
+    else if(elem->is<StyleChange>() || elem->is<FontChange>()) 
+    { 
+      // Rule 3
+      if (elem->is<StyleChange>())
+      {
+        opts.withStyle(elem->as<StyleChange>().style());
+      }
+      else
+      {
+        opts.withFont(elem->as<FontChange>().font());
+      }
+
+      it = mathlist.erase(it);
+    } 
+    // else if(elem->is<MathChoice>()) { } // Rule 4
     else if (elem->is<Atom>())
     {
       auto atom = cast<Atom>(elem);
-      if (atom->type() == Atom::Bin || firstAtom || (mostRecentAtom != nullptr && any_of(mostRecentAtom->type(), { Atom::Bin, Atom::Op, Atom::Rel, Atom::Open, Atom::Punct })))
+
+      if (atom->type() == Atom::Bin && (mostRecentAtom != nullptr && any_of(mostRecentAtom->type(), { Atom::Bin, Atom::Op, Atom::Rel, Atom::Open, Atom::Punct })))
       {
-        firstAtom = false;
+        // Rule 5
         atom->changeType(Atom::Ord);
         processAtom(mathlist, it, opts);
       }
       else if (any_of(atom->type(), { Atom::Rel, Atom::Close, Atom::Punct }))
       {
+        // Rule 6
         if (mostRecentAtom != nullptr && mostRecentAtom->type() == Atom::Bin)
           mostRecentAtom->changeType(Atom::Ord);
         processAtom(mathlist, it, opts);
       }
       else if (any_of(atom->type(), { Atom::Open, Atom::Inner }))
       {
+        // Rule 7
         processAtom(mathlist, it, opts);
       }
       else if (atom->type() == Atom::Vcent)
       {
+        // Rule 8
         auto x = boxit(atom->nucleus(), opts);
         if (!x->is<VBox>())
           x = tex::vbox({ x });
@@ -636,6 +662,7 @@ void preprocess(MathList &mathlist, const Options & opts)
       }
       else if (atom->type() == Atom::Over)
       {
+        // Rule 9
         auto x = boxit(atom->nucleus(), opts.withCrampedStyle());
         float theta = opts.fontMetrics().defaultRuleThickness();
         auto box = tex::vbox({ kern(theta), hrule(x->width(), theta), kern(3 * theta), x });
@@ -644,6 +671,7 @@ void preprocess(MathList &mathlist, const Options & opts)
       }
       else if (atom->type() == Atom::Under)
       {
+        // Rule 10
         auto x = boxit(atom->nucleus(), opts.withCrampedStyle());
         float theta = opts.fontMetrics().defaultRuleThickness();
         auto box = tex::vtop({ x, kern(3 * theta), hrule(x->width(), theta) });
@@ -656,24 +684,37 @@ void preprocess(MathList &mathlist, const Options & opts)
       }
       else if (atom->type() == Atom::Rad)
       {
+        // Rule 11
         processRadAtom(mathlist, it, opts);
       }
       else if (atom->type() == Atom::Acc)
       {
+        // Rule 12
         processAccAtom(mathlist, it, opts);
       }
       else if (atom->type() == Atom::Op)
       {
+        // Rule 13
         processOpAtom(mathlist, it, opts);
+      }
+      else if (atom->type() == Atom::Ord)
+      {
+        // Rule 14 (incomplete)
+        processAtom(mathlist, it, opts);
       }
       else
       {
         assert(false);
       }
+
+      mostRecentAtom = atom;
+      ++it;
     }
     else if (elem->is<Fraction>())
     {
+      // Rule 15
       processFraction(mathlist, it, opts);
+      ++it;
     }
   }
 
@@ -727,6 +768,9 @@ std::shared_ptr<HBox> typeset(MathList & mathlist, const Options & opts)
 
 List mlist_to_hlist(MathList && mathlist, const Options & opts, int relpenalty, int binoppenalty)
 {
+  if (mathlist.empty())
+    return {};
+  
   return tex::math::mlist_to_hlist_impl(std::move(mathlist), opts, relpenalty, binoppenalty);
 }
 

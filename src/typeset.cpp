@@ -50,6 +50,17 @@ Options & Options::withCrampedStyle()
   return *this;
 }
 
+Options Options::withFont(Font f) const
+{
+  return Options{ *this }.withFont(f);
+}
+
+Options& Options::withFont(Font f)
+{
+  mFont = f;
+  return *this;
+}
+
 Options Options::withSize(FontSize size) const
 {
   return Options{ *this }.withSize(size);
