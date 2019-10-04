@@ -18,6 +18,7 @@ class LIBTYPESET_API MathList : public List
 class LIBTYPESET_API MathListNode : public Node
 {
 public:
+  MathListNode() = default;
   MathListNode(MathList && list) : mList(std::move(list)) { }
   ~MathListNode() = default;
 

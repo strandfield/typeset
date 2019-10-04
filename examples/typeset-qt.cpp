@@ -260,8 +260,16 @@ std::shared_ptr<tex::Box> QtTypesetEngine::typeset(const std::string& text, tex:
 
 std::shared_ptr<tex::Box> QtTypesetEngine::typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size)
 {
-  QChar c = QCharSymbol::get(*symbol);
-  return std::make_shared<StringBox>(c, this->font(font, size));
+  if (symbol->is<QCharSymbol>())
+  {
+    QChar c = QCharSymbol::get(*symbol);
+    return std::make_shared<StringBox>(c, this->font(font, size));
+  }
+  else
+  {
+    Q_ASSERT(symbol->is<tex::TextSymbol>());
+    return typeset(symbol->as<tex::TextSymbol>().text(), font, size);
+  }
 }
 
 std::shared_ptr<tex::Box> QtTypesetEngine::typesetRadicalSign(float minTotalHeight, tex::FontSize size)

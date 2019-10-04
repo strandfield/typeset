@@ -27,6 +27,9 @@ public:
   inline const MathList & denom() const { return mDenom; }
   inline bool hasBar() const { return mBar; }
 
+  inline MathList& numer() { return mNumer; }
+  inline MathList& denom() { return mDenom; }
+
 private:
   MathList mNumer;
   MathList mDenom;

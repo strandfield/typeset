@@ -77,3 +77,26 @@ void test_machine_2()
   }
 }
 
+void test_machine_3()
+{
+  using namespace tex;
+
+  auto engine = std::make_shared<TestTypesetEngine>();
+
+  parsing::TypesettingMachine machine{ engine, tex::Options{engine} };
+
+  machine.inputStream().push_back(parsing::InputStream::Document::fromString("Let $x_n > {1 \\over n}$ and $y = 0$...\n\n"));
+
+  while (!machine.inputStream().atEnd())
+  {
+    machine.advance();
+  }
+
+  auto* vm = static_cast<tex::parsing::VerticalMode*>(machine.modes().front().get());
+
+  tex::List vlist = vm->vlist();
+
+  ASSERT(vlist.size() == 1);
+  ASSERT(vlist.front()->isDerivedFrom<tex::HBox>());
+  /// TODO: add some real check
+}

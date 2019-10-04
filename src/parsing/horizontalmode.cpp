@@ -81,7 +81,6 @@ RetCode HorizontalMode::main_callback(HorizontalMode& self)
       }
       else
       {
-        read(tokens);
         self.machine().enter<MathMode>();
       }
 
