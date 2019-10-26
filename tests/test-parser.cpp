@@ -4,99 +4,55 @@
 
 #include "test.h"
 
-#include "test-typeset.h"
+#include "tex/math/fraction.h"
 
-#include "tex/hbox.h"
+#include "tex/parsing/mathparser.h"
 
-#include "tex/parsing/verticalmode.h"
-#include "tex/parsing/typesetting-machine.h"
-
-void test_machine_1()
+void test_parser_1()
 {
   using namespace tex;
 
-  auto engine = std::make_shared<TestTypesetEngine>();
+  parsing::MathParser parser;
+  parser.writeSymbol("a");
+  parser.finish();
 
-  parsing::TypesettingMachine machine{ engine, tex::Options{engine} };
-
-  machine.inputStream().push_back(parsing::InputStream::Document::fromString("Hello {Bob} !\n\n"));
-
-  while (!machine.inputStream().atEnd())
-  {
-    machine.advance();
-  }
-
-  auto* vm = static_cast<tex::parsing::VerticalMode*>(machine.modes().front().get());
-
-  tex::List vlist = vm->vlist();
-
-  ASSERT(vlist.size() == 1);
-  ASSERT(vlist.front()->isDerivedFrom<tex::HBox>());
+  ASSERT(parser.output().size() == 1);
+  ASSERT(parser.output().front()->is<math::Atom>());
 }
 
-void test_machine_2()
+void test_parser_2()
 {
   using namespace tex;
+  using namespace parsing;
 
-  auto engine = std::make_shared<TestTypesetEngine>();
+  parsing::MathParser parser;
+  parser.writeSymbol("1");
+  parser.writeSymbol("+");
+  parser.writeSymbol("2");
+  parser.writeControlSequence(MathParser::CS::OVER);
+  parser.writeSymbol("5");
+  parser.finish();
 
-  {
-    parsing::TypesettingMachine machine{ engine, tex::Options{engine} };
-
-    machine.inputStream().push_back(parsing::InputStream::Document::fromString("\\def\\foo{Hello World!} \\foo \n\n"));
-
-    while (!machine.inputStream().atEnd())
-    {
-      machine.advance();
-    }
-
-    auto* vm = static_cast<tex::parsing::VerticalMode*>(machine.modes().front().get());
-
-    tex::List vlist = vm->vlist();
-
-    ASSERT(vlist.size() == 1);
-    ASSERT(vlist.front()->isDerivedFrom<tex::HBox>());
-  }
-
-  {
-    parsing::TypesettingMachine machine{ engine, tex::Options{engine} };
-
-    machine.inputStream().push_back(parsing::InputStream::Document::fromString("\\def\\foo#1{Hello #1!} \\foo{Bob} \n\n"));
-
-    while (!machine.inputStream().atEnd())
-    {
-      machine.advance();
-    }
-
-    auto* vm = static_cast<tex::parsing::VerticalMode*>(machine.modes().front().get());
-
-    tex::List vlist = vm->vlist();
-
-    ASSERT(vlist.size() == 1);
-    ASSERT(vlist.front()->isDerivedFrom<tex::HBox>());
-  }
+  ASSERT(parser.output().size() == 1);
+  ASSERT(parser.output().front()->is<math::Fraction>());
 }
 
-void test_machine_3()
+void test_parser_3()
 {
   using namespace tex;
+  using namespace parsing;
 
-  auto engine = std::make_shared<TestTypesetEngine>();
+  parsing::MathParser parser;
+  parser.writeControlSequence(MathParser::CS::LEFT);
+  parser.writeSymbol("(");
+  parser.writeSymbol("a");
+  parser.writeSymbol("+");
+  parser.writeSymbol("b");
+  parser.writeControlSequence(MathParser::CS::RIGHT);
+  parser.writeSymbol(")");
+  parser.finish();
 
-  parsing::TypesettingMachine machine{ engine, tex::Options{engine} };
-
-  machine.inputStream().push_back(parsing::InputStream::Document::fromString("Let $x_n > {1 \\over n}$ and $y = 0$...\n\n"));
-
-  while (!machine.inputStream().atEnd())
-  {
-    machine.advance();
-  }
-
-  auto* vm = static_cast<tex::parsing::VerticalMode*>(machine.modes().front().get());
-
-  tex::List vlist = vm->vlist();
-
-  ASSERT(vlist.size() == 1);
-  ASSERT(vlist.front()->isDerivedFrom<tex::HBox>());
-  /// TODO: add some real check
+  ASSERT(parser.output().size() == 1);
+  ASSERT(parser.output().front()->is<math::Atom>());
+  ASSERT(parser.output().front()->as<math::Atom>().type() == math::Atom::Inner);
 }
