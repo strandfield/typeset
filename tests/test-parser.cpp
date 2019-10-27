@@ -56,3 +56,25 @@ void test_parser_3()
   ASSERT(parser.output().front()->is<math::Atom>());
   ASSERT(parser.output().front()->as<math::Atom>().type() == math::Atom::Inner);
 }
+
+void test_parser_4()
+{
+  using namespace tex;
+  using namespace parsing;
+
+  parsing::MathParser parser;
+  parser.writeSymbol("x");
+  parser.beginSuperscript();
+  parser.writeSymbol("2");
+  parser.writeSymbol("+");
+  parser.writeSymbol("2");
+  parser.writeSymbol("x");
+  parser.writeSymbol("+");
+  parser.writeSymbol("1");
+  parser.finish();
+
+  ASSERT(parser.output().size() == 6);
+  ASSERT(parser.output().front()->is<math::Atom>());
+  ASSERT(parser.output().front()->as<math::Atom>().type() == math::Atom::Ord);
+  ASSERT(parser.output().front()->as<math::Atom>().superscript() != nullptr);
+}

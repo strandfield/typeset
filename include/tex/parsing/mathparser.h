@@ -24,40 +24,25 @@ namespace parsing
 class LIBTYPESET_API AtomBuilder
 {
 public:
-  enum State
-  {
-    Idle,
-    ParsingNucleus,
-    AwaitingSuperscript,
-    ParsingSuperscript,
-    AwaitingSubscript,
-    ParsingSubscript,
-  };
+  math::Atom::Type type = math::Atom::Ord;
+  math::Atom::LimitsFlag limits = math::Atom::NoLimits;
+  std::shared_ptr<Node> nucleus_;
+  std::shared_ptr<Node> superscript_;
+  std::shared_ptr<Node> subscript_;
 
+public:
   AtomBuilder();
   explicit AtomBuilder(math::Atom::Type t);
 
-  State state() const;
-  void setState(State s);
+  const std::shared_ptr<Node>& nucleus() const { return nucleus_; }
+  const std::shared_ptr<Node>& superscript() const { return superscript_; }
+  const std::shared_ptr<Node>& subscript() const { return subscript_; }
 
-  MathList& currentList();
-
-  const std::shared_ptr<Node>& nucleus() { return m_nucleus; }
-  const std::shared_ptr<Node>& superscript() { return m_superscript; }
-  const std::shared_ptr<Node>& subscript() { return m_subscript; }
-
-  void setNucleus(const std::shared_ptr<Node>& node);
-  void setSuperscript(const std::shared_ptr<Node>& node);
-  void setSubscript(const std::shared_ptr<Node>& node);
+  AtomBuilder& setNucleus(const std::shared_ptr<Node>& node);
+  AtomBuilder& setSuperscript(const std::shared_ptr<Node>& node);
+  AtomBuilder& setSubscript(const std::shared_ptr<Node>& node);
 
   std::shared_ptr<math::Atom> build() const;
-  
-private:
-  State m_state = Idle;
-  math::Atom::Type m_type = math::Atom::Ord;
-  std::shared_ptr<Node> m_nucleus;
-  std::shared_ptr<Node> m_superscript;
-  std::shared_ptr<Node> m_subscript;
 };
 
 class LIBTYPESET_API MathParser
@@ -68,9 +53,19 @@ public:
   enum class State
   {
     ParsingMList,
+    /* Atom */
+    ParsingAtom,
+    ParsingNucleus,
+    AwaitingSuperscript,
+    ParsingSuperscript,
+    AwaitingSubscript,
+    ParsingSubscript,
+    /* Boundary */
     ParsingBoundary,
     ParsingLeft,
     ParsingRight,
+    /* Fraction */
+    ParsingFraction,
   };
 
   State state() const;
@@ -111,6 +106,12 @@ protected:
 
   void enter(State s);
   void leave(State s);
+  void leaveState();
+  void mutate(State from, State to);
+
+  void pushList(MathList& l);
+  void popList();
+  std::shared_ptr<MathListNode> pushMathList();
 
   /* Parsing procedures */
   void parse_mlist(const std::string& str);
@@ -131,6 +132,7 @@ protected:
 
 private:
   std::vector<State> m_states;
+  std::vector<MathList*> m_lists;
   MathList m_mlist;
   std::vector<AtomBuilder> m_builders;
 };
