@@ -78,3 +78,23 @@ void test_parser_4()
   ASSERT(parser.output().front()->as<math::Atom>().type() == math::Atom::Ord);
   ASSERT(parser.output().front()->as<math::Atom>().superscript() != nullptr);
 }
+
+void test_parser_sqrt()
+{
+  using namespace tex;
+  using namespace parsing;
+
+  parsing::MathParser parser;
+  parser.writeControlSequence(MathParser::CS::SQRT);
+  parser.beginMathList();
+  parser.writeSymbol("1");
+  parser.writeSymbol("+");
+  parser.writeControlSequence(MathParser::CS::SQRT);
+  parser.writeSymbol("2");
+  parser.endMathList();
+  parser.finish();
+
+  ASSERT(parser.output().size() == 1);
+  ASSERT(parser.output().front()->is<math::Atom>());
+  ASSERT(parser.output().front()->as<math::Atom>().type() == math::Atom::Rad);
+}

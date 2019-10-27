@@ -33,13 +33,7 @@ MathMode::MathMode(TypesettingMachine& m)
 
   push(&MathMode::main_callback);
 
-  m_commands = {
-    {"over", &MathMode::cs_over},
-    {"rm", &MathMode::cs_rm},
-    {"textstyle", &MathMode::cs_textstyle},
-    {"scriptstyle", &MathMode::cs_scriptstyle},
-    {"scriptscriptstyle", &MathMode::cs_scriptscriptstyle},
-  };
+  m_commands = {};
 
   read(tokens(), m_style == math::Style::T ? 1 : 2);
 }
@@ -127,10 +121,22 @@ RetCode MathMode::main_callback()
 
     if (it == commands().end())
     {
-      throw std::runtime_error{ "No such control sequence in Horizontal mode" };
+      try
+      {
+        Token cstok = read(toks);
+        m_parser.writeControlSequence(MathParser::cs(cstok.controlSequence()));
+        return RetCode::Yield;
+      }
+      catch (...)
+      {
+        throw std::runtime_error{ "No such control sequence in Math mode" };
+      }
     }
-    Callback f = it->second;
-    return (this->*f)();
+    else
+    {
+      Callback f = it->second;
+      return (this->*f)();
+    }
   }
   else
   {
@@ -196,41 +202,6 @@ RetCode MathMode::main_callback()
    
     return RetCode::Yield;
   }
-}
-
-RetCode MathMode::cs_over()
-{
-  read(tokens(), 1);
-  m_parser.writeControlSequence(MathParser::CS::OVER);
-  return RetCode::Yield;
-}
-
-RetCode MathMode::cs_rm( )
-{
-  read(tokens(), 1);
-  m_parser.writeControlSequence(MathParser::CS::RM);
-  return RetCode::Yield;
-}
-
-RetCode MathMode::cs_textstyle()
-{
-  read(tokens(), 1);
-  m_parser.writeControlSequence(MathParser::CS::TEXTSTYLE);
-  return RetCode::Yield;
-}
-
-RetCode MathMode::cs_scriptstyle()
-{
-  read(tokens(), 1);
-  m_parser.writeControlSequence(MathParser::CS::SCRIPTSTYLE);
-  return RetCode::Yield;
-}
-
-RetCode MathMode::cs_scriptscriptstyle()
-{
-  read(tokens(), 1);
-  m_parser.writeControlSequence(MathParser::CS::SCRIPTSCRIPTSTYLE);
-  return RetCode::Yield;
 }
 
 } // namespace parsing

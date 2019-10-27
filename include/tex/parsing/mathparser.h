@@ -64,6 +64,8 @@ public:
     ParsingBoundary,
     ParsingLeft,
     ParsingRight,
+    /* Rad */
+    ParsingRad,
     /* Fraction */
     ParsingFraction,
   };
@@ -76,6 +78,7 @@ public:
     LEFT,
     RIGHT,
     OVER,
+    SQRT,
     RM,
     TEXTSTYLE,
     SCRIPTSTYLE,
@@ -121,10 +124,13 @@ protected:
   void parse_left(const std::string& str);
   void parse_right(const std::string& str);
 
+  void parse_rad(const std::string& str);
+
   /* Control sequences */
   void cs_left();
   void cs_right();
   void cs_over();
+  void cs_sqrt();
   void cs_rm();
   void cs_textstyle();
   void cs_scriptstyle();

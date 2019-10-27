@@ -47,13 +47,6 @@ public:
   /* Callbacks */
   RetCode main_callback();
 
-  /* Control sequences */
-  RetCode cs_over();
-  RetCode cs_rm();
-  RetCode cs_textstyle();
-  RetCode cs_scriptstyle();
-  RetCode cs_scriptscriptstyle();
-
 private:
   math::Style m_style;
   std::vector<Callback> m_callbacks;

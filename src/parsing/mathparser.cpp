@@ -65,6 +65,7 @@ const std::map<std::string, MathParser::CS>& MathParser::csmap()
     {"left", CS::LEFT},
     {"right", CS::RIGHT},
     {"over", CS::OVER},
+    {"sqrt", CS::SQRT},
     {"rm", CS::RM},
     {"textstyle", CS::TEXTSTYLE},
     {"scriptstyle", CS::SCRIPTSTYLE},
@@ -94,6 +95,8 @@ void MathParser::writeControlSequence(CS csname)
     return cs_right();
   case CS::OVER:
     return cs_over();
+  case CS::SQRT:
+    return cs_sqrt();
   case CS::RM:
     return cs_rm();
   case CS::TEXTSTYLE:
@@ -129,6 +132,8 @@ void MathParser::writeSymbol(const std::string& str)
     return parse_left(str);
   case State::ParsingRight:
     return parse_right(str);
+  case State::ParsingRad:
+    return parse_rad(str);
   case State::ParsingFraction:
     return parse_mlist(str);
   default:
@@ -179,6 +184,17 @@ void MathParser::beginSubscript()
 
 void MathParser::beginMathList()
 {
+  if (state() == State::ParsingRad)
+  {
+    leaveState();
+
+    enter(State::ParsingAtom);
+    m_builders.emplace_back(AtomBuilder(math::Atom::Rad));
+    enter(State::ParsingNucleus);
+    m_builders.back().setNucleus(pushMathList());
+    return;
+  }
+
   if (state() == State::AwaitingSubscript)
   {
     leaveState();
@@ -343,6 +359,14 @@ void MathParser::parse_right(const std::string& str)
   assert(state() == State::ParsingAtom);
 }
 
+void MathParser::parse_rad(const std::string& str)
+{
+  leave(State::ParsingRad);
+
+  m_builders.emplace_back(AtomBuilder(math::Atom::Rad).setNucleus(std::make_shared<TextSymbol>(str)));
+  enter(State::ParsingAtom);
+}
+
 void MathParser::cs_left()
 {
   commitCurrentAtom();
@@ -375,6 +399,12 @@ void MathParser::cs_over()
   ml.push_back(frac);
   enter(State::ParsingFraction);
   pushList(frac->denom());
+}
+
+void MathParser::cs_sqrt()
+{
+  commitCurrentAtom();
+  enter(State::ParsingRad);
 }
 
 void MathParser::cs_rm()
