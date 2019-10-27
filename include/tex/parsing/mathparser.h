@@ -119,7 +119,8 @@ protected:
   /* Parsing procedures */
   void parse_mlist(const std::string& str);
 
-  void parse_boundary(const std::string& str);
+  void parse_atom(const std::string& str);
+  void parse_subsupscript(const std::string& str);
 
   void parse_left(const std::string& str);
   void parse_right(const std::string& str);

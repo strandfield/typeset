@@ -87,6 +87,11 @@ MathParser::CS MathParser::cs(const std::string& name)
 
 void MathParser::writeControlSequence(CS csname)
 {
+  if (state() == State::ParsingAtom)
+  {
+    commitCurrentAtom();
+  }
+
   switch (csname)
   {
   case CS::LEFT:
@@ -120,14 +125,16 @@ void MathParser::writeSymbol(const std::string& str)
   case State::ParsingMList:
     return parse_mlist(str);
   case State::ParsingAtom:
+    return parse_atom(str);
   case State::ParsingNucleus:
   case State::ParsingSubscript:
   case State::ParsingSuperscript:
+    return parse_mlist(str);
   case State::AwaitingSubscript:
   case State::AwaitingSuperscript:
-    return parse_mlist(str);
+    return parse_subsupscript(str);
   case State::ParsingBoundary:
-    return parse_boundary(str);
+    return parse_mlist(str);
   case State::ParsingLeft:
     return parse_left(str);
   case State::ParsingRight:
@@ -317,6 +324,19 @@ std::shared_ptr<MathListNode> MathParser::pushMathList()
 
 void MathParser::parse_mlist(const std::string& str)
 {
+  enter(State::ParsingAtom);
+  m_builders.emplace_back();
+  m_builders.back().setNucleus(std::make_shared<TextSymbol>(str));
+}
+
+void MathParser::parse_atom(const std::string& str)
+{
+  commitCurrentAtom();
+  return writeSymbol(str);
+}
+
+void MathParser::parse_subsupscript(const std::string& str)
+{
   if (state() == State::AwaitingSubscript)
   {
     m_builders.back().setSubscript(std::make_shared<TextSymbol>(str));
@@ -327,19 +347,6 @@ void MathParser::parse_mlist(const std::string& str)
     m_builders.back().setSuperscript(std::make_shared<TextSymbol>(str));
     leaveState();
   }
-  else
-  {
-    commitCurrentAtom();
-
-    enter(State::ParsingAtom);
-    m_builders.emplace_back();
-    m_builders.back().setNucleus(std::make_shared<TextSymbol>(str));
-  }
-}
-
-void MathParser::parse_boundary(const std::string& str)
-{
-  return parse_mlist(str);
 }
 
 void MathParser::parse_left(const std::string& str)
@@ -369,7 +376,6 @@ void MathParser::parse_rad(const std::string& str)
 
 void MathParser::cs_left()
 {
-  commitCurrentAtom();
   m_builders.emplace_back(AtomBuilder(math::Atom::Inner).setNucleus(pushMathList()));
   enter(State::ParsingAtom);
   enter(State::ParsingNucleus);
@@ -379,8 +385,6 @@ void MathParser::cs_left()
 
 void MathParser::cs_right()
 {
-  commitCurrentAtom();
-
   if (state() != State::ParsingBoundary)
   {
     throw std::runtime_error{ "Mismatching \\left & \\right" };
@@ -391,8 +395,6 @@ void MathParser::cs_right()
 
 void MathParser::cs_over()
 {
-  commitCurrentAtom();
-
   MathList& ml = mlist();
   auto frac = std::make_shared<math::Fraction>(std::move(ml), MathList{});
   ml.clear();
@@ -403,31 +405,26 @@ void MathParser::cs_over()
 
 void MathParser::cs_sqrt()
 {
-  commitCurrentAtom();
   enter(State::ParsingRad);
 }
 
 void MathParser::cs_rm()
 {
-  commitCurrentAtom();
   mlist().push_back(std::make_shared<math::FontChange>(Font::MathRoman));
 }
 
 void MathParser::cs_textstyle()
 {
-  commitCurrentAtom();
   mlist().push_back(std::make_shared<math::StyleChange>(math::Style::T));
 }
 
 void MathParser::cs_scriptstyle()
 {
-  commitCurrentAtom();
   mlist().push_back(std::make_shared<math::StyleChange>(math::Style::S));
 }
 
 void MathParser::cs_scriptscriptstyle()
 {
-  commitCurrentAtom();
   mlist().push_back(std::make_shared<math::StyleChange>(math::Style::SS));
 }
 
