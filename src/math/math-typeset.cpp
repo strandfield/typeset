@@ -14,6 +14,7 @@
 #include "tex/math/boundary.h"
 #include "tex/math/fontchange.h"
 #include "tex/math/fraction.h"
+#include "tex/math/root.h"
 #include "tex/math/style.h"
 #include "tex/math/stylechange.h"
 
@@ -77,7 +78,7 @@ static std::shared_ptr<Box> boxit(std::shared_ptr<Node> node, const Options & op
   throw std::runtime_error{ "boxit() : invalid input" };
 }
 
-static std::shared_ptr<Box> boxit(MathList mlist, const Options & opts)
+static std::shared_ptr<HBox> boxit(MathList mlist, const Options & opts)
 {
   List hlist = mlist_to_hlist(std::move(mlist), opts);
   return tex::hbox(std::move(hlist));
@@ -180,27 +181,7 @@ static void processRadAtom(MathList & mathlist, MathList::iterator & current, co
     psi = 0.5f * (psi + y->depth() - x->totalHeight());
   auto vbox = tex::vbox({ kern(theta), tex::hrule(x->width(), theta), kern(psi), x });
   y->setShiftAmount(y->shiftAmount() - psi + x->height());
-
-
-  if (atom->index() == nullptr)
-  {
-    atom->changeNucleus(tex::hbox({ y, vbox }));
-    changeToOrd(mathlist, current, opts);
-    return;
-  }
-
-  // Handle the optional root index
-  auto index = hboxit(atom->index(), opts.withStyle(Style::SS));
-
-  float h = std::max(y->height() - y->shiftAmount(), vbox->height());
-  float d = std::max(y->depth() + y->shiftAmount(), vbox->depth());
-
-  // The amount the index is shifted by. This is taken from the TeX
-  // source, in the definition of `\r@@t`.
-  const float shiftAmount = 0.6f * (h - d);
-  index->shift(-shiftAmount);
-
-  atom->changeNucleus(tex::hbox({ index, kern(-radicalSignBoxWidth), y, vbox }));
+  atom->changeNucleus(tex::hbox({ y, vbox }));
   changeToOrd(mathlist, current, opts);
 }
 
@@ -464,6 +445,39 @@ static void processFraction(MathList & mlist, MathList::iterator & current, cons
   *current = Atom::create<Atom::Inner>(vbox);
 }
 
+static void processRoot(MathList& mlist, MathList::iterator& current, const Options& opts)
+{
+  auto root = cast<Root>(*current);
+
+  // Do as with a Rad atom
+  auto x = boxit(root->radicand(), opts.withCrampedStyle());
+  float theta = opts.fontMetrics().defaultRuleThickness();
+  const float phi = opts.mathStyle() > Style::T ? opts.fontMetrics().xHeight() : 0.f;
+  float psi = theta + 0.25f * std::abs(phi);
+  auto y = radicalSignBox(psi + theta + x->totalHeight(), opts);
+  const float radicalSignBoxWidth = y->width();
+  theta = y->height();
+  if (y->depth() > psi + y->totalHeight())
+    psi = 0.5f * (psi + y->depth() - x->totalHeight());
+  auto vbox = tex::vbox({ kern(theta), tex::hrule(x->width(), theta), kern(psi), x });
+  y->setShiftAmount(y->shiftAmount() - psi + x->height());
+
+  // Handle the root index
+  auto index = boxit(root->degree(), opts.withStyle(Style::SS));
+
+  float h = std::max(y->height() - y->shiftAmount(), vbox->height());
+  float d = std::max(y->depth() + y->shiftAmount(), vbox->depth());
+
+  // The amount the index is shifted by. This is taken from the TeX
+  // source, in the definition of `\r@@t`.
+  const float shiftAmount = 0.6f * (h - d);
+  index->shift(-shiftAmount);
+
+  auto atom = Atom::create<Atom::Rad>(tex::hbox({ index, kern(-radicalSignBoxWidth), y, vbox }));
+  *current = atom;
+  changeToOrd(mlist, current, opts);
+}
+
 static std::shared_ptr<Box> typesetDelimiter(const std::shared_ptr<Symbol> & ms, float minTotalHeight, const Options & opts)
 {
   if (ms == nullptr)
@@ -714,6 +728,12 @@ void preprocess(MathList &mathlist, Options opts)
     {
       // Rule 15
       processFraction(mathlist, it, opts);
+      ++it;
+    }
+    else if (elem->is<Root>())
+    {
+      processRoot(mathlist, it, opts);
+      mostRecentAtom = cast<Atom>(*it);
       ++it;
     }
   }

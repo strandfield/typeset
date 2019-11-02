@@ -50,7 +50,6 @@ public:
   inline const std::shared_ptr<Node> & subscript() const { return mSubscript; }
   inline const std::shared_ptr<Node> & superscript() const { return mSuperscript; }
   inline const std::shared_ptr<Symbol> & accent() const { return mAccent; }
-  inline const std::shared_ptr<Node> & index() const { return mIndex; }
   inline LimitsFlag limits() const { return mLimits; }
 
   void changeNucleus(const std::shared_ptr<Node> & nuc);
@@ -59,29 +58,23 @@ public:
   template<Atom::Type T, typename = std::enable_if_t<T == Atom::Op>>
   static std::shared_ptr<Atom> create(std::shared_ptr<Node> nucleus, std::shared_ptr<Node> subscript = nullptr, std::shared_ptr<Node> superscript = nullptr, LimitsFlag limits = NoLimits)
   {
-    return std::make_shared<Atom>(T, nucleus, subscript, superscript, nullptr, nullptr, limits);
+    return std::make_shared<Atom>(T, nucleus, subscript, superscript, nullptr, limits);
   }
 
   template<Atom::Type T, typename = std::enable_if_t<T == Atom::Acc>>
   static std::shared_ptr<Atom> create(std::shared_ptr<Node> nucleus, std::shared_ptr<Symbol> accent, std::shared_ptr<Node> subscript = nullptr, std::shared_ptr<Node> superscript = nullptr)
   {
-    return std::make_shared<Atom>(T, nucleus, subscript, superscript, accent, nullptr, NoLimits);
+    return std::make_shared<Atom>(T, nucleus, subscript, superscript, accent, NoLimits);
   }
 
-  template<Atom::Type T, typename = std::enable_if_t<T == Atom::Rad>>
-  static std::shared_ptr<Atom> create(std::shared_ptr<Node> nucleus, std::shared_ptr<Node> index, std::shared_ptr<Node> subscript = nullptr, std::shared_ptr<Node> superscript = nullptr)
-  {
-    return std::make_shared<Atom>(T, nucleus, subscript, superscript, nullptr, index, NoLimits);
-  }
-
-  template<Atom::Type T, typename = std::enable_if_t<T != Atom::Rad && T != Atom::Acc && T != Atom::Op>>
+  template<Atom::Type T, typename = std::enable_if_t<T != Atom::Acc && T != Atom::Op>>
   static std::shared_ptr<Atom> create(std::shared_ptr<Node> nucleus, std::shared_ptr<Node> subscript = nullptr, std::shared_ptr<Node> superscript = nullptr)
   {
-    return std::make_shared<Atom>(T, nucleus, subscript, superscript, nullptr, nullptr, NoLimits);
+    return std::make_shared<Atom>(T, nucleus, subscript, superscript, nullptr, NoLimits);
   }
 
 public:
-  Atom(Type t, std::shared_ptr<Node> nucleus, std::shared_ptr<Node> subscript, std::shared_ptr<Node> superscript, std::shared_ptr<Symbol> accent, std::shared_ptr<Node> index, LimitsFlag limits);
+  Atom(Type t, std::shared_ptr<Node> nucleus, std::shared_ptr<Node> subscript, std::shared_ptr<Node> superscript, std::shared_ptr<Symbol> accent, LimitsFlag limits);
 
 private:
   Type mType;
@@ -89,7 +82,6 @@ private:
   std::shared_ptr<Node> mSubscript;
   std::shared_ptr<Node> mSuperscript;
   std::shared_ptr<Symbol> mAccent; // accent of a Acc atom
-  std::shared_ptr<Node> mIndex; // index of a Rad atom
   LimitsFlag mLimits;
 };
 

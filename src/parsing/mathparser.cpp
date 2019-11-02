@@ -51,7 +51,7 @@ AtomBuilder& AtomBuilder::setSubscript(const std::shared_ptr<Node>& node)
 
 std::shared_ptr<math::Atom> AtomBuilder::build() const
 {
-  return std::make_shared<math::Atom>(type, nucleus(), subscript(), superscript(), nullptr, nullptr, math::Atom::NoLimits);
+  return std::make_shared<math::Atom>(type, nucleus(), subscript(), superscript(), nullptr, math::Atom::NoLimits);
 }
 
 MathParser::MathParser()
