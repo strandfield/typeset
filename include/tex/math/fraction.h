@@ -16,12 +16,19 @@ namespace math
 class LIBTYPESET_API Fraction : public Node
 {
 public:
+  ~Fraction() = default;
+
+  explicit Fraction(bool bar = true)
+    : mBar(bar)
+  {
+
+  }
+
   Fraction(MathList && n, MathList && d, bool bar = true)
     : mNumer(std::move(n)), mDenom(std::move(d)), mBar(bar)
   {
 
   }
-  ~Fraction() = default;
 
   inline const MathList & numer() const { return mNumer; }
   inline const MathList & denom() const { return mDenom; }

@@ -70,7 +70,12 @@ public:
     ParsingSqrtRadicand,
     ParsingSqrtRadicandMList,
     /* Fraction */
-    ParsingFraction,
+    ParsingOver,
+    ParsingFrac,
+    ParsingFracNumer,
+    ParsingFracNumerMList,
+    ParsingFracDenom,
+    ParsingFracDenomMList,
   };
 
   State state() const;
@@ -81,6 +86,7 @@ public:
     LEFT,
     RIGHT,
     OVER,
+    FRAC,
     SQRT,
     RM,
     TEXTSTYLE,
@@ -134,10 +140,14 @@ protected:
   void parse_sqrt_degree(const std::string& str);
   void parse_sqrt_radicand(const std::string& str);
 
+  void parse_frac_numer(const std::string& str);
+  void parse_frac_denom(const std::string& str);
+
   /* Control sequences */
   void cs_left();
   void cs_right();
   void cs_over();
+  void cs_frac();
   void cs_sqrt();
   void cs_rm();
   void cs_textstyle();

@@ -121,3 +121,27 @@ void test_parser_sqrt()
     ASSERT(parser.output().front()->as<math::Root>().degree().size() == 1);
   }
 }
+
+void test_parser_frac()
+{
+  using namespace tex;
+  using namespace parsing;
+
+  {
+    // frac{a}{b}
+
+    parsing::MathParser parser;
+    parser.writeControlSequence(MathParser::CS::FRAC);
+    parser.beginMathList();
+    parser.writeSymbol("a");
+    parser.endMathList();
+    parser.beginMathList();
+    parser.writeSymbol("b");
+    parser.endMathList();
+    parser.finish();
+
+    ASSERT(parser.output().size() == 1);
+    ASSERT(parser.output().front()->is<math::Fraction>());
+  }
+
+}

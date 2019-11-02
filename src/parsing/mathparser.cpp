@@ -66,6 +66,7 @@ const std::map<std::string, MathParser::CS>& MathParser::csmap()
     {"left", CS::LEFT},
     {"right", CS::RIGHT},
     {"over", CS::OVER},
+    {"frac", CS::FRAC},
     {"sqrt", CS::SQRT},
     {"rm", CS::RM},
     {"textstyle", CS::TEXTSTYLE},
@@ -101,6 +102,8 @@ void MathParser::writeControlSequence(CS csname)
     return cs_right();
   case CS::OVER:
     return cs_over();
+  case CS::FRAC:
+    return cs_frac();
   case CS::SQRT:
     return cs_sqrt();
   case CS::RM:
@@ -148,7 +151,15 @@ void MathParser::writeSymbol(const std::string& str)
     return parse_sqrt_radicand(str);
   case State::ParsingSqrtRadicandMList:
     return parse_mlist(str);
-  case State::ParsingFraction:
+  case State::ParsingOver:
+    return parse_mlist(str);
+  case State::ParsingFracDenom:
+    return parse_frac_denom(str);
+  case State::ParsingFracNumer:
+    return parse_frac_numer(str);
+  case State::ParsingFracDenomMList:
+    return parse_mlist(str);
+  case State::ParsingFracNumerMList:
     return parse_mlist(str);
   default:
     throw std::runtime_error{ "Bad call to writeSymbol()" };
@@ -215,6 +226,20 @@ void MathParser::beginMathList()
     pushList(root->radicand());
     return;
   }
+  else if (state() == State::ParsingFracNumer)
+  {
+    auto frac = std::dynamic_pointer_cast<math::Fraction>(mlist().back());
+    enter(State::ParsingFracNumerMList);
+    pushList(frac->numer());
+    return;
+  }
+  else if (state() == State::ParsingFracDenom)
+  {
+    auto frac = std::dynamic_pointer_cast<math::Fraction>(mlist().back());
+    enter(State::ParsingFracDenomMList);
+    pushList(frac->denom());
+    return;
+  }
 
   if (state() == State::AwaitingSubscript)
   {
@@ -251,7 +276,7 @@ void MathParser::endMathList()
     popList();
     leave(state());
     break;
-  case State::ParsingFraction:
+  case State::ParsingOver:
   {
     popList();
     leaveState();
@@ -261,6 +286,22 @@ void MathParser::endMathList()
       endMathList();
     }
 
+    break;
+  }
+  case State::ParsingFracNumerMList:
+  {
+    popList();
+    leave(State::ParsingFracNumerMList);
+    leave(State::ParsingFracNumer);
+    enter(State::ParsingFracDenom);
+    break;
+  }
+  case State::ParsingFracDenomMList:
+  {
+    popList();
+    leave(State::ParsingFracDenomMList);
+    leave(State::ParsingFracDenom);
+    leave(State::ParsingFrac);
     break;
   }
   case State::ParsingSqrtRadicandMList:
@@ -280,7 +321,7 @@ void MathParser::finish()
 {
   commitCurrentAtom();
 
-  if (state() == State::ParsingFraction)
+  if (state() == State::ParsingOver)
   {
     popList();
     leaveState();
@@ -355,7 +396,9 @@ bool MathParser::isParsingMList() const
   case State::ParsingSqrtDegree:
   case State::ParsingBoundary:
   case State::ParsingSqrtRadicandMList:
-  case State::ParsingFraction:
+  case State::ParsingOver:
+  case State::ParsingFracDenomMList:
+  case State::ParsingFracNumerMList:
     return true;
   default:
     return false;
@@ -450,6 +493,30 @@ void MathParser::parse_sqrt_radicand(const std::string& str)
   leave(State::ParsingSqrt);
 }
 
+void MathParser::parse_frac_numer(const std::string& str)
+{
+  AtomBuilder builder{ math::Atom::Ord };
+  builder.setNucleus(std::make_shared<TextSymbol>(str));
+
+  auto frac = std::dynamic_pointer_cast<math::Fraction>(mlist().back());
+  frac->numer().push_back(builder.build());
+
+  leave(State::ParsingFracNumer);
+  enter(State::ParsingFracDenom);
+}
+
+void MathParser::parse_frac_denom(const std::string& str)
+{
+  AtomBuilder builder{ math::Atom::Ord };
+  builder.setNucleus(std::make_shared<TextSymbol>(str));
+
+  auto frac = std::dynamic_pointer_cast<math::Fraction>(mlist().back());
+  frac->denom().push_back(builder.build());
+
+  leave(State::ParsingFracDenom);
+  leave(State::ParsingFrac);
+}
+
 void MathParser::cs_left()
 {
   m_builders.emplace_back(AtomBuilder(math::Atom::Inner).setNucleus(pushMathList()));
@@ -475,8 +542,16 @@ void MathParser::cs_over()
   auto frac = std::make_shared<math::Fraction>(std::move(ml), MathList{});
   ml.clear();
   ml.push_back(frac);
-  enter(State::ParsingFraction);
+  enter(State::ParsingOver);
   pushList(frac->denom());
+}
+
+void MathParser::cs_frac()
+{
+  auto frac = std::make_shared<math::Fraction>();
+  mlist().push_back(frac);
+  enter(State::ParsingFrac);
+  enter(State::ParsingFracNumer);
 }
 
 void MathParser::cs_sqrt()
