@@ -21,10 +21,9 @@ void test_atom_creation()
   ASSERT_EQ(acc->accent(), dot);
   ASSERT_EQ(acc->limits(), math::Atom::NoLimits);
 
-  auto rad = math::Atom::create<math::Atom::Rad>(x, y);
+  auto rad = math::Atom::create<math::Atom::Rad>(x);
   ASSERT_EQ(rad->type(), math::Atom::Rad);
   ASSERT_EQ(rad->nucleus(), x);
-  ASSERT_EQ(rad->index(), y);
   ASSERT_EQ(rad->limits(), math::Atom::NoLimits);
 
   auto ord = math::Atom::create<math::Atom::Ord>(x, y, z);

@@ -64,8 +64,11 @@ public:
     ParsingBoundary,
     ParsingLeft,
     ParsingRight,
-    /* Rad */
-    ParsingRad,
+    /* Sqrt */
+    ParsingSqrt,
+    ParsingSqrtDegree,
+    ParsingSqrtRadicand,
+    ParsingSqrtRadicandMList,
     /* Fraction */
     ParsingFraction,
   };
@@ -116,6 +119,8 @@ protected:
   void popList();
   std::shared_ptr<MathListNode> pushMathList();
 
+  bool isParsingMList() const;
+
   /* Parsing procedures */
   void parse_mlist(const std::string& str);
 
@@ -125,7 +130,9 @@ protected:
   void parse_left(const std::string& str);
   void parse_right(const std::string& str);
 
-  void parse_rad(const std::string& str);
+  void parse_sqrt(const std::string& str);
+  void parse_sqrt_degree(const std::string& str);
+  void parse_sqrt_radicand(const std::string& str);
 
   /* Control sequences */
   void cs_left();

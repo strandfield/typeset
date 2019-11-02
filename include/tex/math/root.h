@@ -16,12 +16,14 @@ namespace math
 class LIBTYPESET_API Root : public Node
 {
 public:
+  Root() = default;
+  ~Root() = default;
+
   Root(MathList && deg, MathList && rad)
     : mDegree(std::move(deg)), mRadicand(std::move(rad))
   {
 
   }
-  ~Root() = default;
 
   inline const MathList & degree() const { return mDegree; }
   inline const MathList & radicand() const { return mRadicand; }

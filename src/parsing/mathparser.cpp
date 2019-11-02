@@ -9,6 +9,7 @@
 #include "tex/math/fraction.h"
 #include "tex/math/math-typeset.h"
 #include "tex/math/mathlist.h"
+#include "tex/math/root.h"
 #include "tex/math/stylechange.h"
 
 #include <cassert>
@@ -139,8 +140,14 @@ void MathParser::writeSymbol(const std::string& str)
     return parse_left(str);
   case State::ParsingRight:
     return parse_right(str);
-  case State::ParsingRad:
-    return parse_rad(str);
+  case State::ParsingSqrt:
+    return parse_sqrt(str);
+  case State::ParsingSqrtDegree:
+    return parse_sqrt_degree(str);
+  case State::ParsingSqrtRadicand:
+    return parse_sqrt_radicand(str);
+  case State::ParsingSqrtRadicandMList:
+    return parse_mlist(str);
   case State::ParsingFraction:
     return parse_mlist(str);
   default:
@@ -155,7 +162,7 @@ void MathParser::writeBox(const std::shared_ptr<tex::Box>& box)
 
 void MathParser::beginSuperscript()
 {
-  if (state() == State::ParsingMList)
+  if (isParsingMList())
   {
     m_builders.emplace_back();
     enter(State::ParsingAtom);
@@ -173,7 +180,7 @@ void MathParser::beginSuperscript()
 
 void MathParser::beginSubscript()
 {
-  if (state() == State::ParsingMList)
+  if (isParsingMList())
   {
     m_builders.emplace_back();
     enter(State::ParsingAtom);
@@ -191,7 +198,7 @@ void MathParser::beginSubscript()
 
 void MathParser::beginMathList()
 {
-  if (state() == State::ParsingRad)
+  if (state() == State::ParsingSqrt)
   {
     leaveState();
 
@@ -199,6 +206,13 @@ void MathParser::beginMathList()
     m_builders.emplace_back(AtomBuilder(math::Atom::Rad));
     enter(State::ParsingNucleus);
     m_builders.back().setNucleus(pushMathList());
+    return;
+  }
+  else if (state() == State::ParsingSqrtRadicand)
+  {
+    auto root = std::dynamic_pointer_cast<math::Root>(mlist().back());
+    enter(State::ParsingSqrtRadicandMList);
+    pushList(root->radicand());
     return;
   }
 
@@ -247,6 +261,14 @@ void MathParser::endMathList()
       endMathList();
     }
 
+    break;
+  }
+  case State::ParsingSqrtRadicandMList:
+  {
+    popList();
+    leave(State::ParsingSqrtRadicandMList);
+    leave(State::ParsingSqrtRadicand);
+    leave(State::ParsingSqrt);
     break;
   }
   default:
@@ -322,6 +344,24 @@ std::shared_ptr<MathListNode> MathParser::pushMathList()
   return ret;
 }
 
+bool MathParser::isParsingMList() const
+{
+  switch (state())
+  {
+  case State::ParsingMList:
+  case State::ParsingNucleus:
+  case State::ParsingSubscript:
+  case State::ParsingSuperscript:
+  case State::ParsingSqrtDegree:
+  case State::ParsingBoundary:
+  case State::ParsingSqrtRadicandMList:
+  case State::ParsingFraction:
+    return true;
+  default:
+    return false;
+  }
+}
+
 void MathParser::parse_mlist(const std::string& str)
 {
   enter(State::ParsingAtom);
@@ -366,12 +406,48 @@ void MathParser::parse_right(const std::string& str)
   assert(state() == State::ParsingAtom);
 }
 
-void MathParser::parse_rad(const std::string& str)
+void MathParser::parse_sqrt(const std::string& str)
 {
-  leave(State::ParsingRad);
+  if (str == "[")
+  {
+    enter(State::ParsingSqrtDegree);
+    auto root = std::make_shared<math::Root>();
+    mlist().push_back(root);
+    pushList(root->degree());
+  }
+  else
+  {
+    leave(State::ParsingSqrt);
 
-  m_builders.emplace_back(AtomBuilder(math::Atom::Rad).setNucleus(std::make_shared<TextSymbol>(str)));
-  enter(State::ParsingAtom);
+    m_builders.emplace_back(AtomBuilder(math::Atom::Rad).setNucleus(std::make_shared<TextSymbol>(str)));
+    enter(State::ParsingAtom);
+  }
+}
+
+void MathParser::parse_sqrt_degree(const std::string& str)
+{
+  if (str == "]")
+  {
+    leave(State::ParsingSqrtDegree);
+    popList();
+    enter(State::ParsingSqrtRadicand);
+  }
+  else
+  {
+    parse_mlist(str);
+  }
+}
+
+void MathParser::parse_sqrt_radicand(const std::string& str)
+{
+  AtomBuilder builder{ math::Atom::Ord };
+  builder.setNucleus(std::make_shared<TextSymbol>(str));
+
+  auto root = std::dynamic_pointer_cast<math::Root>(mlist().back());
+  root->radicand().push_back(builder.build());
+
+  leave(State::ParsingSqrtRadicand);
+  leave(State::ParsingSqrt);
 }
 
 void MathParser::cs_left()
@@ -405,7 +481,7 @@ void MathParser::cs_over()
 
 void MathParser::cs_sqrt()
 {
-  enter(State::ParsingRad);
+  enter(State::ParsingSqrt);
 }
 
 void MathParser::cs_rm()
