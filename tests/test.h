@@ -16,4 +16,9 @@ extern int test_exit_code;
 
 int run_test(void(*f)(void));
 
+int register_test(const char* name, void(*f)(void));
+int run_tests();
+
+#define TEST_CASE(name) void name(); static int test##name##id = register_test(#name, name); void name() 
+
 #endif // LIBTYPESET_TEST_H

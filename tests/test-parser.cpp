@@ -9,7 +9,7 @@
 
 #include "tex/parsing/mathparser.h"
 
-void test_parser_1()
+TEST_CASE(test_parser_1)
 {
   using namespace tex;
 
@@ -21,7 +21,7 @@ void test_parser_1()
   ASSERT(parser.output().front()->is<math::Atom>());
 }
 
-void test_parser_2()
+TEST_CASE(test_parser_2)
 {
   using namespace tex;
   using namespace parsing;
@@ -38,7 +38,7 @@ void test_parser_2()
   ASSERT(parser.output().front()->is<math::Fraction>());
 }
 
-void test_parser_3()
+TEST_CASE(test_parser_3)
 {
   using namespace tex;
   using namespace parsing;
@@ -58,7 +58,7 @@ void test_parser_3()
   ASSERT(parser.output().front()->as<math::Atom>().type() == math::Atom::Inner);
 }
 
-void test_parser_4()
+TEST_CASE(test_parser_4)
 {
   using namespace tex;
   using namespace parsing;
@@ -80,7 +80,7 @@ void test_parser_4()
   ASSERT(parser.output().front()->as<math::Atom>().superscript() != nullptr);
 }
 
-void test_parser_sqrt()
+TEST_CASE(test_parser_sqrt)
 {
   using namespace tex;
   using namespace parsing;
@@ -122,7 +122,7 @@ void test_parser_sqrt()
   }
 }
 
-void test_parser_frac()
+TEST_CASE(test_parser_frac)
 {
   using namespace tex;
   using namespace parsing;

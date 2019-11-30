@@ -11,7 +11,7 @@
 #include "tex/parsing/verticalmode.h"
 #include "tex/parsing/typesetting-machine.h"
 
-void test_machine_1()
+TEST_CASE(test_machine_1)
 {
   using namespace tex;
 
@@ -34,7 +34,7 @@ void test_machine_1()
   ASSERT(vlist.front()->isDerivedFrom<tex::HBox>());
 }
 
-void test_machine_2()
+TEST_CASE(test_machine_2)
 {
   using namespace tex;
 
@@ -77,7 +77,7 @@ void test_machine_2()
   }
 }
 
-void test_machine_3()
+TEST_CASE(test_machine_3)
 {
   using namespace tex;
 

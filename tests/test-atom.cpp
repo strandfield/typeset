@@ -6,7 +6,7 @@
 
 #include "tex/math/atom.h"
 
-void test_atom_creation()
+TEST_CASE(test_atom_creation)
 {
   using namespace tex;
 

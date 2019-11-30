@@ -6,7 +6,7 @@
 
 #include "tex/lexer.h"
 
-void test_lexer()
+TEST_CASE(test_lexer)
 {
   using namespace tex;
 
