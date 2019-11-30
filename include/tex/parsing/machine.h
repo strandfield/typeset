@@ -7,6 +7,7 @@
 
 #include "tex/parsing/inputstream.h"
 #include "tex/parsing/preprocessor.h"
+#include "tex/parsing/registers.h"
 #include "tex/lexer.h"
 #include "tex/parsing/mode.h"
 
@@ -54,6 +55,7 @@ public:
   Machine& operator=(const Machine&) = delete;
 
 private:
+  Registers m_registers;
   Memory m_memory;
   std::stack<Lexer::CatCodeTable> m_lexercatcodes;
   InputStream m_inputstream;
@@ -75,7 +77,7 @@ namespace parsing
 inline Machine::Machine()
   : m_memory{},
     m_inputstream{},
-    m_preprocessor{ &m_memory, &m_inputstream }
+    m_preprocessor{ m_registers }
 {
 
 }
@@ -109,21 +111,21 @@ inline void Machine::advance()
     m_preprocessor.write(std::move(t));
   }
 
-  RetCode rc = m_preprocessor.advance();
-
-  while (rc != RetCode::Await)
-  {
-    rc = m_preprocessor.advance();
-  }
-
   m_lexer.output().clear();
+
+  m_preprocessor.advance();
+
+  while (!m_preprocessor.input().empty())
+  {
+    m_preprocessor.advance();
+  }
 
   if (m_preprocessor.output().empty())
   {
     return;
   }
 
-  rc = m_modes.back()->advance();
+  RetCode rc = m_modes.back()->advance();
 
   while (rc == RetCode::Yield && !m_preprocessor.output().empty())
   {

@@ -27,6 +27,11 @@ inline void read(std::vector<Token>& toks, int n)
   toks.erase(toks.begin(), toks.begin() + n);
 }
 
+inline void discard(std::vector<Token>& toks, int n = 1)
+{
+  toks.erase(toks.begin(), toks.begin() + n);
+}
+
 inline const Token& peek(const std::vector<Token>& toks)
 {
   return toks.front();

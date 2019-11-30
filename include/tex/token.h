@@ -48,6 +48,16 @@ struct CharacterToken
   CharCategory category = CharCategory::Invalid;
 };
 
+inline bool operator==(const CharacterToken& lhs, const CharacterToken& rhs)
+{
+  return lhs.value == rhs.value && lhs.category == rhs.category;
+}
+
+inline bool operator!=(const CharacterToken& lhs, const CharacterToken& rhs)
+{
+  return !(lhs == rhs);
+}
+
 class Token
 {
 private:

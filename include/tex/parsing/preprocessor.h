@@ -19,9 +19,6 @@ namespace tex
 namespace parsing
 {
 
-class InputStream;
-struct Memory;
-
 class LIBTYPESET_API Macro
 {
 public:
@@ -36,6 +33,27 @@ public:
   const std::vector<Token>& parameterText() const;
   const std::vector<Token>& replacementText() const;
 
+  struct MatchResult
+  {
+    enum ResultCode
+    {
+      PartialMatch,
+      CompleteMatch,
+      NoMatch,
+    };
+
+    ResultCode result = NoMatch;
+    size_t size = 0;
+    std::array<std::vector<Token>, 9> arguments;
+
+    operator bool() const { return result == CompleteMatch; }
+  };
+
+  MatchResult match(const std::vector<Token>& text) const;
+
+  std::vector<Token> expand(const std::array<std::vector<Token>, 9>& arguments) const;
+  void expand(const std::array<std::vector<Token>, 9> & arguments, std::vector<Token>& output, std::vector<Token>::iterator output_it) const;
+
   Macro& operator=(const Macro&) = default;
   Macro& operator=(Macro&&) = default;
 
@@ -45,11 +63,50 @@ private:
   std::vector<Token> m_repl_text;
 };
 
+} // namespace parsing
+
+} // namespace tex
+
+namespace tex
+{
+
+namespace parsing
+{
+
+struct Registers;
+
+namespace preprocessor
+{
+
+struct MacroDefinitionData
+{
+  std::string csname;
+  int parameter_index = 1;
+  std::vector<Token> parameter_text;
+  int brace_nesting = 0;
+  std::vector<Token> replacement_text;
+};
+
+struct MacroExpansionData
+{
+  const Macro* def = nullptr;
+  size_t pattern_index = 0;
+  size_t current_arg_index = 0;
+  int current_arg_brace_nesting = 0;
+  std::array<std::vector<Token>, 9> arguments;
+};
+
+} // namespace preprocessor
+
 class LIBTYPESET_API Preprocessor
 {
 public:
-  explicit Preprocessor(Memory* mem = nullptr, InputStream* is = nullptr);
+  Preprocessor() = delete;
+  Preprocessor(const Preprocessor&) = delete;
+  Preprocessor(Preprocessor&&) = delete;
   ~Preprocessor() = default;
+
+  explicit Preprocessor(Registers& r);
 
   struct Definitions
   {
@@ -64,42 +121,82 @@ public:
   void write(const Token& t);
   void write(Token&& t);
 
-  RetCode advance();
+  void advance();
 
+  std::vector<Token>& input();
+  const std::vector<Token>& input() const;
   std::vector<Token>& output();
 
-  struct MatchResult
+  struct State
   {
-    enum ResultCode
+    State() = default;
+    State(const State&) = delete;
+    State(State&&) = default;
+
+    enum FrameType
     {
-      PartialMatch,
-      CompleteMatch,
-      NoMatch,
+      Idle,
+      ReadingMacro, // RM
+      ExpandingMacro, // EXPM
     };
 
-    ResultCode result = NoMatch;
-    size_t begin = 0;
-    size_t end = 0;
+    enum FrameSubType
+    {
+      FST_None = 0,
+      RM_ReadingMacroName,
+      RM_ReadingMacroParameterText,
+      RM_ReadingMacroReplacementText,
+      EXPM_MatchingMacroParameterText,
+      EXPM_ReadingDelimitedMacroArgument,
+      EXPM_ReadingUndelimitedMacroArgument,
+      EXPM_ReadingBracedDelimitedMacroArgument,
+    };
+
+    struct Frame
+    {
+      Frame(const Frame&) = delete;
+      Frame(Frame&& f);
+      ~Frame();
+
+      explicit Frame(FrameType ft);
+
+      FrameType type;
+      FrameSubType subtype;
+
+      union {
+        preprocessor::MacroExpansionData* macro_expansion;
+        preprocessor::MacroDefinitionData* macro_definition;
+      };
+    };
+
+    std::vector<Frame> frames;
   };
 
-  static MatchResult match(std::vector<Token>& input, const std::vector<Token>& pattern, Arguments& args);
+  const State& state() const;
 
   const Macro* find(const std::string& cs) const;
 
-  RetCode processControlSeq();
+  void processControlSeq();
+
+  Preprocessor& operator=(const Preprocessor&) = delete;
 
 protected:
-  RetCode readMacroDef();
+  void enter(State::FrameType s);
+  void leave();
 
-  RetCode expandMacro(const Macro& mdef, std::vector<Token>& toks, std::vector<Token>::iterator begin);
-  RetCode expandMacro(const Macro& mdef, std::vector<Token>& toks);
+  State::Frame& currentFrame();
+
+  void readMacro();
+
+  void expandMacro();
+  void updateExpandMacroState();
 
 private:
-  Memory* m_memory = nullptr;
-  InputStream* m_inputstream = nullptr;
+  Registers& m_registers;
   std::list<Definitions> m_defs;
   std::vector<Token> m_input;
   std::vector<Token> m_output;
+  State m_state;
 };
 
 } // namespace parsing
@@ -142,14 +239,6 @@ inline const std::vector<Token>& Macro::replacementText() const
   return m_repl_text;
 }
 
-inline Preprocessor::Preprocessor(Memory* mem, InputStream* is)
-  : m_memory(mem),
-  m_inputstream{is},
-  m_defs{ Definitions{} }
-{
-
-}
-
 inline void Preprocessor::beginGroup()
 {
   m_defs.push_front(Definitions{});
@@ -170,26 +259,14 @@ inline void Preprocessor::write(Token&& t)
   m_input.emplace_back(std::move(t));
 }
 
-inline RetCode Preprocessor::advance()
+inline std::vector<Token>& Preprocessor::input()
 {
-  if (m_input.empty())
-  {
-    return RetCode::Await;
-  }
+  return m_input;
+}
 
-  if (peek(m_input).isCharacterToken())
-  {
-    parsing::write(read(m_input), m_output);
-    return m_input.empty() ? RetCode::Await : RetCode::Yield;
-  }
-  else if (peek(m_input).isControlSequence())
-  {
-    return processControlSeq();
-  }
-  else
-  {
-    throw std::runtime_error{ "Illegal parameter token in token stream" };
-  }
+inline const std::vector<Token>& Preprocessor::input() const
+{
+  return m_input;
 }
 
 inline std::vector<Token>& Preprocessor::output()
@@ -197,9 +274,13 @@ inline std::vector<Token>& Preprocessor::output()
   return m_output;
 }
 
+inline const Preprocessor::State& Preprocessor::state() const
+{
+  return m_state;
+}
+
 } // namespace parsing
 
 } // namespace tex
-
 
 #endif // LIBTYPESET_PARSING_PREPROCESSOR_H
