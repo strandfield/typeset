@@ -16,7 +16,10 @@ namespace parsing
 {
 
 TypesettingMachine::TypesettingMachine(std::shared_ptr<TypesetEngine> te, const Options& opts)
-  : m_typeset_engine(te)
+  : m_memory{},
+  m_inputstream{},
+  m_preprocessor{ m_registers },
+  m_typeset_engine(te)
 {
   m_opts.push(opts);
 
@@ -25,7 +28,8 @@ TypesettingMachine::TypesettingMachine(std::shared_ptr<TypesetEngine> te, const 
 
 void TypesettingMachine::beginGroup()
 {
-  Machine::beginGroup();
+  m_preprocessor.beginGroup();
+  m_lexercatcodes.push(m_lexer.catcodes());
   Options opts = m_opts.top();
   m_opts.push(opts);
 }
@@ -33,7 +37,9 @@ void TypesettingMachine::beginGroup()
 void TypesettingMachine::endGroup()
 {
   m_opts.pop();
-  Machine::endGroup();
+  m_lexer.catcodes() = m_lexercatcodes.top();
+  m_lexercatcodes.pop();
+  m_preprocessor.endGroup();
 }
 
 TextTypesetter::TextTypesetter(std::shared_ptr<TypesetEngine> te, Font f, FontSize s)

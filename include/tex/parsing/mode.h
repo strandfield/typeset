@@ -17,22 +17,22 @@ namespace tex
 namespace parsing
 {
 
-class Machine;
+class TypesettingMachine;
 
 class LIBTYPESET_API Mode
 {
 public:
-  Mode(Machine& m);
+  Mode(TypesettingMachine& m);
   virtual ~Mode() = default;
 
-  Machine& machine() const;
+  TypesettingMachine& machine() const;
   Mode* parent() const;
   std::vector<Token>& tokens();
 
   virtual RetCode advance() = 0;
 
 private:
-  Machine& m_machine;
+  TypesettingMachine& m_machine;
   Mode* m_parent;
 };
 
@@ -46,7 +46,7 @@ namespace tex
 namespace parsing
 {
 
-inline Machine& Mode::machine() const
+inline TypesettingMachine& Mode::machine() const
 {
   return m_machine;
 }

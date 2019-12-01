@@ -27,11 +27,6 @@ HorizontalMode::HorizontalMode(TypesettingMachine& m)
   m_commands["par"] = &HorizontalMode::par_callback;
 }
 
-TypesettingMachine& HorizontalMode::machine() const
-{
-  return static_cast<TypesettingMachine&>(Mode::machine());
-}
-
 FontMetrics HorizontalMode::metrics() const
 {
   const Options& opts = machine().options();

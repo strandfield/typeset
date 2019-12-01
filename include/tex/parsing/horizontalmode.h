@@ -27,7 +27,6 @@ public:
 
   typedef RetCode(*Callback)(HorizontalMode&);
 
-  TypesettingMachine& machine() const;
   FontMetrics metrics() const;
 
   std::map<std::string, Callback>& commands();

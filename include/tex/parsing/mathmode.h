@@ -27,7 +27,6 @@ public:
 
   typedef RetCode(MathMode::*Callback)();
 
-  TypesettingMachine& machine() const;
   FontMetrics metrics() const;
 
   bool isInlineMath() const;

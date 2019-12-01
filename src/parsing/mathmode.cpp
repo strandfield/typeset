@@ -38,11 +38,6 @@ MathMode::MathMode(TypesettingMachine& m)
   read(tokens(), m_style == math::Style::T ? 1 : 2);
 }
 
-TypesettingMachine& MathMode::machine() const
-{
-  return static_cast<TypesettingMachine&>(Mode::machine());
-}
-
 FontMetrics MathMode::metrics() const
 {
   const Options& opts = machine().options();

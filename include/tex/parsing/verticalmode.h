@@ -29,7 +29,6 @@ public:
 
   typedef RetCode(*Callback)(VerticalMode&);
 
-  TypesettingMachine& machine() const;
   std::map<std::string, Callback>& commands();
 
   int pageWidth() const;

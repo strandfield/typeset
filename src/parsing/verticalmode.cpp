@@ -20,11 +20,6 @@ VerticalMode::VerticalMode(TypesettingMachine& m)
   m_callbacks.push_back(&VerticalMode::main_callback);
 }
 
-TypesettingMachine& VerticalMode::machine() const
-{
-  return static_cast<TypesettingMachine&>(Mode::machine());
-}
-
 RetCode VerticalMode::advance()
 {
   return m_callbacks.back()(*this);

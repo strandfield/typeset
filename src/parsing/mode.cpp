@@ -4,7 +4,7 @@
 
 #include "tex/parsing/mode.h"
 
-#include "tex/parsing/machine.h"
+#include "tex/parsing/typesetting-machine.h"
 
 namespace tex
 {
@@ -12,7 +12,7 @@ namespace tex
 namespace parsing
 {
 
-Mode::Mode(Machine& m)
+Mode::Mode(TypesettingMachine& m)
   : m_machine(m)
 {
   m_parent = m.modes().empty() ? nullptr : m.modes().back().get();
