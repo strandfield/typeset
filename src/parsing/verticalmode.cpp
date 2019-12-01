@@ -20,9 +20,10 @@ VerticalMode::VerticalMode(TypesettingMachine& m)
   m_callbacks.push_back(&VerticalMode::main_callback);
 }
 
-RetCode VerticalMode::advance()
+bool VerticalMode::write(Token&& t)
 {
-  return m_callbacks.back()(*this);
+  m_callbacks.back()(*this, std::move(t));
+  return done();
 }
 
 List& VerticalMode::vlist()
@@ -30,47 +31,60 @@ List& VerticalMode::vlist()
   return m_vlist;
 }
 
-RetCode VerticalMode::main_callback(VerticalMode& self)
+void VerticalMode::push(Callback cmd)
 {
-  std::vector<Token>& tokens = self.tokens();
+  m_callbacks.push_back(cmd);
+}
 
-  if (peek(tokens).isControlSequence())
+void VerticalMode::pop()
+{
+  m_callbacks.pop_back();
+}
+
+void VerticalMode::main_callback(VerticalMode& self, Token&& t)
+{
+  if (t.isControlSequence())
   {
-    auto it = self.commands().find(tokens.front().controlSequence());
+    auto it = self.commands().find(t.controlSequence());
 
     if (it == self.commands().end())
     {
       throw std::runtime_error{ "No such control sequence in Vertical mode" };
     }
 
-    return it->second(self);
+    it->second(self, std::move(t));
   }
   else
   {
-    if (peek(tokens) == CharCategory::MathShift)
+    if (t == CharCategory::MathShift)
     {
-      if (tokens.size() == 1)
-      {
-        return RetCode::Await; // need more tokens
-      }
-
-      if (peek(tokens, 1) == CharCategory::MathShift)
-      {
-        self.machine().enter<MathMode>();
-      }
-      else
-      {
-        self.machine().enter<HorizontalMode>();
-      }
-
-      return RetCode::Yield;
+      self.push(&VerticalMode::mathshift_callback);
     }
     else
     {
-      self.machine().enter<HorizontalMode>();
+      std::vector<Token>& preproc_output = self.machine().preprocessor().output();
+      preproc_output.insert(preproc_output.begin(), t);
 
-      return RetCode::Yield;
+      self.machine().enter<HorizontalMode>();
     }
+  }
+}
+
+void VerticalMode::mathshift_callback(VerticalMode& self, Token&& t)
+{
+  self.pop();
+
+  std::vector<Token>& preproc_output = self.machine().preprocessor().output();
+  preproc_output.insert(preproc_output.begin(), t);
+
+  if (t == CharCategory::MathShift)
+  {
+    preproc_output.insert(preproc_output.begin(), t);
+    self.machine().enter<MathMode>();
+  }
+  else
+  {
+    self.machine().enter<HorizontalMode>();
   }
 }
 

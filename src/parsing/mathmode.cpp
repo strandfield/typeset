@@ -35,7 +35,7 @@ MathMode::MathMode(TypesettingMachine& m)
 
   m_commands = {};
 
-  read(tokens(), m_style == math::Style::T ? 1 : 2);
+  parsing::read(machine().preprocessor().output(), m_style == math::Style::T ? 1 : 2);
 }
 
 FontMetrics MathMode::metrics() const
@@ -64,10 +64,11 @@ void MathMode::pop()
   m_callbacks.pop_back();
 }
 
-RetCode MathMode::advance()
+bool MathMode::write(Token&& t)
 {
   Callback f = m_callbacks.back();
-  return (this->*f)();
+  (this->*f)(std::move(t));
+  return done();
 }
 
 std::string& MathMode::symbuf()
@@ -104,23 +105,21 @@ void MathMode::writeOutput()
 
     hm->hlist().insert(hm->hlist().end(), hlist.begin(), hlist.end());
   }
+
+  setDone();
 }
 
-RetCode MathMode::main_callback()
+void MathMode::main_callback(Token&& t)
 {
-  std::vector<Token>& toks = tokens();
-
-  if (peek(toks).isControlSequence())
+  if (t.isControlSequence())
   {
-    auto it = commands().find(toks.front().controlSequence());
+    auto it = commands().find(t.controlSequence());
 
     if (it == commands().end())
     {
       try
       {
-        Token cstok = read(toks);
-        m_parser.writeControlSequence(MathParser::cs(cstok.controlSequence()));
-        return RetCode::Yield;
+        m_parser.writeControlSequence(MathParser::cs(t.controlSequence()));
       }
       catch (...)
       {
@@ -130,43 +129,27 @@ RetCode MathMode::main_callback()
     else
     {
       Callback f = it->second;
-      return (this->*f)();
+      (this->*f)(std::move(t));
     }
   }
   else
   {
-    if (peek(toks) == CharCategory::MathShift)
+    if (t == CharCategory::MathShift)
     {
       if (isInlineMath())
       {
-        read(toks);
         m_parser.finish();
         writeOutput();
-        return RetCode::Return;
-      }
-
-      if (toks.size() == 1)
-      {
-        return RetCode::Await; // need more tokens
-      }
-
-      if (peek(toks, 1) == CharCategory::MathShift)
-      {
-        read(toks, 2);
-        m_parser.finish();
-        writeOutput();
-        return RetCode::Return;
       }
       else
       {
-        read(toks);
-        throw std::runtime_error{ "Unexpected '$' in display math mode" };
+        m_callbacks.push_back(&MathMode::mathshift_callback);
       }
 
-      return RetCode::Yield;
+      return;
     }
 
-    CharacterToken ctok = read(toks).characterToken();
+    CharacterToken ctok = t.characterToken();
 
     if (ctok.category == CharCategory::Letter || ctok.category == CharCategory::Other)
     {
@@ -194,9 +177,18 @@ RetCode MathMode::main_callback()
     {
       m_parser.endMathList();
     }
-   
-    return RetCode::Yield;
   }
+}
+
+void MathMode::mathshift_callback(Token&& t)
+{
+  if (t != CharCategory::MathShift)
+    throw std::runtime_error{ "Unexpected single '$' in display math mode" };
+
+  m_parser.finish();
+  writeOutput();
+
+  m_callbacks.clear();
 }
 
 } // namespace parsing

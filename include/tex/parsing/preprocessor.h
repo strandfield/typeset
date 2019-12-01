@@ -7,8 +7,6 @@
 
 #include "tex/tokstream.h"
 
-#include "tex/parsing/retcode.h"
-
 #include <list>
 #include <map>
 #include <vector>
@@ -257,6 +255,9 @@ inline void Preprocessor::write(const Token& t)
 inline void Preprocessor::write(Token&& t)
 {
   m_input.emplace_back(std::move(t));
+
+  if (m_input.size() == 1)
+    advance();
 }
 
 inline std::vector<Token>& Preprocessor::input()

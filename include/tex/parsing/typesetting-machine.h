@@ -157,28 +157,28 @@ inline void TypesettingMachine::advance()
 
   m_lexer.output().clear();
 
-  m_preprocessor.advance();
-
-  while (!m_preprocessor.input().empty())
+  for (;;)
   {
-    m_preprocessor.advance();
-  }
+    while (!m_preprocessor.output().empty())
+    {
+      Token t = parsing::read(m_preprocessor.output());
 
-  if (m_preprocessor.output().empty())
-  {
-    return;
-  }
+      m_modes.back()->write(std::move(t));
 
-  RetCode rc = m_modes.back()->advance();
+      if (m_modes.back()->done())
+      {
+        m_modes.pop_back();
+      }
+    }
 
-  while (rc == RetCode::Yield && !m_preprocessor.output().empty())
-  {
-    rc = m_modes.back()->advance();
-  }
-
-  if (rc == RetCode::Return)
-  {
-    m_modes.pop_back();
+    if (!m_preprocessor.input().empty())
+    {
+      m_preprocessor.advance();
+    }
+    else
+    {
+      break;
+    }
   }
 }
 

@@ -25,7 +25,7 @@ public:
   MathMode(TypesettingMachine& m);
   ~MathMode() = default;
 
-  typedef RetCode(MathMode::*Callback)();
+  typedef void(MathMode::*Callback)(Token&&);
 
   FontMetrics metrics() const;
 
@@ -35,7 +35,7 @@ public:
   void push(Callback cmd);
   void pop();
 
-  RetCode advance() override;
+  bool write(Token&& t) override;
 
   std::string& symbuf();
 
@@ -44,7 +44,8 @@ public:
   void writeOutput();
 
   /* Callbacks */
-  RetCode main_callback();
+  void main_callback(Token&&);
+  void mathshift_callback(Token&&);
 
 private:
   math::Style m_style;

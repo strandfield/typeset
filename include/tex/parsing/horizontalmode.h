@@ -25,7 +25,7 @@ public:
   HorizontalMode(TypesettingMachine& m);
   ~HorizontalMode() = default;
 
-  typedef RetCode(*Callback)(HorizontalMode&);
+  typedef void(*Callback)(HorizontalMode&, Token&&);
 
   FontMetrics metrics() const;
 
@@ -33,7 +33,7 @@ public:
   void push(Callback cmd);
   void pop();
 
-  RetCode advance() override;
+  bool write(Token&& t) override;
 
   List& hlist();
   TextTypesetter& typesetter();
@@ -43,8 +43,9 @@ public:
   void writeOutput();
 
   /* Callbacks */
-  static RetCode main_callback(HorizontalMode&);
-  static RetCode par_callback(HorizontalMode&);
+  static void main_callback(HorizontalMode&, Token&&);
+  static void mathshift_callback(HorizontalMode&, Token&&);
+  static void par_callback(HorizontalMode&, Token&&);
 
 private:
   TextTypesetter m_typesetter;

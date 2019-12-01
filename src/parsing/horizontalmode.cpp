@@ -33,13 +33,11 @@ FontMetrics HorizontalMode::metrics() const
   return FontMetrics{ opts.font(), opts.fontSize(), machine().typesetEngine()->metrics() };
 }
 
-RetCode HorizontalMode::main_callback(HorizontalMode& self)
+void HorizontalMode::main_callback(HorizontalMode& self, Token&& t)
 {
-  std::vector<Token>& tokens = self.tokens();
-
-  if (peek(tokens).isControlSequence())
+  if (t.isControlSequence())
   {
-    auto it = self.commands().find(tokens.front().controlSequence());
+    auto it = self.commands().find(t.controlSequence());
 
     if (it == self.commands().end())
     {
@@ -52,37 +50,23 @@ RetCode HorizontalMode::main_callback(HorizontalMode& self)
       self.hlist().push_back(self.typesetter().print());
     }
 
-    return it->second(self);
+    return it->second(self, std::move(t));
   }
   else
   {
-    if (peek(tokens) == CharCategory::MathShift)
+    if (self.typesetter().ready())
     {
-      if (tokens.size() == 1)
-      {
-        return RetCode::Await; // need more tokens
-      }
-
-      if (self.typesetter().ready())
-      {
-        self.prepareTypesetter();
-        self.hlist().push_back(self.typesetter().print());
-      }
-
-      if (peek(tokens, 1) == CharCategory::MathShift)
-      {
-        self.writeOutput();
-        return RetCode::Return;
-      }
-      else
-      {
-        self.machine().enter<MathMode>();
-      }
-
-      return RetCode::Yield;
+      self.prepareTypesetter();
+      self.hlist().push_back(self.typesetter().print());
     }
 
-    CharacterToken ctok = read(tokens).characterToken();
+    if (t == CharCategory::MathShift)
+    {
+      self.push(&HorizontalMode::mathshift_callback);
+      return;
+    }
+
+    CharacterToken ctok = t.characterToken();
 
     if (ctok.category == CharCategory::Letter || ctok.category == CharCategory::Other)
     {
@@ -120,16 +104,30 @@ RetCode HorizontalMode::main_callback(HorizontalMode& self)
         self.machine().endGroup();
       }
     }
-
-    return RetCode::Yield;
   }
 }
 
-RetCode HorizontalMode::par_callback(HorizontalMode& self)
+void HorizontalMode::mathshift_callback(HorizontalMode& self, Token&& t)
+{
+  self.pop();
+
+  std::vector<Token>& preproc_output = self.machine().preprocessor().output();
+  preproc_output.insert(preproc_output.begin(), t);
+
+  if (t == CharCategory::MathShift)
+  {
+    preproc_output.insert(preproc_output.begin(), t);
+    self.writeOutput();
+  }
+  else
+  {
+    self.machine().enter<MathMode>();
+  }
+}
+
+void HorizontalMode::par_callback(HorizontalMode& self, Token&& t)
 {
   self.writeOutput();
-  parsing::read(self.tokens());
-  return RetCode::Return;
 }
 
 void HorizontalMode::push(Callback cmd)
@@ -142,9 +140,10 @@ void HorizontalMode::pop()
   m_callbacks.pop_back();
 }
 
-RetCode HorizontalMode::advance()
+bool HorizontalMode::write(Token&& t)
 {
-  return m_callbacks.back()(*this);
+  m_callbacks.back()(*this, std::move(t));
+  return done();
 }
 
 List& HorizontalMode::hlist()
@@ -168,6 +167,8 @@ void HorizontalMode::writeOutput()
   List l =p.create(hlist());
 
   vm->vlist().insert(vm->vlist().end(), l.begin(), l.end());
+
+  setDone();
 }
 
 } // namespace parsing

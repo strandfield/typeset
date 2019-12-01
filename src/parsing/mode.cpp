@@ -23,11 +23,6 @@ Mode* Mode::parent() const
   return m_parent;
 }
 
-std::vector<Token>& Mode::tokens()
-{
-  return m_machine.preprocessor().output();
-}
-
 } // namespace parsing
 
 } // namespace tex

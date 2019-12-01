@@ -27,19 +27,22 @@ public:
   VerticalMode(TypesettingMachine& m);
   ~VerticalMode() = default;
 
-  typedef RetCode(*Callback)(VerticalMode&);
+  typedef void(*Callback)(VerticalMode&, Token&&);
 
   std::map<std::string, Callback>& commands();
+  void push(Callback cmd);
+  void pop();
 
   int pageWidth() const;
   void setPageWidth(int pw);
 
-  RetCode advance() override;
+  bool write(Token&& t) override;
 
   List& vlist();
 
   /* Callbacks */
-  static RetCode main_callback(VerticalMode&);
+  static void main_callback(VerticalMode&, Token&&);
+  static void mathshift_callback(VerticalMode&, Token&&);
 
 private:
   std::vector<Callback> m_callbacks;

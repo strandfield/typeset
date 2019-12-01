@@ -7,8 +7,6 @@
 
 #include "tex/token.h"
 
-#include "tex/parsing/retcode.h"
-
 #include <vector>
 
 namespace tex
@@ -27,13 +25,18 @@ public:
 
   TypesettingMachine& machine() const;
   Mode* parent() const;
-  std::vector<Token>& tokens();
 
-  virtual RetCode advance() = 0;
+  bool done() const;
+
+  virtual bool write(Token&& t) = 0;
+
+protected:
+  void setDone();
 
 private:
   TypesettingMachine& m_machine;
   Mode* m_parent;
+  bool m_done = false;
 };
 
 } // namespace parsing
@@ -49,6 +52,16 @@ namespace parsing
 inline TypesettingMachine& Mode::machine() const
 {
   return m_machine;
+}
+
+inline bool Mode::done() const
+{
+  return m_done;
+}
+
+inline void Mode::setDone()
+{
+  m_done = true;
 }
 
 } // namespace parsing
