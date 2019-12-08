@@ -125,3 +125,19 @@ TEST_CASE(test_preprocessor_if)
   ASSERT(preproc.output() == tokenize("F"));
   preproc.output().clear();
 }
+
+TEST_CASE(test_preprocessor_csname)
+{
+  using namespace tex;
+  using namespace parsing;
+
+  Registers registers;
+  Preprocessor preproc{ registers };
+
+  write(preproc, "\\def\\foo{K}");
+
+  write(preproc, "\\csname foo\\endcsname ");
+
+  ASSERT(preproc.output() == tokenize("K"));
+  preproc.output().clear();
+}

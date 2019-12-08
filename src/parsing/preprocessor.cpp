@@ -237,6 +237,10 @@ Preprocessor::State::Frame::Frame(Frame&& f)
     branching = f.branching;
     f.branching = nullptr;
     break;
+  case FormingCS:
+    csname = f.csname;
+    f.csname = nullptr;
+    break;
   default: break;
   }
 
@@ -261,6 +265,9 @@ Preprocessor::State::Frame::Frame(Preprocessor::State::FrameType ft)
   case Branching:
     branching = new preprocessor::Branching;
     break;
+  case FormingCS:
+    csname = new preprocessor::CsName;
+    break;
   default: macro_definition = nullptr; break;
   }
 }
@@ -277,6 +284,9 @@ Preprocessor::State::Frame::~Frame()
     break;
   case Branching:
     delete branching;
+    break;
+  case FormingCS:
+    delete csname;
     break;
   default: break;
   }
@@ -304,6 +314,8 @@ void Preprocessor::advance()
     return expandMacro();
   case State::Branching:
     return branch();
+  case State::FormingCS:
+    return formCs();
   default:
   {
     if (peek(m_input).isCharacterToken())
@@ -366,6 +378,11 @@ void Preprocessor::processControlSeq()
   {
     enter(State::Branching);
     currentFrame().branching->success = m_registers.br;
+    parsing::discard(m_input);
+  }
+  else if (cs.controlSequence() == "csname")
+  {
+    enter(State::FormingCS);
     parsing::discard(m_input);
   }
   else
@@ -670,6 +687,26 @@ void Preprocessor::branch()
   if (branching.success == branching.inside_if)
   {
     branching.successful_branch.push_back(std::move(tok));
+  }
+}
+
+void Preprocessor::formCs()
+{
+  Token tok = parsing::read(m_input);
+  State::Frame& frame = currentFrame();
+  auto& csname = *(frame.csname);
+
+  if (tok.isControlSequence())
+  {
+    if (tok.controlSequence() != "endcsname")
+      throw std::runtime_error{ "Bad csname" };
+
+    m_input.insert(m_input.begin(), Token{std::move(csname.name)});
+    leave();
+  }
+  else
+  {
+    csname.name.push_back(tok.characterToken().value);
   }
 }
 

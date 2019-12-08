@@ -102,6 +102,11 @@ struct Branching
   std::vector<Token> successful_branch;
 };
 
+struct CsName
+{
+  std::string name;
+};
+
 } // namespace preprocessor
 
 class LIBTYPESET_API Preprocessor
@@ -145,6 +150,7 @@ public:
       ReadingMacro, // RM
       ExpandingMacro, // EXPM
       Branching, // IF
+      FormingCS, // CSNAME
     };
 
     enum FrameSubType
@@ -174,6 +180,7 @@ public:
         preprocessor::MacroExpansionData* macro_expansion;
         preprocessor::MacroDefinitionData* macro_definition;
         preprocessor::Branching* branching;
+        preprocessor::CsName* csname;
       };
     };
 
@@ -200,6 +207,8 @@ protected:
   void updateExpandMacroState();
 
   void branch();
+
+  void formCs();
 
 private:
   Registers& m_registers;
