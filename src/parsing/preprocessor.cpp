@@ -4,6 +4,8 @@
 
 #include "tex/parsing/preprocessor.h"
 
+#include "tex/parsing/registers.h"
+
 #include <cassert>
 #include <numeric>
 
@@ -231,6 +233,10 @@ Preprocessor::State::Frame::Frame(Frame&& f)
     macro_expansion = f.macro_expansion;
     f.macro_expansion = nullptr;
     break;
+  case Branching:
+    branching = f.branching;
+    f.branching = nullptr;
+    break;
   default: break;
   }
 
@@ -252,6 +258,9 @@ Preprocessor::State::Frame::Frame(Preprocessor::State::FrameType ft)
     subtype = EXPM_MatchingMacroParameterText;
     macro_expansion = new preprocessor::MacroExpansionData;
     break;
+  case Branching:
+    branching = new preprocessor::Branching;
+    break;
   default: macro_definition = nullptr; break;
   }
 }
@@ -265,6 +274,9 @@ Preprocessor::State::Frame::~Frame()
     break;
   case ExpandingMacro:
     delete macro_expansion;
+    break;
+  case Branching:
+    delete branching;
     break;
   default: break;
   }
@@ -290,6 +302,8 @@ void Preprocessor::advance()
     return readMacro();
   case State::ExpandingMacro:
     return expandMacro();
+  case State::Branching:
+    return branch();
   default:
   {
     if (peek(m_input).isCharacterToken())
@@ -346,6 +360,12 @@ void Preprocessor::processControlSeq()
   if (cs.controlSequence() == "def")
   {
     enter(State::ReadingMacro);
+    parsing::discard(m_input);
+  }
+  else if (cs.controlSequence() == "ifbr")
+  {
+    enter(State::Branching);
+    currentFrame().branching->success = m_registers.br;
     parsing::discard(m_input);
   }
   else
@@ -596,6 +616,60 @@ void Preprocessor::expandMacro()
     // Done!
     macro_expansion.def->expand(macro_expansion.arguments, m_input, m_input.begin());
     leave();
+  }
+}
+
+inline static bool is_if(const Token& tok)
+{
+  return tok.isControlSequence() && tok.controlSequence().length() >= 2
+    && tok.controlSequence().at(0) == 'i' && tok.controlSequence().at(1) == 'f';
+}
+
+inline static bool is_else(const Token& tok)
+{
+  return tok.isControlSequence() && tok.controlSequence() == "else";
+}
+
+inline static bool is_fi(const Token& tok)
+{
+  return tok.isControlSequence() && tok.controlSequence() == "fi";
+}
+
+void Preprocessor::branch()
+{
+  Token tok = parsing::read(m_input);
+  State::Frame& frame = currentFrame();
+  auto& branching = *(frame.branching);
+
+  if (is_if(tok))
+  {
+    branching.if_nesting += 1;
+  }
+  else if (is_else(tok))
+  {
+    if (branching.if_nesting == 0)
+    {
+      branching.inside_if = false;
+      return;
+    }
+  }
+  else if (is_fi(tok))
+  {
+    if (branching.if_nesting == 0)
+    {
+      m_input.insert(m_input.begin(), branching.successful_branch.begin(), branching.successful_branch.end());
+      leave();
+      return;
+    }
+    else
+    {
+      branching.if_nesting -= 1;
+    }
+  }
+
+  if (branching.success == branching.inside_if)
+  {
+    branching.successful_branch.push_back(std::move(tok));
   }
 }
 

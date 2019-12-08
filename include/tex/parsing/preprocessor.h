@@ -94,6 +94,14 @@ struct MacroExpansionData
   std::array<std::vector<Token>, 9> arguments;
 };
 
+struct Branching
+{
+  bool success = false;
+  bool inside_if = true;
+  size_t if_nesting = 0;
+  std::vector<Token> successful_branch;
+};
+
 } // namespace preprocessor
 
 class LIBTYPESET_API Preprocessor
@@ -136,6 +144,7 @@ public:
       Idle,
       ReadingMacro, // RM
       ExpandingMacro, // EXPM
+      Branching, // IF
     };
 
     enum FrameSubType
@@ -164,6 +173,7 @@ public:
       union {
         preprocessor::MacroExpansionData* macro_expansion;
         preprocessor::MacroDefinitionData* macro_definition;
+        preprocessor::Branching* branching;
       };
     };
 
@@ -188,6 +198,8 @@ protected:
 
   void expandMacro();
   void updateExpandMacroState();
+
+  void branch();
 
 private:
   Registers& m_registers;

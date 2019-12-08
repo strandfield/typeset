@@ -54,7 +54,20 @@ TEST_CASE(test_macro)
 
 }
 
-TEST_CASE(test_preprocessor)
+void write(tex::parsing::Preprocessor& preproc, const std::string& str)
+{
+  for (const auto& t : tokenize(str))
+  {
+    preproc.write(t);
+  }
+
+  while (!preproc.input().empty())
+  {
+    preproc.advance();
+  }
+}
+
+TEST_CASE(test_preprocessor_macro)
 {
   using namespace tex;
   using namespace parsing;
@@ -87,4 +100,28 @@ TEST_CASE(test_preprocessor)
   }
 
   ASSERT(preproc.output() == tokenize("Statement: Macros are great"));
+}
+
+TEST_CASE(test_preprocessor_if)
+{
+  using namespace tex;
+  using namespace parsing;
+
+  Registers registers;
+  Preprocessor preproc{ registers };
+
+  registers.br = true;
+
+  write(preproc, "\\ifbr T\\else F\\fi ");
+  ASSERT(preproc.output() == tokenize("T"));
+  preproc.output().clear();
+
+  registers.br = false;
+  write(preproc, "\\ifbr T\\else F\\fi ");
+  ASSERT(preproc.output() == tokenize("F"));
+  preproc.output().clear();
+
+  write(preproc, "\\ifbr \\ifbr A \\fi \\else F\\fi ");
+  ASSERT(preproc.output() == tokenize("F"));
+  preproc.output().clear();
 }
