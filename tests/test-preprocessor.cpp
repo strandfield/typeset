@@ -141,3 +141,34 @@ TEST_CASE(test_preprocessor_csname)
   ASSERT(preproc.output() == tokenize("K"));
   preproc.output().clear();
 }
+
+TEST_CASE(test_preprocessor_expandafter)
+{
+  using namespace tex;
+  using namespace parsing;
+
+  Registers registers;
+  Preprocessor preproc{ registers };
+
+  write(preproc, "\\expandafter\\def\\csname 123\\endcsname{H}");
+  ASSERT(preproc.find("123") != nullptr);
+
+  write(preproc, "\\csname 123\\endcsname ");
+  ASSERT(preproc.output() == tokenize("H"));
+  preproc.output().clear();
+
+  write(preproc, "\\def\\a[#1]{#1}");
+  ASSERT(preproc.find("a") != nullptr);
+  write(preproc, "\\def\\args{[FOO]}");
+  ASSERT(preproc.find("args") != nullptr);
+  write(preproc, "\\expandafter\\a\\args ");
+  ASSERT(preproc.output() == tokenize("FOO"));
+  preproc.output().clear();
+
+  write(preproc, "\\def\\foo{F}\\def\\bar{B}\\def\\qux{Q}");
+  ASSERT(preproc.find("foo") != nullptr && preproc.find("bar") != nullptr && preproc.find("qux") != nullptr);
+
+  write(preproc, "\\expandafter\\foo\\expandafter\\bar\\qux ");
+  ASSERT(preproc.output() == tokenize("FBQ"));
+  preproc.output().clear();
+}

@@ -241,6 +241,10 @@ Preprocessor::State::Frame::Frame(Frame&& f)
     csname = f.csname;
     f.csname = nullptr;
     break;
+  case ExpandingAfter:
+    expandafter = f.expandafter;
+    f.expandafter = nullptr;
+    break;
   default: break;
   }
 
@@ -268,6 +272,10 @@ Preprocessor::State::Frame::Frame(Preprocessor::State::FrameType ft)
   case FormingCS:
     csname = new preprocessor::CsName;
     break;
+  case ExpandingAfter:
+    expandafter = new preprocessor::ExpandAfter;
+    subtype = EXPAFTER_ReadingCs;
+    break;
   default: macro_definition = nullptr; break;
   }
 }
@@ -287,6 +295,9 @@ Preprocessor::State::Frame::~Frame()
     break;
   case FormingCS:
     delete csname;
+    break;
+  case ExpandingAfter:
+    delete expandafter;
     break;
   default: break;
   }
@@ -316,6 +327,8 @@ void Preprocessor::advance()
     return branch();
   case State::FormingCS:
     return formCs();
+  case State::ExpandingAfter:
+    return expandafter();
   default:
   {
     if (peek(m_input).isCharacterToken())
@@ -343,6 +356,14 @@ void Preprocessor::enter(State::FrameType s)
 void Preprocessor::leave()
 {
   m_state.frames.pop_back();
+
+  if (m_state.frames.back().type == State::ExpandingAfter
+    && m_state.frames.back().subtype == State::EXPAFTER_InsertingCs)
+  {
+    m_input.insert(m_input.begin(), m_state.frames.back().expandafter->cs);
+
+    leave();
+  }
 }
 
 Preprocessor::State::Frame& Preprocessor::currentFrame()
@@ -367,44 +388,47 @@ const Macro* Preprocessor::find(const std::string& cs) const
 
 void Preprocessor::processControlSeq()
 {
-  Token cs = peek(m_input);
+  Token cs = read(m_input);
+  processControlSeq(cs.controlSequence());
+}
 
-  if (cs.controlSequence() == "def")
+void Preprocessor::processControlSeq(const std::string& cs)
+{
+  if (cs == "def")
   {
     enter(State::ReadingMacro);
-    parsing::discard(m_input);
   }
-  else if (cs.controlSequence() == "ifbr")
+  else if (cs == "ifbr")
   {
     enter(State::Branching);
     currentFrame().branching->success = m_registers.br;
-    parsing::discard(m_input);
   }
-  else if (cs.controlSequence() == "csname")
+  else if (cs == "csname")
   {
     enter(State::FormingCS);
-    parsing::discard(m_input);
+  }
+  else if (cs == "expandafter")
+  {
+    enter(State::ExpandingAfter);
   }
   else
   {
-    const Macro* m = find(cs.controlSequence());
+    const Macro* m = find(cs);
 
     if (m == nullptr)
     {
-      parsing::write(parsing::read(m_input), m_output);
+      parsing::write(Token{ cs }, m_output);
     }
     else
     {
       if (m->parameterText().empty())
       {
-        parsing::discard(m_input);
         m->expand({}, m_input, m_input.begin());
       }
       else
       {
         enter(State::ExpandingMacro);
         currentFrame().macro_expansion->def = m;
-        parsing::discard(m_input);
         updateExpandMacroState();
       }
     }
@@ -707,6 +731,45 @@ void Preprocessor::formCs()
   else
   {
     csname.name.push_back(tok.characterToken().value);
+  }
+}
+
+void Preprocessor::expandafter()
+{
+  const size_t framecount = state().frames.size();
+  auto& data = *(currentFrame().expandafter);
+
+  switch (currentFrame().subtype)
+  {
+  case State::EXPAFTER_ReadingCs:
+  {
+    Token tok = parsing::read(m_input);
+
+    if (!tok.isControlSequence())
+      throw std::runtime_error{ "Expected cs name after expandafter" };
+
+    data.cs = std::move(tok);
+    currentFrame().subtype = State::EXPAFTER_ExpandingCs;
+  }
+  break;
+  case State::EXPAFTER_ExpandingCs:
+  {
+    Token tok = parsing::read(m_input);
+
+    if (!tok.isControlSequence())
+      throw std::runtime_error{ "Expected cs name after expandafter" };
+
+    currentFrame().subtype = State::EXPAFTER_InsertingCs;
+
+    processControlSeq(tok.controlSequence());
+
+    if (state().frames.size() == framecount)
+    {
+      enter(State::Idle);
+      leave();
+    }
+  }
+  break;
   }
 }
 

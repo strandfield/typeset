@@ -107,6 +107,11 @@ struct CsName
   std::string name;
 };
 
+struct ExpandAfter
+{
+  Token cs;
+};
+
 } // namespace preprocessor
 
 class LIBTYPESET_API Preprocessor
@@ -150,19 +155,26 @@ public:
       ReadingMacro, // RM
       ExpandingMacro, // EXPM
       Branching, // IF
-      FormingCS, // CSNAME
+      FormingCS, // CSNAME,
+      ExpandingAfter, // EXPAFTER
     };
 
     enum FrameSubType
     {
       FST_None = 0,
+      /* Reading Macro */
       RM_ReadingMacroName,
       RM_ReadingMacroParameterText,
       RM_ReadingMacroReplacementText,
+      /* Expanding Macro */
       EXPM_MatchingMacroParameterText,
       EXPM_ReadingDelimitedMacroArgument,
       EXPM_ReadingUndelimitedMacroArgument,
       EXPM_ReadingBracedDelimitedMacroArgument,
+      /* expandafter */
+      EXPAFTER_ReadingCs,
+      EXPAFTER_ExpandingCs,
+      EXPAFTER_InsertingCs,
     };
 
     struct Frame
@@ -181,6 +193,7 @@ public:
         preprocessor::MacroDefinitionData* macro_definition;
         preprocessor::Branching* branching;
         preprocessor::CsName* csname;
+        preprocessor::ExpandAfter* expandafter;
       };
     };
 
@@ -192,6 +205,7 @@ public:
   const Macro* find(const std::string& cs) const;
 
   void processControlSeq();
+  void processControlSeq(const std::string& cs);
 
   Preprocessor& operator=(const Preprocessor&) = delete;
 
@@ -209,6 +223,8 @@ protected:
   void branch();
 
   void formCs();
+  
+  void expandafter();
 
 private:
   Registers& m_registers;
