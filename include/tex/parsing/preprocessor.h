@@ -203,6 +203,7 @@ public:
   const State& state() const;
 
   const Macro* find(const std::string& cs) const;
+  void define(Macro m);
 
   void processControlSeq();
   void processControlSeq(const std::string& cs);

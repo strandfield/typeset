@@ -386,6 +386,11 @@ const Macro* Preprocessor::find(const std::string& cs) const
   return nullptr;
 }
 
+void Preprocessor::define(Macro m)
+{
+  m_defs.front().macros[m.controlSequence()] = std::move(m);
+}
+
 void Preprocessor::processControlSeq()
 {
   Token cs = read(m_input);
