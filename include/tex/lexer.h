@@ -24,7 +24,7 @@ enum class LexerState {
   StateCOM, // Comments
 };
 
-class Lexer
+class LIBTYPESET_API Lexer
 {
 public:
 

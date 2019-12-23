@@ -58,7 +58,7 @@ inline bool operator!=(const CharacterToken& lhs, const CharacterToken& rhs)
   return !(lhs == rhs);
 }
 
-class Token
+class LIBTYPESET_API Token
 {
 private:
 
