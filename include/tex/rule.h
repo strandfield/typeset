@@ -14,15 +14,6 @@ class LIBTYPESET_API Rule final : public Box
 {
 public:
   Rule(float w, float h, float d);
-
-  float height() const override;
-  float depth() const override;
-  float width() const override;
-
-private:
-  float mWidth;
-  float mHeight;
-  float mDepth;
 };
 
 LIBTYPESET_API std::shared_ptr<Rule> hrule(float width, float height, float depth = 0.f);

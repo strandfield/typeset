@@ -8,26 +8,9 @@ namespace tex
 {
 
 Rule::Rule(float w, float h, float d)
-  : mWidth(w)
-  , mHeight(h)
-  , mDepth(d)
+  : Box(h, d, w)
 {
 
-}
-
-float Rule::height() const
-{
-  return mHeight;
-}
-
-float Rule::depth() const
-{
-  return mDepth;
-}
-
-float Rule::width() const
-{
-  return mWidth;
 }
 
 std::shared_ptr<Rule> hrule(float width, float height, float depth)

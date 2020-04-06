@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -11,9 +11,6 @@ namespace tex
 
 ListBox::ListBox(List && list)
   : mList(std::move(list))
-  , mWidth(0)
-  , mHeight(0)
-  , mDepth(0)
   , mShiftAmount(0)
   , mGlueSettings{0.f, GlueOrder::Normal}
 {

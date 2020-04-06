@@ -11,24 +11,18 @@ class TestBox : public tex::Box
 {
 public:
   std::string m_text;
-  tex::BoxMetrics m_metrics;
 
   explicit TestBox(const tex::BoxMetrics& m)
-    : m_metrics(m)
+    : Box(m)
   {
 
   }
 
   TestBox(std::string str, const tex::BoxMetrics& m)
-    : m_text(str), m_metrics(m)
+    : Box(m), m_text(str)
   {
 
   }
-
-
-  float height() const override { return m_metrics.height; }
-  float depth() const override { return m_metrics.depth; }
-  float width() const override { return m_metrics.width; }
 };
 
 class TestFontMetricsProvider : public tex::FontMetricsProdiver

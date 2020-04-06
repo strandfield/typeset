@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -12,33 +12,16 @@ StringBox::StringBox(const QString & t, const QFont & f)
 {
   QFontMetricsF metrics{ f };
   const QRectF rect = metrics.tightBoundingRect(text);
-  width_ = rect.width();
-  height_ = -rect.top();
-  depth_ = rect.bottom();
+
+  reset(-rect.top(), rect.bottom(), rect.width());
 }
 
 StringBox::StringBox(const QString & t, const QFont & f, tex::BoxMetrics metrics)
-  : text(t)
-  , font(f)
+  : tex::Box(metrics), 
+    text(t),
+    font(f)
 {
-  width_ = metrics.width;
-  height_ = metrics.height;
-  depth_ = metrics.depth;
-}
 
-float StringBox::height() const
-{
-  return height_;
-}
-
-float StringBox::depth() const
-{
-  return depth_;
-}
-
-float StringBox::width() const
-{
-  return width_;
 }
 
 std::shared_ptr<StringBox> stringbox(const QString & text, const QFont & f)

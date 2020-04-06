@@ -13,17 +13,34 @@ namespace tex
 
 class LIBTYPESET_API Box : public Node
 {
-public:
-  virtual float height() const = 0;
-  virtual float depth() const = 0;
-  virtual float width() const = 0;
+private:
+  float m_height;
+  float m_depth;
+  float m_width;
 
-  inline float totalHeight() const
+public:
+
+  Box();
+
+  explicit Box(const BoxMetrics& metrics);
+  Box(float h, float d, float w);
+
+  float height() const { return m_height; }
+  float depth() const { return m_depth; }
+  float width() const { return m_width; }
+
+  float totalHeight() const
   {
     return height() + depth();
   }
 
-  inline BoxMetrics metrics() const { return BoxMetrics{ height(), depth(), width() }; }
+  BoxMetrics metrics() const { return BoxMetrics{ height(), depth(), width() }; }
+
+protected:
+  void setHeight(float h);
+  void setDepth(float d);
+  void setWidth(float w);
+  void reset(float h, float d, float w);
 };
 
 } // namespace tex

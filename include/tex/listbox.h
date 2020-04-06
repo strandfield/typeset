@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -28,10 +28,6 @@ class LIBTYPESET_API ListBox : public Box
 public:
   ~ListBox() = default;
 
-  inline float height() const override { return mHeight; }
-  inline float depth() const override { return mDepth; }
-  inline float width() const override { return mWidth; }
-
   inline float shiftAmount() const { return mShiftAmount; }
   inline void setShiftAmount(float sa) { mShiftAmount = sa; }
   inline void shift(float amount) { mShiftAmount += amount; }
@@ -47,18 +43,12 @@ protected:
   ListBox(List && list);
 
   inline List & mutableList() { return mList; }
-  inline void setHeight(float h) { mHeight = h; }
-  inline void setDepth(float d) { mDepth = d; }
-  inline void setWidth(float w) { mWidth = w; }
 
   void setGlue(float ratio, GlueOrder order);
   float setGlue(float x, float desired, const GlueShrink & shrink, const GlueStretch & stretch);
 
 private:
   List mList;
-  float mWidth;
-  float mHeight;
-  float mDepth;
   float mShiftAmount;
   GlueSettings mGlueSettings;
 };
