@@ -47,30 +47,6 @@ inline void write(Token&& tok, std::vector<Token>& out)
   out.push_back(std::move(tok));
 }
 
-inline void replace(std::vector<Token>& toks, std::vector<Token>::iterator begin, std::vector<Token>::iterator end, 
-  std::vector<Token>::const_iterator repl_begin, std::vector<Token>::const_iterator repl_end)
-{
-  const size_t num = std::distance(begin, end);
-  const size_t repl_num = std::distance(repl_begin, repl_end);
-
-  if (repl_num <= num)
-  {
-    std::move(repl_begin, repl_end, begin);
-    toks.erase(begin + (num - repl_num), end);
-  }
-  else
-  {
-    auto it = toks.erase(begin, end);
-    toks.insert(it, repl_begin, repl_end);
-  }
-}
-
-inline void replace(std::vector<Token>& toks, std::vector<Token>::iterator begin, std::vector<Token>::iterator end,
-  const std::vector<Token>& repl)
-{
-  replace(toks, begin, end, repl.begin(), repl.end());
-}
-
 } // namespace parsing
 
 } // namespace tex
