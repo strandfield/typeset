@@ -92,12 +92,24 @@ public:
     TEXTSTYLE,
     SCRIPTSTYLE,
     SCRIPTSCRIPTSTYLE,
+    /* Symbols */
+    BULLET,
+    CAP,
+    CDOT,
+    CIRC,
+    CUP,
+    SQCAP,
+    SQCUP,
+    TIMES,
   };
 
   static const std::map<std::string, CS>& csmap();
   static CS cs(const std::string& name);
 
   void writeControlSequence(CS csname);
+
+  // @TODO: maybe not that good, should be protected maybe 
+  void writeSymbol(Character c);
 
   void writeSymbol(const std::string& str);  
   void writeBox(const std::shared_ptr<tex::Box>& box);

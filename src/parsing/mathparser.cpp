@@ -12,6 +12,8 @@
 #include "tex/math/root.h"
 #include "tex/math/stylechange.h"
 
+#include "tex/mathchars.h"
+
 #include <cassert>
 #include <stdexcept>
 
@@ -72,6 +74,15 @@ const std::map<std::string, MathParser::CS>& MathParser::csmap()
     {"textstyle", CS::TEXTSTYLE},
     {"scriptstyle", CS::SCRIPTSTYLE},
     {"scriptscriptstyle", CS::SCRIPTSCRIPTSTYLE},
+    /* Symbols */
+    {"bullet", CS::BULLET},
+    {"cap", CS::CAP},
+    {"cdot", CS::CDOT},
+    {"circ", CS::CIRC},
+    {"cup", CS::CUP},
+    {"sqcap", CS::SQCAP},
+    {"sqcup", CS::SQCUP},
+    {"times", CS::TIMES},
   };
 
   return map;
@@ -114,12 +125,36 @@ void MathParser::writeControlSequence(CS csname)
     return cs_scriptstyle();
   case CS::SCRIPTSCRIPTSTYLE:
     return cs_scriptscriptstyle();
+    /* Symbols */
+  case CS::BULLET:
+    return writeSymbol(mathchars::BULLET);
+  case CS::CAP:
+    return writeSymbol(mathchars::CAP);
+  case CS::CDOT:
+    return writeSymbol(mathchars::CDOT);
+  case CS::CIRC:
+    return writeSymbol(mathchars::CIRC);
+  case CS::CUP:
+    return writeSymbol(mathchars::CUP);
+  case CS::SQCAP:
+    return writeSymbol(mathchars::SQCAP);
+  case CS::SQCUP:
+    return writeSymbol(mathchars::SQCUP);
+  case CS::TIMES:
+    return writeSymbol(mathchars::TIMES);
   }
 }
 
 MathList& MathParser::mlist()
 {
   return m_lists.empty() ? m_mlist : *m_lists.back();
+}
+
+void MathParser::writeSymbol(Character c)
+{
+  // @TODO: decide if the std::string overload should be removed
+  Utf8Char u8c{ c };
+  writeSymbol(std::string(u8c.data()));
 }
 
 void MathParser::writeSymbol(const std::string& str)
