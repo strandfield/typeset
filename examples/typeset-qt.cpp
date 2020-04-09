@@ -47,6 +47,41 @@ QtFontMetricsProdiver::QtFontMetricsProdiver(const QtFontTable & fonts)
       mMetrics[i][j] = QFontMetricsF{ fonts[i][j] };
     }
   }
+
+  for (size_t i(0); i < 4; ++i)
+  {
+    const QFontMetricsF& m = info(tex::Font(i), tex::FontSize::Normal);
+    auto& font_dimen = mFontDimen[i];
+
+    font_dimen.slant_per_pt = 0.f;
+    font_dimen.interword_space = m.width(' ');
+    font_dimen.interword_stretch = 0.25f * font_dimen.interword_space;
+    font_dimen.interword_shrink = 0.1f * font_dimen.interword_space;
+    font_dimen.extra_space = font_dimen.interword_stretch;
+    font_dimen.x_height = -m.boundingRect(QChar('x')).top();
+    font_dimen.quad = m.width(QChar('m'));
+    font_dimen.num1 = font_dimen.x_height * 0.5f;
+    font_dimen.num2 = font_dimen.x_height / 3.f;
+    font_dimen.num3 = font_dimen.x_height / 4.f;
+    font_dimen.denom1 = font_dimen.x_height / 3.f;
+    font_dimen.denom2 = font_dimen.x_height / 4.f;
+    font_dimen.sup1 = font_dimen.quad / 4.f;
+    font_dimen.sup2 = font_dimen.quad / 5.f;
+    font_dimen.sup3 = font_dimen.quad / 6.f;
+    font_dimen.sub1 = font_dimen.quad / 4.f;
+    font_dimen.sub2 = font_dimen.quad / 5.f;
+    font_dimen.sup_drop = font_dimen.x_height;
+    font_dimen.sub_drop = font_dimen.x_height;
+    font_dimen.delim1 = m.boundingRect(QChar('(')).height();
+    font_dimen.delim2 = font_dimen.delim1 * 1.1f;
+    font_dimen.axis_height = font_dimen.x_height / 2.f;
+    font_dimen.default_rule_thickness = 2.f;
+    font_dimen.big_op_spacing1 = font_dimen.x_height / 2.f;
+    font_dimen.big_op_spacing2 = font_dimen.x_height / 2.f;
+    font_dimen.big_op_spacing3 = font_dimen.x_height * 0.75f;
+    font_dimen.big_op_spacing4 = font_dimen.x_height * 0.5f + m.height();
+    font_dimen.big_op_spacing5 = font_dimen.x_height * 0.25f;
+  }
 }
 
 tex::BoxMetrics QtFontMetricsProdiver::metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size)
@@ -67,168 +102,13 @@ float QtFontMetricsProdiver::italicCorrection(const std::shared_ptr<tex::Symbol>
   return 0;
 }
 
-float QtFontMetricsProdiver::slantPerPt(tex::Font font)
+const tex::FontDimen& QtFontMetricsProdiver::fontdimen(tex::Font f)
 {
-  return 0.f;
+  return mFontDimen[f.id()];
 }
 
-float QtFontMetricsProdiver::interwordSpace(tex::Font font)
-{
-  return info(font, tex::FontSize::Normal).width(' ');
-}
 
-float QtFontMetricsProdiver::interwordStretch(tex::Font font)
-{
-  return 0.25f * interwordSpace(font);
-}
 
-float QtFontMetricsProdiver::interwordShrink(tex::Font font)
-{
-  return 0.1f * interwordSpace(font);
-}
-
-float QtFontMetricsProdiver::extraSpace(tex::Font font)
-{
-  return interwordStretch(font);
-}
-
-float QtFontMetricsProdiver::xHeight(tex::FontSize size)
-{
-  const float result = -info(tex::Font::MathRoman, size).boundingRect(QChar('x')).top();
-  return result;
-}
-
-float QtFontMetricsProdiver::quad(tex::FontSize size)
-{
-  const float result = info(tex::Font::MathRoman, size).width(QChar('M'));
-  return result;
-}
-
-float QtFontMetricsProdiver::num1(tex::FontSize size)
-{
-  float result = xHeight(size) / 2.f;
-  return result;
-}
-
-float QtFontMetricsProdiver::num2(tex::FontSize size)
-{
-  float result = xHeight(size) / 3.f;
-  return result;
-}
-
-float QtFontMetricsProdiver::num3(tex::FontSize size)
-{
-  float result = xHeight(size) / 4.f;
-  return result;
-}
-
-float QtFontMetricsProdiver::denom1(tex::FontSize size)
-{
-  float result = xHeight(size) / 3.f;
-  return result;
-}
-
-float QtFontMetricsProdiver::denom2(tex::FontSize size)
-{
-  float result = xHeight(size) / 4.f;
-  return result;
-}
-
-float QtFontMetricsProdiver::sup1(tex::FontSize size)
-{
-  float result = quad(size) / 4.f;
-  return result;
-}
-
-float QtFontMetricsProdiver::sup2(tex::FontSize size)
-{
-  float result = quad(size) / 5.f;
-  return result;
-}
-
-float QtFontMetricsProdiver::sup3(tex::FontSize size)
-{
-  float result = quad(size) / 6.f;
-  return result;
-}
-
-float QtFontMetricsProdiver::sub1(tex::FontSize size)
-{
-  float result = quad(size) / 4.f;
-  return result;
-}
-
-float QtFontMetricsProdiver::sub2(tex::FontSize size)
-{
-  float result = quad(size) / 5.f;
-  return result;
-}
-
-float QtFontMetricsProdiver::supDrop(tex::FontSize size)
-{
-  float result = xHeight(size);
-  return result;
-}
-
-float QtFontMetricsProdiver::subDrop(tex::FontSize size)
-{
-  float result = xHeight(size);
-  return result;
-}
-
-float QtFontMetricsProdiver::delim1(tex::FontSize size)
-{
-  const auto rect = info(tex::Font::MathRoman, size).boundingRect(QChar('('));
-  return rect.height();
-}
-
-float QtFontMetricsProdiver::delim2(tex::FontSize size)
-{
-  const auto rect = info(tex::Font::MathRoman, size).boundingRect(QChar('('));
-  float result = rect.height() * 1.1f;
-  return result;
-}
-
-float QtFontMetricsProdiver::axisHeight(tex::FontSize size)
-{
-  float result = xHeight(size) / 2.f;
-  return result;
-}
-
-float QtFontMetricsProdiver::defaultRuleThickness()
-{
-  return 2.f;
-}
-
-float QtFontMetricsProdiver::bigOpSpacing1()
-{
-  float result = xHeight(tex::FontSize::Normal) / 2.f;
-  return result;
-}
-
-float QtFontMetricsProdiver::bigOpSpacing2()
-{
-  float result = xHeight(tex::FontSize::Normal) / 2.f;
-  return result;
-}
-
-float QtFontMetricsProdiver::bigOpSpacing3()
-{
-  float result = xHeight(tex::FontSize::Normal) * 0.75f;
-  return result;
-}
-
-float QtFontMetricsProdiver::bigOpSpacing4()
-{
-  float result = xHeight(tex::FontSize::Normal) * 0.5f + info(tex::Font::MathRoman, tex::FontSize::Normal).height();
-  return result;
-}
-
-float QtFontMetricsProdiver::bigOpSpacing5()
-{
-  float result = xHeight(tex::FontSize::Normal) * 0.25f;
-  return result;
-}
 
 const QFontMetricsF & QtFontMetricsProdiver::info(tex::Font f, tex::FontSize s) const
 {

@@ -27,40 +27,17 @@ public:
 
 class TestFontMetricsProvider : public tex::FontMetricsProdiver
 {
+private:
+  tex::FontDimen m_fontdimen;
+
 public:
+
+  TestFontMetricsProvider();
+
   tex::BoxMetrics metrics(const std::shared_ptr<tex::Symbol>& symbol, tex::Font font, tex::FontSize size) override;
   float italicCorrection(const std::shared_ptr<tex::Symbol>& symbol, tex::Font font, tex::FontSize size) override;
 
-  float slantPerPt(tex::Font font) override;
-  float interwordSpace(tex::Font font) override;
-  float interwordStretch(tex::Font font) override;
-  float interwordShrink(tex::Font font) override;
-  float extraSpace(tex::Font font) override;
-
-  float xHeight(tex::FontSize size) override;
-  float quad(tex::FontSize size) override;
-  float num1(tex::FontSize size) override;
-  float num2(tex::FontSize size) override;
-  float num3(tex::FontSize size) override;
-  float denom1(tex::FontSize size) override;
-  float denom2(tex::FontSize size) override;
-  float sup1(tex::FontSize size) override;
-  float sup2(tex::FontSize size) override;
-  float sup3(tex::FontSize size) override;
-  float sub1(tex::FontSize size) override;
-  float sub2(tex::FontSize size) override;
-  float supDrop(tex::FontSize size) override;
-  float subDrop(tex::FontSize size) override;
-  float delim1(tex::FontSize size) override;
-  float delim2(tex::FontSize size) override;
-  float axisHeight(tex::FontSize size) override;
-
-  float defaultRuleThickness() override;
-  float bigOpSpacing1() override;
-  float bigOpSpacing2() override;
-  float bigOpSpacing3() override;
-  float bigOpSpacing4() override;
-  float bigOpSpacing5() override;
+  const tex::FontDimen& fontdimen(tex::Font f) override;
 };
 
 class TestTypesetEngine : public tex::TypesetEngine

@@ -25,145 +25,150 @@ float FontMetrics::italicCorrection(const std::shared_ptr<tex::Symbol> & symbol)
   return metricsProvider()->italicCorrection(symbol, font(), fontSize());
 }
 
+const FontDimen& FontMetrics::fontdimen() const
+{
+  return metricsProvider()->fontdimen(font());
+}
+
 float FontMetrics::slantPerPt() const
 {
-  return metricsProvider()->slantPerPt(font());
+  return fontdimen().slant_per_pt;
 }
 
 float FontMetrics::interwordSpace() const
 {
-  return metricsProvider()->interwordSpace(font());
+  return fontdimen().interword_space;
 }
 
 float FontMetrics::interwordStretch() const
 {
-  return metricsProvider()->interwordStretch(font());
+  return fontdimen().interword_stretch;
 }
 
 float FontMetrics::interwordShrink() const
 {
-  return metricsProvider()->interwordShrink(font());
+  return fontdimen().interword_shrink;
 }
 
 float FontMetrics::extraSpace() const
 {
-  return metricsProvider()->extraSpace(font());
+  return fontdimen().extra_space;
 }
 
 float FontMetrics::xHeight() const
 {
-  return metricsProvider()->xHeight(fontSize());
+  return fontdimen().x_height;
 }
 
 float FontMetrics::quad() const
 {
-  return metricsProvider()->quad(fontSize());
+  return fontdimen().quad;
 }
 
 float FontMetrics::num1() const
 {
-  return metricsProvider()->num1(fontSize());
+  return fontdimen().num1;
 }
 
 float FontMetrics::num2() const
 {
-  return metricsProvider()->num2(fontSize());
+  return fontdimen().num2;
 }
 
 float FontMetrics::num3() const
 {
-  return metricsProvider()->num3(fontSize());
+  return fontdimen().num3;
 }
 
 float FontMetrics::denom1() const
 {
-  return metricsProvider()->denom1(fontSize());
+  return fontdimen().denom1;
 }
 
 float FontMetrics::denom2() const
 {
-  return metricsProvider()->denom2(fontSize());
+  return fontdimen().denom2;
 }
 
 float FontMetrics::sup1() const
 {
-  return metricsProvider()->sup1(fontSize());
+  return fontdimen().sup1;
 }
 
 float FontMetrics::sup2() const
 {
-  return metricsProvider()->sup2(fontSize());
+  return fontdimen().sup2;
 }
 
 float FontMetrics::sup3() const
 {
-  return metricsProvider()->sup3(fontSize());
+  return fontdimen().sup3;
 }
 
 float FontMetrics::sub1() const
 {
-  return metricsProvider()->sub1(fontSize());
+  return fontdimen().sub1;
 }
 
 float FontMetrics::sub2() const
 {
-  return metricsProvider()->sub2(fontSize());
+  return fontdimen().sub2;
 }
 
 float FontMetrics::supDrop() const
 {
-  return metricsProvider()->supDrop(fontSize());
+  return fontdimen().sup_drop;
 }
 
 float FontMetrics::subDrop() const
 {
-  return metricsProvider()->subDrop(fontSize());
+  return fontdimen().sub_drop;
 }
 
 float FontMetrics::delim1() const
 {
-  return metricsProvider()->delim1(fontSize());
+  return fontdimen().delim1;
 }
 
 float FontMetrics::delim2() const
 {
-  return metricsProvider()->delim2(fontSize());
+  return fontdimen().delim2;
 }
 
 float FontMetrics::axisHeight() const
 {
-  return metricsProvider()->axisHeight(fontSize());
+  return fontdimen().axis_height;
 }
 
 
 float FontMetrics::defaultRuleThickness() const
 {
-  return metricsProvider()->defaultRuleThickness();
+  return fontdimen().default_rule_thickness;
 }
 
 float FontMetrics::bigOpSpacing1() const
 {
-  return metricsProvider()->bigOpSpacing1();
+  return fontdimen().big_op_spacing1;
 }
 
 float FontMetrics::bigOpSpacing2() const
 {
-  return metricsProvider()->bigOpSpacing2();
+  return fontdimen().big_op_spacing2;
 }
 
 float FontMetrics::bigOpSpacing3() const
 {
-  return metricsProvider()->bigOpSpacing3();
+  return fontdimen().big_op_spacing3;
 }
 
 float FontMetrics::bigOpSpacing4() const
 {
-  return metricsProvider()->bigOpSpacing4();
+  return fontdimen().big_op_spacing4;
 }
 
 float FontMetrics::bigOpSpacing5() const
 {
-  return metricsProvider()->bigOpSpacing5();
+  return fontdimen().big_op_spacing5;
 }
 
 } // namespace tex

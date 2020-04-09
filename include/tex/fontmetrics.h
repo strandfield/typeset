@@ -7,6 +7,7 @@
 
 #include "tex/boxmetrics.h"
 #include "tex/font.h"
+#include "tex/fontdimen.h"
 #include "tex/symbol.h"
 
 #include <memory>
@@ -25,36 +26,7 @@ public:
   virtual BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) = 0;
   virtual float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) = 0;
 
-  virtual float slantPerPt(tex::Font font) = 0;
-  virtual float interwordSpace(tex::Font font) = 0;
-  virtual float interwordStretch(tex::Font font) = 0;
-  virtual float interwordShrink(tex::Font font) = 0;
-  virtual float extraSpace(tex::Font font) = 0;
-
-  virtual float xHeight(tex::FontSize size) = 0;
-  virtual float quad(tex::FontSize size) = 0;
-  virtual float num1(tex::FontSize size) = 0;
-  virtual float num2(tex::FontSize size) = 0;
-  virtual float num3(tex::FontSize size) = 0;
-  virtual float denom1(tex::FontSize size) = 0;
-  virtual float denom2(tex::FontSize size) = 0;
-  virtual float sup1(tex::FontSize size) = 0;
-  virtual float sup2(tex::FontSize size) = 0;
-  virtual float sup3(tex::FontSize size) = 0;
-  virtual float sub1(tex::FontSize size) = 0;
-  virtual float sub2(tex::FontSize size) = 0;
-  virtual float supDrop(tex::FontSize size) = 0;
-  virtual float subDrop(tex::FontSize size) = 0;
-  virtual float delim1(tex::FontSize size) = 0;
-  virtual float delim2(tex::FontSize size) = 0;
-  virtual float axisHeight(tex::FontSize size) = 0;
-
-  virtual float defaultRuleThickness() = 0;
-  virtual float bigOpSpacing1() = 0;
-  virtual float bigOpSpacing2() = 0;
-  virtual float bigOpSpacing3() = 0;
-  virtual float bigOpSpacing4() = 0;
-  virtual float bigOpSpacing5() = 0;
+  virtual const FontDimen& fontdimen(Font font) = 0;
 
   FontMetricsProdiver & operator=(const FontMetricsProdiver &) = delete;
 };
@@ -73,6 +45,8 @@ public:
 
   BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol) const;
   float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol) const;
+
+  const FontDimen& fontdimen() const;
 
   float slantPerPt() const;
   float interwordSpace() const;

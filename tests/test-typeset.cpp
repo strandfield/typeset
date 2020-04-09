@@ -4,6 +4,38 @@
 
 #include "test-typeset.h"
 
+TestFontMetricsProvider::TestFontMetricsProvider()
+{
+  m_fontdimen.slant_per_pt = 0.f;
+  m_fontdimen.interword_space = 1.f;
+  m_fontdimen.interword_stretch = 1.f;
+  m_fontdimen.interword_shrink = 0.1f;
+  m_fontdimen.x_height = 2.f;
+  m_fontdimen.quad = 3.f;
+  m_fontdimen.extra_space = 1.f;
+  m_fontdimen.num1 = 1.f;
+  m_fontdimen.num2 = 1.f;
+  m_fontdimen.num3 = 1.f;
+  m_fontdimen.denom1 = 1.f;
+  m_fontdimen.denom2 = 1.f;
+  m_fontdimen.sup1 = 1.f;
+  m_fontdimen.sup2 = 1.f;
+  m_fontdimen.sup3 = 1.f;
+  m_fontdimen.sub1 = 1.f;
+  m_fontdimen.sub2 = 1.f;
+  m_fontdimen.sup_drop = 1.f;
+  m_fontdimen.sub_drop = 1.f;
+  m_fontdimen.delim1 = 1.f;
+  m_fontdimen.delim2 = 1.f;
+  m_fontdimen.axis_height = 1.f;
+  m_fontdimen.default_rule_thickness = 1.f;
+  m_fontdimen.big_op_spacing1 = 1.f;
+  m_fontdimen.big_op_spacing2 = 1.f;
+  m_fontdimen.big_op_spacing3 = 1.f;
+  m_fontdimen.big_op_spacing4 = 1.f;
+  m_fontdimen.big_op_spacing5 = 1.f;
+}
+
 tex::BoxMetrics TestFontMetricsProvider::metrics(const std::shared_ptr<tex::Symbol>& symbol, tex::Font font, tex::FontSize size)
 {
   return tex::BoxMetrics{ 2.f, 1.f, 2.f };
@@ -14,144 +46,9 @@ float TestFontMetricsProvider::italicCorrection(const std::shared_ptr<tex::Symbo
   return 0.0f;
 }
 
-float TestFontMetricsProvider::slantPerPt(tex::Font font)
+const tex::FontDimen& TestFontMetricsProvider::fontdimen(tex::Font /* f */)
 {
-  return 0.0f;
-}
-
-float TestFontMetricsProvider::interwordSpace(tex::Font font)
-{
-  return 1.f;
-}
-
-float TestFontMetricsProvider::interwordStretch(tex::Font font)
-{
-  return 1.f;
-}
-
-float TestFontMetricsProvider::interwordShrink(tex::Font font)
-{
-  return 0.1f;
-}
-
-float TestFontMetricsProvider::extraSpace(tex::Font font)
-{
-  return 1.f;
-}
-
-float TestFontMetricsProvider::xHeight(tex::FontSize size)
-{
-  return 2.f;
-}
-
-float TestFontMetricsProvider::quad(tex::FontSize size)
-{
-  return 3.0f;
-}
-
-float TestFontMetricsProvider::num1(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::num2(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::num3(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::denom1(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::denom2(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::sup1(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::sup2(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::sup3(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::sub1(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::sub2(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::supDrop(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::subDrop(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::delim1(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::delim2(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::axisHeight(tex::FontSize size)
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::defaultRuleThickness()
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::bigOpSpacing1()
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::bigOpSpacing2()
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::bigOpSpacing3()
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::bigOpSpacing4()
-{
-  return 1.0f;
-}
-
-float TestFontMetricsProvider::bigOpSpacing5()
-{
-  return 1.0f;
+  return m_fontdimen;
 }
 
 TestTypesetEngine::TestTypesetEngine()
@@ -178,8 +75,8 @@ std::shared_ptr<tex::Box> TestTypesetEngine::typesetRadicalSign(float minTotalHe
 {
   tex::BoxMetrics box;
   box.width = 2;
-  box.height = metrics()->defaultRuleThickness();
-  box.depth = minTotalHeight - metrics()->defaultRuleThickness();
+  box.height = metrics()->fontdimen(tex::Font::MathRoman).default_rule_thickness;
+  box.depth = minTotalHeight - metrics()->fontdimen(tex::Font::MathRoman).default_rule_thickness;
   return std::make_shared<TestBox>(box);
 }
 
@@ -187,8 +84,8 @@ std::shared_ptr<tex::Box> TestTypesetEngine::typesetDelimiter(const std::shared_
 {
   tex::BoxMetrics box;
   box.width = 2;
-  box.height = metrics()->defaultRuleThickness();
-  box.depth = minTotalHeight - metrics()->defaultRuleThickness();
+  box.height = metrics()->fontdimen(tex::Font::MathRoman).default_rule_thickness;
+  box.depth = minTotalHeight - metrics()->fontdimen(tex::Font::MathRoman).default_rule_thickness;
   return std::make_shared<TestBox>(box);
 }
 
