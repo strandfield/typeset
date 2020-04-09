@@ -12,20 +12,20 @@ namespace math
 
 struct StyleConstructor
 {
-  static Style build(int id, int size, bool cramped)
+  static Style build(int id, bool cramped)
   {
-    return Style{ id, size, cramped };
+    return Style{ id, cramped };
   }
 };
 
-const Style Style::D = StyleConstructor::build(0, 0, false);
-const Style Style::Dc = StyleConstructor::build(1, 0, true);
-const Style Style::T = StyleConstructor::build(2, 1, false);
-const Style Style::Tc = StyleConstructor::build(3, 1, true);
-const Style Style::S = StyleConstructor::build(4, 2, false);
-const Style Style::Sc = StyleConstructor::build(5, 2, true);
-const Style Style::SS = StyleConstructor::build(6, 3, false);
-const Style Style::SSc = StyleConstructor::build(7, 3, true);
+const Style Style::D = StyleConstructor::build(0, false);
+const Style Style::Dc = StyleConstructor::build(1, true);
+const Style Style::T = StyleConstructor::build(2, false);
+const Style Style::Tc = StyleConstructor::build(3, true);
+const Style Style::S = StyleConstructor::build(4, false);
+const Style Style::Sc = StyleConstructor::build(5, true);
+const Style Style::SS = StyleConstructor::build(6, false);
+const Style Style::SSc = StyleConstructor::build(7, true);
 
 namespace StyleTables
 {
@@ -60,9 +60,8 @@ static const Style style_table[] = {
 } // namespace StyleTables
 
 
-Style::Style(int id, int size, bool cramped)
+Style::Style(int id, bool cramped)
   : mId(id)
-  , mSize(size)
   , mCramped(cramped)
 {
 
@@ -97,12 +96,6 @@ Style Style::cramp() const
 Style Style::text() const
 {
   return StyleTables::style_table[StyleTables::text_table[id()]];
-}
-
-
-bool Style::isTight() const
-{
-  return mSize >= 2;
 }
 
 Style Style::fromId(int id)

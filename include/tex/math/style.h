@@ -29,8 +29,6 @@ public:
 
   Style text() const;
 
-  bool isTight() const;
-
   static const Style D;
   static const Style Dc;
   static const Style T;
@@ -49,11 +47,10 @@ public:
 
 protected:
   friend struct StyleConstructor;
-  Style(int, int, bool);
+  Style(int, bool);
 
 private:
   int mId;
-  int mSize;
   bool mCramped;
 };
 
