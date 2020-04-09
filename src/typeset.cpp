@@ -13,7 +13,6 @@ Options::Options(const std::shared_ptr<TypesetEngine> & engine)
   : mEngine(engine)
   , mMathStyle(math::Style::T.id())
   , mFont(Font::Default)
-  , mFontSize(FontSize::Normal)
 {
 
 }
@@ -25,7 +24,7 @@ math::Style Options::mathStyle() const
 
 FontMetrics Options::fontMetrics() const
 {
-  return FontMetrics{ mFont, mFontSize, mEngine->metrics() };
+  return FontMetrics{ mFont, mEngine->metrics() };
 }
 
 Options Options::withStyle(math::Style style) const
@@ -58,17 +57,6 @@ Options Options::withFont(Font f) const
 Options& Options::withFont(Font f)
 {
   mFont = f;
-  return *this;
-}
-
-Options Options::withSize(FontSize size) const
-{
-  return Options{ *this }.withSize(size);
-}
-
-Options & Options::withSize(FontSize size)
-{
-  mFontSize = size;
   return *this;
 }
 

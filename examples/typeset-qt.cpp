@@ -38,19 +38,14 @@ QtFontMetrics::QtFontMetrics()
 
 QtFontMetricsProdiver::QtFontMetricsProdiver(const QtFontTable & fonts)
 {
-  const size_t inner_size = fonts.front().size();
-
   for (size_t i(0); i < fonts.size(); ++i)
   {
-    for (size_t j(0); j < inner_size; ++j)
-    {
-      mMetrics[i][j] = QFontMetricsF{ fonts[i][j] };
-    }
+    mMetrics[i] = QFontMetricsF{ fonts[i] };
   }
 
   for (size_t i(0); i < 4; ++i)
   {
-    const QFontMetricsF& m = info(tex::Font(i), tex::FontSize::Normal);
+    const QFontMetricsF& m = info(tex::Font(i));
     auto& font_dimen = mFontDimen[i];
 
     font_dimen.slant_per_pt = 0.f;
@@ -84,9 +79,9 @@ QtFontMetricsProdiver::QtFontMetricsProdiver(const QtFontTable & fonts)
   }
 }
 
-tex::BoxMetrics QtFontMetricsProdiver::metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size)
+tex::BoxMetrics QtFontMetricsProdiver::metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font)
 {
-  const QFontMetricsF & m = info(font, size);
+  const QFontMetricsF & m = info(font);
   QChar c = QCharSymbol::get(*symbol);
   QRectF rect = m.boundingRect(c);
 
@@ -97,7 +92,7 @@ tex::BoxMetrics QtFontMetricsProdiver::metrics(const std::shared_ptr<tex::Symbol
   return ret;
 }
 
-float QtFontMetricsProdiver::italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size)
+float QtFontMetricsProdiver::italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font)
 {
   return 0;
 }
@@ -110,9 +105,9 @@ const tex::FontDimen& QtFontMetricsProdiver::fontdimen(tex::Font f)
 
 
 
-const QFontMetricsF & QtFontMetricsProdiver::info(tex::Font f, tex::FontSize s) const
+const QFontMetricsF & QtFontMetricsProdiver::info(tex::Font f) const
 {
-  return mMetrics[f.id()][s.value() - 1];
+  return mMetrics[f.id()];
 }
 
 std::shared_ptr<tex::FontMetricsProdiver> QtTypesetEngine::metrics() const
@@ -122,10 +117,10 @@ std::shared_ptr<tex::FontMetricsProdiver> QtTypesetEngine::metrics() const
 
 QtTypesetEngine::QtTypesetEngine()
 {
-  initFont(tex::Font::Default, "Times New Roman", 24);
-  initFont(tex::Font::Text, "Times New Roman", 24);
-  initFont(tex::Font::MathRoman, "Times New Roman", 24);
-  initFont(tex::Font::MathItalic, "Times New Roman", 24, true);
+  initFont(tex::Font::Default, "Times New Roman", 10);
+  initFont(tex::Font::Text, "Times New Roman", 10);
+  initFont(tex::Font::MathRoman, "Times New Roman", 10);
+  initFont(tex::Font::MathItalic, "Times New Roman", 10, true);
 
   QChar c{ 0x221A };
   mRadicalSign = std::make_shared<QCharSymbol>(c);
@@ -133,83 +128,59 @@ QtTypesetEngine::QtTypesetEngine()
   mMetrics = std::make_shared<QtFontMetricsProdiver>(mFonts);
 }
 
-std::shared_ptr<tex::Box> QtTypesetEngine::typeset(const std::string& text, tex::Font font, tex::FontSize size)
+std::shared_ptr<tex::Box> QtTypesetEngine::typeset(const std::string& text, tex::Font font)
 {
-  return stringbox(QString::fromUtf8(text.data(), text.size()), this->font(font, size));
+  return stringbox(QString::fromUtf8(text.data(), text.size()), this->font(font));
 }
 
-std::shared_ptr<tex::Box> QtTypesetEngine::typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size)
+std::shared_ptr<tex::Box> QtTypesetEngine::typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font)
 {
   if (symbol->is<QCharSymbol>())
   {
     QChar c = QCharSymbol::get(*symbol);
-    return std::make_shared<StringBox>(c, this->font(font, size));
+    return std::make_shared<StringBox>(c, this->font(font));
   }
   else
   {
     Q_ASSERT(symbol->is<tex::TextSymbol>());
-    return typeset(symbol->as<tex::TextSymbol>().text(), font, size);
+    return typeset(symbol->as<tex::TextSymbol>().text(), font);
   }
 }
 
-std::shared_ptr<tex::Box> QtTypesetEngine::typesetRadicalSign(float minTotalHeight, tex::FontSize size)
+std::shared_ptr<tex::Box> QtTypesetEngine::typesetRadicalSign(float minTotalHeight)
 {
   QChar c = QCharSymbol::get(*mRadicalSign);
-  auto metrics = mMetrics->metrics(mRadicalSign, tex::Font::MathRoman, size);
+  auto metrics = mMetrics->metrics(mRadicalSign, tex::Font::MathRoman);
   const float ratio = minTotalHeight / (metrics.height + metrics.depth);
   metrics.height *= ratio;
   metrics.depth *= ratio;
-  return std::make_shared<StringBox>(c, this->font(tex::Font::MathRoman, size), metrics);
+  return std::make_shared<StringBox>(c, this->font(tex::Font::MathRoman), metrics);
 }
 
-std::shared_ptr<tex::Box> QtTypesetEngine::typesetDelimiter(const std::shared_ptr<tex::Symbol> & symbol, float minTotalHeight, tex::FontSize size)
+std::shared_ptr<tex::Box> QtTypesetEngine::typesetDelimiter(const std::shared_ptr<tex::Symbol> & symbol, float minTotalHeight)
 {
   QChar c = QCharSymbol::get(*symbol);
-  auto metrics = mMetrics->metrics(symbol, tex::Font::MathRoman, size);
+  auto metrics = mMetrics->metrics(symbol, tex::Font::MathRoman);
   const float ratio = minTotalHeight / (metrics.height + metrics.depth);
   metrics.height *= ratio;
   metrics.depth *= ratio;
-  return std::make_shared<StringBox>(QString(c), this->font(tex::Font::MathRoman, size), metrics);
+  return std::make_shared<StringBox>(QString(c), this->font(tex::Font::MathRoman), metrics);
 }
 
-std::shared_ptr<tex::Box> QtTypesetEngine::typesetLargeOp(const std::shared_ptr<tex::Symbol> & symbol, tex::FontSize size)
+std::shared_ptr<tex::Box> QtTypesetEngine::typesetLargeOp(const std::shared_ptr<tex::Symbol> & symbol)
 {
-  size = size.larger();
-  return typeset(symbol, tex::Font::MathRoman, size);
+  return typeset(symbol, tex::Font::MathRoman);
 }
 
-QFont & QtTypesetEngine::font(tex::Font f, tex::FontSize s)
+QFont & QtTypesetEngine::font(tex::Font f)
 {
-  return mFonts[f.id()][s.value() - 1];
+  return mFonts[f.id()];
 }
 
-static QFont font_with_size(QFont f, tex::FontSize size, int default_size)
-{
-  const float scale = 1.1f;
-  const int step = size.value() - tex::FontSize::Normal.value();
-  const float factor = std::pow(scale, step);
-  f.setPixelSize(default_size * factor);
-  return f;
-}
-
-static void init_font(QtFontTable::reference fonts, QFont f, tex::FontSize size, int default_size)
-{
-  fonts[size.value() - 1] = font_with_size(f, size, default_size);
-}
-
-void QtTypesetEngine::initFont(tex::Font f, const QString & name, int default_size, bool italic)
+void QtTypesetEngine::initFont(tex::Font f, const QString & name, int size, bool italic)
 {
   QFont qfont{ name };
   qfont.setItalic(italic);
-  auto &fonts = mFonts[f.id()];
-
-  init_font(fonts, qfont, tex::FontSize::Normal, default_size);
-  init_font(fonts, qfont, tex::FontSize::Small, default_size);
-  init_font(fonts, qfont, tex::FontSize::Large, default_size);
-  init_font(fonts, qfont, tex::FontSize::FootNoteSize, default_size);
-  init_font(fonts, qfont, tex::FontSize::ScriptSize, default_size);
-  init_font(fonts, qfont, tex::FontSize::Tiny, default_size);
-  init_font(fonts, qfont, tex::FontSize::LARGE, default_size);
-  init_font(fonts, qfont, tex::FontSize::Huge, default_size);
-  init_font(fonts, qfont, tex::FontSize::HUGE, default_size);
+  qfont.setPointSize(size);
+  mFonts[f.id()] = qfont;
 }

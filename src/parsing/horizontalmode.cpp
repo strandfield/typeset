@@ -30,7 +30,7 @@ HorizontalMode::HorizontalMode(TypesettingMachine& m)
 FontMetrics HorizontalMode::metrics() const
 {
   const Options& opts = machine().options();
-  return FontMetrics{ opts.font(), opts.fontSize(), machine().typesetEngine()->metrics() };
+  return FontMetrics{ opts.font(), machine().typesetEngine()->metrics() };
 }
 
 void HorizontalMode::main_callback(HorizontalMode& self, Token&& t)
@@ -154,7 +154,6 @@ List& HorizontalMode::hlist()
 void HorizontalMode::prepareTypesetter()
 {
   m_typesetter.setFont(machine().options().font());
-  m_typesetter.setFontSize(machine().options().fontSize());
 }
 
 void HorizontalMode::writeOutput()

@@ -24,11 +24,11 @@ public:
 
   virtual std::shared_ptr<tex::FontMetricsProdiver> metrics() const = 0;
 
-  virtual std::shared_ptr<tex::Box> typeset(const std::string& text, tex::Font font, tex::FontSize size) = 0;
-  virtual std::shared_ptr<tex::Box> typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) = 0;
-  virtual std::shared_ptr<tex::Box> typesetRadicalSign(float minTotalHeight, tex::FontSize size) = 0;
-  virtual std::shared_ptr<tex::Box> typesetDelimiter(const std::shared_ptr<tex::Symbol> & symbol, float minTotalHeight, tex::FontSize size) = 0;
-  virtual std::shared_ptr<tex::Box> typesetLargeOp(const std::shared_ptr<tex::Symbol> & symbol, tex::FontSize size) = 0;
+  virtual std::shared_ptr<tex::Box> typeset(const std::string& text, tex::Font font) = 0;
+  virtual std::shared_ptr<tex::Box> typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) = 0;
+  virtual std::shared_ptr<tex::Box> typesetRadicalSign(float minTotalHeight) = 0;
+  virtual std::shared_ptr<tex::Box> typesetDelimiter(const std::shared_ptr<tex::Symbol> & symbol, float minTotalHeight) = 0;
+  virtual std::shared_ptr<tex::Box> typesetLargeOp(const std::shared_ptr<tex::Symbol> & symbol) = 0;
 
   FontMetricsProdiver & operator=(const FontMetricsProdiver &) = delete;
 };
@@ -43,7 +43,6 @@ public:
   inline const std::shared_ptr<TypesetEngine> & engine() const { return mEngine; }
   math::Style mathStyle() const;
   inline Font font() const { return mFont; }
-  inline FontSize fontSize() const { return mFontSize; }
   FontMetrics fontMetrics() const;
 
   Options withStyle(math::Style style) const;
@@ -52,8 +51,6 @@ public:
   Options & withCrampedStyle();
   Options withFont(Font f) const;
   Options& withFont(Font f);
-  Options withSize(FontSize size) const;
-  Options & withSize(FontSize size);
 
   Options & operator=(const Options &) = default;
 
@@ -61,7 +58,6 @@ private:
   std::shared_ptr<TypesetEngine> mEngine;
   int mMathStyle;
   Font mFont;
-  FontSize mFontSize;
 };
 
 } // namespace tex

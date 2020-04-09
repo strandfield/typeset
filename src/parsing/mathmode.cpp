@@ -41,7 +41,7 @@ MathMode::MathMode(TypesettingMachine& m)
 FontMetrics MathMode::metrics() const
 {
   const Options& opts = machine().options();
-  return FontMetrics{ opts.font(), opts.fontSize(), machine().typesetEngine()->metrics() };
+  return FontMetrics{ opts.font(), machine().typesetEngine()->metrics() };
 }
 
 bool MathMode::isInlineMath() const

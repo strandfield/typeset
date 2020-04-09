@@ -42,10 +42,9 @@ void TypesettingMachine::endGroup()
   m_preprocessor.endGroup();
 }
 
-TextTypesetter::TextTypesetter(std::shared_ptr<TypesetEngine> te, Font f, FontSize s)
+TextTypesetter::TextTypesetter(std::shared_ptr<TypesetEngine> te, Font f)
   : m_typeset_engine(te),
-  m_font(f),
-  m_size(s)
+  m_font(f)
 {
 
 }
@@ -60,19 +59,9 @@ void TextTypesetter::setFont(Font f)
   m_font = f;
 }
 
-FontSize TextTypesetter::fontSize() const
-{
-  return m_size;
-}
-
-void TextTypesetter::setFontSize(FontSize fs)
-{
-  m_size = fs;
-}
-
 std::shared_ptr<Box> TextTypesetter::print(const std::string& text) const
 {
-  return m_typeset_engine->typeset(text, font(), fontSize());
+  return m_typeset_engine->typeset(text, font());
 }
 
 std::string& TextTypesetter::buffer()
@@ -93,7 +82,7 @@ bool TextTypesetter::ready() const
 std::shared_ptr<Box> TextTypesetter::print()
 {
   assert(ready());
-  auto box = m_typeset_engine->typeset(buffer(), m_font, m_size);
+  auto box = m_typeset_engine->typeset(buffer(), m_font);
   m_buffer.clear();
   return box;
 }

@@ -37,12 +37,12 @@ std::shared_ptr<Box> nullbox()
 
 std::shared_ptr<Box> typeset(std::shared_ptr<Symbol> symbol, const Options & opts)
 {
-  return opts.engine()->typeset(symbol, opts.font(), opts.fontSize());
+  return opts.engine()->typeset(symbol, opts.font());
 }
 
 static std::shared_ptr<VBox> radicalSignBox(float minTotalHeight, const Options & opts)
 {
-  std::shared_ptr<Box> box = opts.engine()->typesetRadicalSign(minTotalHeight, opts.fontSize());
+  std::shared_ptr<Box> box = opts.engine()->typesetRadicalSign(minTotalHeight);
   auto ret = tex::vbox({ box });
   const float theta = opts.fontMetrics().defaultRuleThickness();
   if (ret->height() != theta)
@@ -109,7 +109,7 @@ static void processOpAtom(MathList & mathlist, MathList::iterator & current, con
   {
     auto mathsymbol = cast<Symbol>(atom->nucleus());
 
-    auto x = opts.engine()->typesetLargeOp(mathsymbol, opts.fontSize());
+    auto x = opts.engine()->typesetLargeOp(mathsymbol);
     delta = opts.fontMetrics().italicCorrection(mathsymbol);
     const float a = opts.fontMetrics().axisHeight();
     auto boxed_x = tex::hbox({ x });
@@ -483,7 +483,7 @@ static std::shared_ptr<Box> typesetDelimiter(const std::shared_ptr<Symbol> & ms,
   if (ms == nullptr)
     return nullbox();
 
-  return opts.engine()->typesetDelimiter(ms, minTotalHeight, opts.fontSize());
+  return opts.engine()->typesetDelimiter(ms, minTotalHeight);
 }
 
 void processBoundary(MathList & mlist, const Options & opts)

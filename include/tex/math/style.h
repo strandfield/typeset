@@ -40,8 +40,6 @@ public:
   static const Style SS;
   static const Style SSc;
 
-  FontSize sizeForStyle(FontSize currentSize = FontSize::Normal) const;
-
   inline int id() const { return mId; }
   inline bool isCramped() const { return mCramped; }
 

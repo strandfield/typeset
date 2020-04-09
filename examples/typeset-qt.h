@@ -12,7 +12,7 @@
 
 #include <array>
 
-using QtFontTable = std::array<std::array<QFont, 11>, 4>;
+using QtFontTable = std::array<QFont, 4>;
 
 class QCharSymbol : public tex::Symbol
 {
@@ -67,16 +67,16 @@ public:
   QtFontMetricsProdiver(const QtFontTable & fonts);
   ~QtFontMetricsProdiver() = default;
 
-  tex::BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) override;
-  float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) override;
+  tex::BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) override;
+  float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) override;
 
   const tex::FontDimen& fontdimen(tex::Font f) override;
 
 protected:
-  const QFontMetricsF & info(tex::Font f, tex::FontSize s) const;
+  const QFontMetricsF & info(tex::Font f) const;
 
 private:
-  QtFontMetrics mMetrics[4][11];
+  QtFontMetrics mMetrics[4];
   tex::FontDimen mFontDimen[4];
 };
 
@@ -90,14 +90,14 @@ protected:
 
   std::shared_ptr<tex::FontMetricsProdiver> metrics() const override;
 
-  std::shared_ptr<tex::Box> typeset(const std::string& text, tex::Font font, tex::FontSize size) override;
-  std::shared_ptr<tex::Box> typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) override;
-  std::shared_ptr<tex::Box> typesetRadicalSign(float minTotalHeight, tex::FontSize size) override;
-  std::shared_ptr<tex::Box> typesetDelimiter(const std::shared_ptr<tex::Symbol> & symbol, float minTotalHeight, tex::FontSize size) override;
-  std::shared_ptr<tex::Box> typesetLargeOp(const std::shared_ptr<tex::Symbol> & symbol, tex::FontSize size) override;
+  std::shared_ptr<tex::Box> typeset(const std::string& text, tex::Font font) override;
+  std::shared_ptr<tex::Box> typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) override;
+  std::shared_ptr<tex::Box> typesetRadicalSign(float minTotalHeight) override;
+  std::shared_ptr<tex::Box> typesetDelimiter(const std::shared_ptr<tex::Symbol> & symbol, float minTotalHeight) override;
+  std::shared_ptr<tex::Box> typesetLargeOp(const std::shared_ptr<tex::Symbol> & symbol) override;
 
-  QFont & font(tex::Font f, tex::FontSize s);
-  void initFont(tex::Font, const QString & name, int default_size, bool italic = false);
+  QFont & font(tex::Font f);
+  void initFont(tex::Font, const QString & name, int size, bool italic = false);
 
 private:
   QtFontTable mFonts;

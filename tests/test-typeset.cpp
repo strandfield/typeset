@@ -36,12 +36,12 @@ TestFontMetricsProvider::TestFontMetricsProvider()
   m_fontdimen.big_op_spacing5 = 1.f;
 }
 
-tex::BoxMetrics TestFontMetricsProvider::metrics(const std::shared_ptr<tex::Symbol>& symbol, tex::Font font, tex::FontSize size)
+tex::BoxMetrics TestFontMetricsProvider::metrics(const std::shared_ptr<tex::Symbol>& symbol, tex::Font font)
 {
   return tex::BoxMetrics{ 2.f, 1.f, 2.f };
 }
 
-float TestFontMetricsProvider::italicCorrection(const std::shared_ptr<tex::Symbol>& symbol, tex::Font font, tex::FontSize size)
+float TestFontMetricsProvider::italicCorrection(const std::shared_ptr<tex::Symbol>& symbol, tex::Font font)
 {
   return 0.0f;
 }
@@ -61,17 +61,17 @@ std::shared_ptr<tex::FontMetricsProdiver> TestTypesetEngine::metrics() const
   return m_metrics;
 }
 
-std::shared_ptr<tex::Box> TestTypesetEngine::typeset(const std::string& text, tex::Font font, tex::FontSize size)
+std::shared_ptr<tex::Box> TestTypesetEngine::typeset(const std::string& text, tex::Font font)
 {
-  return std::make_shared<TestBox>(text, metrics()->metrics(nullptr, font, size));
+  return std::make_shared<TestBox>(text, metrics()->metrics(nullptr, font));
 }
 
-std::shared_ptr<tex::Box> TestTypesetEngine::typeset(const std::shared_ptr<tex::Symbol>& symbol, tex::Font font, tex::FontSize size)
+std::shared_ptr<tex::Box> TestTypesetEngine::typeset(const std::shared_ptr<tex::Symbol>& symbol, tex::Font font)
 {
-  return std::make_shared<TestBox>(metrics()->metrics(symbol, font, size));
+  return std::make_shared<TestBox>(metrics()->metrics(symbol, font));
 }
 
-std::shared_ptr<tex::Box> TestTypesetEngine::typesetRadicalSign(float minTotalHeight, tex::FontSize size)
+std::shared_ptr<tex::Box> TestTypesetEngine::typesetRadicalSign(float minTotalHeight)
 {
   tex::BoxMetrics box;
   box.width = 2;
@@ -80,7 +80,7 @@ std::shared_ptr<tex::Box> TestTypesetEngine::typesetRadicalSign(float minTotalHe
   return std::make_shared<TestBox>(box);
 }
 
-std::shared_ptr<tex::Box> TestTypesetEngine::typesetDelimiter(const std::shared_ptr<tex::Symbol>& symbol, float minTotalHeight, tex::FontSize size)
+std::shared_ptr<tex::Box> TestTypesetEngine::typesetDelimiter(const std::shared_ptr<tex::Symbol>& symbol, float minTotalHeight)
 {
   tex::BoxMetrics box;
   box.width = 2;
@@ -89,7 +89,7 @@ std::shared_ptr<tex::Box> TestTypesetEngine::typesetDelimiter(const std::shared_
   return std::make_shared<TestBox>(box);
 }
 
-std::shared_ptr<tex::Box> TestTypesetEngine::typesetLargeOp(const std::shared_ptr<tex::Symbol>& symbol, tex::FontSize size)
+std::shared_ptr<tex::Box> TestTypesetEngine::typesetLargeOp(const std::shared_ptr<tex::Symbol>& symbol)
 {
-  return std::make_shared<TestBox>(metrics()->metrics(symbol, tex::Font::MathRoman, size));
+  return std::make_shared<TestBox>(metrics()->metrics(symbol, tex::Font::MathRoman));
 }

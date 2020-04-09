@@ -7,9 +7,8 @@
 namespace tex
 {
 
-FontMetrics::FontMetrics(Font font, FontSize size, std::shared_ptr<FontMetricsProdiver> mp)
+FontMetrics::FontMetrics(Font font, std::shared_ptr<FontMetricsProdiver> mp)
   : mFont(font)
-  , mFontSize(size)
   , mMetricsProvider(mp)
 {
 
@@ -17,12 +16,12 @@ FontMetrics::FontMetrics(Font font, FontSize size, std::shared_ptr<FontMetricsPr
 
 BoxMetrics FontMetrics::metrics(const std::shared_ptr<tex::Symbol> & symbol) const
 {
-  return metricsProvider()->metrics(symbol, font(), fontSize());
+  return metricsProvider()->metrics(symbol, font());
 }
 
 float FontMetrics::italicCorrection(const std::shared_ptr<tex::Symbol> & symbol) const
 {
-  return metricsProvider()->italicCorrection(symbol, font(), fontSize());
+  return metricsProvider()->italicCorrection(symbol, font());
 }
 
 const FontDimen& FontMetrics::fontdimen() const

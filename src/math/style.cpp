@@ -105,27 +105,6 @@ bool Style::isTight() const
   return mSize >= 2;
 }
 
-
-static const int sizeStyleMap[][3] = {
-  // {textsize, scriptsize, scripscriptsize}
-  { 1, 1, 1 },    // size1:  \tiny
-  { 2, 1, 1 },    // size2:  
-  { 3, 1, 1 },    // size3:  \scriptsize
-  { 4, 2, 1 },    // size4:  \footnotesize
-  { 5, 2, 1 },    // size5:  \small
-  { 6, 3, 1 },    // size6:  \normalsize
-  { 7, 4, 2 },    // size7:  \large
-  { 8, 6, 3 },    // size8:  \Large
-  { 9, 7, 6 },    // size9:  \LARGE
-  { 10, 8, 7 },   // size10: \huge
-  { 11, 10, 9 },  // size11: \HUGE
-};
-
-FontSize Style::sizeForStyle(FontSize currentSize) const
-{
-  return mSize < 2 ? currentSize : FontSize{ sizeStyleMap[currentSize.value() - 1][mSize - 1] };
-}
-
 Style Style::fromId(int id)
 {
   return StyleTables::style_table[id];

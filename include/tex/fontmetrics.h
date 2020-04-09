@@ -23,8 +23,8 @@ public:
   FontMetricsProdiver() = default;
   virtual ~FontMetricsProdiver() = default;
 
-  virtual BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) = 0;
-  virtual float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font, tex::FontSize size) = 0;
+  virtual BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) = 0;
+  virtual float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) = 0;
 
   virtual const FontDimen& fontdimen(Font font) = 0;
 
@@ -35,12 +35,11 @@ public:
 class LIBTYPESET_API FontMetrics
 {
 public:
-  FontMetrics(Font font, FontSize size, std::shared_ptr<FontMetricsProdiver> mp);
+  FontMetrics(Font font, std::shared_ptr<FontMetricsProdiver> mp);
   FontMetrics(const FontMetrics &) = default;
   ~FontMetrics() = default;
 
   inline Font font() const { return mFont; }
-  inline FontSize fontSize() const { return mFontSize; }
   inline const std::shared_ptr<FontMetricsProdiver> & metricsProvider() const { return mMetricsProvider; }
 
   BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol) const;
@@ -83,7 +82,6 @@ public:
 
 private:
   Font mFont;
-  FontSize mFontSize;
   std::shared_ptr<FontMetricsProdiver> mMetricsProvider;
 };
 

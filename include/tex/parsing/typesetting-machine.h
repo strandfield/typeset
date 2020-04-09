@@ -78,13 +78,11 @@ private:
 class LIBTYPESET_API TextTypesetter
 {
 public:
-  explicit TextTypesetter(std::shared_ptr<TypesetEngine> te, Font f = Font::Default, FontSize s = FontSize::Normal);
+  explicit TextTypesetter(std::shared_ptr<TypesetEngine> te, Font f = Font::Default);
   ~TextTypesetter() = default;
 
   Font font() const;
   void setFont(Font f);
-  FontSize fontSize() const;
-  void setFontSize(FontSize fs);
 
   std::shared_ptr<Box> print(const std::string& text) const;
 
@@ -97,7 +95,6 @@ public:
 private:
   std::shared_ptr<TypesetEngine> m_typeset_engine;
   Font m_font;
-  FontSize m_size;
   std::string m_buffer;
 };
 
