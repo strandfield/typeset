@@ -1,0 +1,20 @@
+\documentclass{article}
+   
+\begin{document}
+
+\newcount\foo
+\foo=32
+\loop
+ 
+\the\foo 
+\hspace{1em}
+\char\foo 
+\hspace{1em}
+\the\mathcode\foo
+
+
+  \advance \foo 1
+\ifnum \foo<128
+\repeat
+
+\end{document}
