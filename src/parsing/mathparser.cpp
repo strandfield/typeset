@@ -397,12 +397,6 @@ void MathParser::leaveState()
   m_states.pop_back();
 }
 
-void MathParser::mutate(State from, State to)
-{
-  leave(from);
-  enter(to);
-}
-
 void MathParser::pushList(MathList& l)
 {
   m_lists.push_back(&l);

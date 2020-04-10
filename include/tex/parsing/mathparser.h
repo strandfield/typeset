@@ -131,7 +131,6 @@ protected:
   void enter(State s);
   void leave(State s);
   void leaveState();
-  void mutate(State from, State to);
 
   void pushList(MathList& l);
   void popList();
