@@ -62,140 +62,50 @@ MathParser::MathParser()
   enter(State::ParsingMList);
 }
 
-const std::map<std::string, MathParser::CS>& MathParser::csmap()
-{
-  static const std::map<std::string, MathParser::CS> map = {
-    {"left", CS::LEFT},
-    {"right", CS::RIGHT},
-    {"over", CS::OVER},
-    {"frac", CS::FRAC},
-    {"sqrt", CS::SQRT},
-    {"rm", CS::RM},
-    {"textstyle", CS::TEXTSTYLE},
-    {"scriptstyle", CS::SCRIPTSTYLE},
-    {"scriptscriptstyle", CS::SCRIPTSCRIPTSTYLE},
-    /* Symbols */
-    {"bullet", CS::BULLET},
-    {"cap", CS::CAP},
-    {"cdot", CS::CDOT},
-    {"circ", CS::CIRC},
-    {"cup", CS::CUP},
-    {"sqcap", CS::SQCAP},
-    {"sqcup", CS::SQCUP},
-    {"times", CS::TIMES},
-  };
-
-  return map;
-}
-
-MathParser::CS MathParser::cs(const std::string& name)
-{
-  auto it = csmap().find(name);
-
-  if (it == csmap().end())
-    throw std::runtime_error{ "Unknown control sequence" };
-
-  return it->second;
-}
-
-void MathParser::writeControlSequence(CS csname)
-{
-  if (state() == State::ParsingAtom)
-  {
-    commitCurrentAtom();
-  }
-
-  switch (csname)
-  {
-  case CS::LEFT:
-    return cs_left();
-  case CS::RIGHT:
-    return cs_right();
-  case CS::OVER:
-    return cs_over();
-  case CS::FRAC:
-    return cs_frac();
-  case CS::SQRT:
-    return cs_sqrt();
-  case CS::RM:
-    return cs_rm();
-  case CS::TEXTSTYLE:
-    return cs_textstyle();
-  case CS::SCRIPTSTYLE:
-    return cs_scriptstyle();
-  case CS::SCRIPTSCRIPTSTYLE:
-    return cs_scriptscriptstyle();
-    /* Symbols */
-  case CS::BULLET:
-    return writeSymbol(mathchars::BULLET);
-  case CS::CAP:
-    return writeSymbol(mathchars::CAP);
-  case CS::CDOT:
-    return writeSymbol(mathchars::CDOT);
-  case CS::CIRC:
-    return writeSymbol(mathchars::CIRC);
-  case CS::CUP:
-    return writeSymbol(mathchars::CUP);
-  case CS::SQCAP:
-    return writeSymbol(mathchars::SQCAP);
-  case CS::SQCUP:
-    return writeSymbol(mathchars::SQCUP);
-  case CS::TIMES:
-    return writeSymbol(mathchars::TIMES);
-  }
-}
-
 MathList& MathParser::mlist()
 {
   return m_lists.empty() ? m_mlist : *m_lists.back();
 }
 
-void MathParser::writeSymbol(Character c)
-{
-  // @TODO: decide if the std::string overload should be removed
-  Utf8Char u8c{ c };
-  writeSymbol(std::string(u8c.data()));
-}
-
-void MathParser::writeSymbol(const std::string& str)
+void MathParser::writeSymbol(std::shared_ptr<MathSymbol> mathsym)
 {
   switch (state())
   {
   case State::ParsingMList:
-    return parse_mlist(str);
+    return parse_mlist(mathsym);
   case State::ParsingAtom:
-    return parse_atom(str);
+    return parse_atom(mathsym);
   case State::ParsingNucleus:
   case State::ParsingSubscript:
   case State::ParsingSuperscript:
-    return parse_mlist(str);
+    return parse_mlist(mathsym);
   case State::AwaitingSubscript:
   case State::AwaitingSuperscript:
-    return parse_subsupscript(str);
+    return parse_subsupscript(mathsym);
   case State::ParsingBoundary:
-    return parse_mlist(str);
+    return parse_mlist(mathsym);
   case State::ParsingLeft:
-    return parse_left(str);
+    return parse_left(mathsym);
   case State::ParsingRight:
-    return parse_right(str);
+    return parse_right(mathsym);
   case State::ParsingSqrt:
-    return parse_sqrt(str);
+    return parse_sqrt(mathsym);
   case State::ParsingSqrtDegree:
-    return parse_sqrt_degree(str);
+    return parse_sqrt_degree(mathsym);
   case State::ParsingSqrtRadicand:
-    return parse_sqrt_radicand(str);
+    return parse_sqrt_radicand(mathsym);
   case State::ParsingSqrtRadicandMList:
-    return parse_mlist(str);
+    return parse_mlist(mathsym);
   case State::ParsingOver:
-    return parse_mlist(str);
+    return parse_mlist(mathsym);
   case State::ParsingFracDenom:
-    return parse_frac_denom(str);
+    return parse_frac_denom(mathsym);
   case State::ParsingFracNumer:
-    return parse_frac_numer(str);
+    return parse_frac_numer(mathsym);
   case State::ParsingFracDenomMList:
-    return parse_mlist(str);
+    return parse_mlist(mathsym);
   case State::ParsingFracNumerMList:
-    return parse_mlist(str);
+    return parse_mlist(mathsym);
   default:
     throw std::runtime_error{ "Bad call to writeSymbol()" };
   }
@@ -434,43 +344,43 @@ bool MathParser::isParsingMList() const
   }
 }
 
-void MathParser::parse_mlist(const std::string& str)
+void MathParser::parse_mlist(std::shared_ptr<MathSymbol> mathsym)
 {
   enter(State::ParsingAtom);
   m_builders.emplace_back();
-  m_builders.back().setNucleus(std::make_shared<TextSymbol>(str));
+  m_builders.back().setNucleus(mathsym);
 }
 
-void MathParser::parse_atom(const std::string& str)
+void MathParser::parse_atom(std::shared_ptr<MathSymbol> mathsym)
 {
   commitCurrentAtom();
-  return writeSymbol(str);
+  return writeSymbol(mathsym);
 }
 
-void MathParser::parse_subsupscript(const std::string& str)
+void MathParser::parse_subsupscript(std::shared_ptr<MathSymbol> mathsym)
 {
   if (state() == State::AwaitingSubscript)
   {
-    m_builders.back().setSubscript(std::make_shared<TextSymbol>(str));
+    m_builders.back().setSubscript(mathsym);
     leaveState();
   }
   else if (state() == State::AwaitingSuperscript)
   {
-    m_builders.back().setSuperscript(std::make_shared<TextSymbol>(str));
+    m_builders.back().setSuperscript(mathsym);
     leaveState();
   }
 }
 
-void MathParser::parse_left(const std::string& str)
+void MathParser::parse_left(std::shared_ptr<MathSymbol> mathsym)
 {
-  mlist().push_back(std::make_shared<math::Boundary>(std::make_shared<TextSymbol>(str)));
+  mlist().push_back(std::make_shared<math::Boundary>(mathsym));
   leave(State::ParsingLeft);
   assert(state() == State::ParsingBoundary);
 }
 
-void MathParser::parse_right(const std::string& str)
+void MathParser::parse_right(std::shared_ptr<MathSymbol> mathsym)
 {
-  mlist().push_back(std::make_shared<math::Boundary>(std::make_shared<TextSymbol>(str)));
+  mlist().push_back(std::make_shared<math::Boundary>(mathsym));
   leave(State::ParsingRight);
   leave(State::ParsingBoundary);
   leave(State::ParsingNucleus);
@@ -478,9 +388,9 @@ void MathParser::parse_right(const std::string& str)
   assert(state() == State::ParsingAtom);
 }
 
-void MathParser::parse_sqrt(const std::string& str)
+void MathParser::parse_sqrt(std::shared_ptr<MathSymbol> mathsym)
 {
-  if (str == "[")
+  if (mathsym->character() == '[')
   {
     enter(State::ParsingSqrtDegree);
     auto root = std::make_shared<math::Root>();
@@ -491,14 +401,14 @@ void MathParser::parse_sqrt(const std::string& str)
   {
     leave(State::ParsingSqrt);
 
-    m_builders.emplace_back(AtomBuilder(math::Atom::Rad).setNucleus(std::make_shared<TextSymbol>(str)));
+    m_builders.emplace_back(AtomBuilder(math::Atom::Rad).setNucleus(mathsym));
     enter(State::ParsingAtom);
   }
 }
 
-void MathParser::parse_sqrt_degree(const std::string& str)
+void MathParser::parse_sqrt_degree(std::shared_ptr<MathSymbol> mathsym)
 {
-  if (str == "]")
+  if (mathsym->character() == ']')
   {
     leave(State::ParsingSqrtDegree);
     popList();
@@ -506,14 +416,14 @@ void MathParser::parse_sqrt_degree(const std::string& str)
   }
   else
   {
-    parse_mlist(str);
+    parse_mlist(mathsym);
   }
 }
 
-void MathParser::parse_sqrt_radicand(const std::string& str)
+void MathParser::parse_sqrt_radicand(std::shared_ptr<MathSymbol> mathsym)
 {
-  AtomBuilder builder{ math::Atom::Ord };
-  builder.setNucleus(std::make_shared<TextSymbol>(str));
+  AtomBuilder builder{ math::Atom::Ord }; // @TODO: is-it Ord ?
+  builder.setNucleus(mathsym);
 
   auto root = std::dynamic_pointer_cast<math::Root>(mlist().back());
   root->radicand().push_back(builder.build());
@@ -522,10 +432,10 @@ void MathParser::parse_sqrt_radicand(const std::string& str)
   leave(State::ParsingSqrt);
 }
 
-void MathParser::parse_frac_numer(const std::string& str)
+void MathParser::parse_frac_numer(std::shared_ptr<MathSymbol> mathsym)
 {
-  AtomBuilder builder{ math::Atom::Ord };
-  builder.setNucleus(std::make_shared<TextSymbol>(str));
+  AtomBuilder builder{ math::Atom::Ord }; // @TODO: is-it Ord ?
+  builder.setNucleus(mathsym);
 
   auto frac = std::dynamic_pointer_cast<math::Fraction>(mlist().back());
   frac->numer().push_back(builder.build());
@@ -534,10 +444,10 @@ void MathParser::parse_frac_numer(const std::string& str)
   enter(State::ParsingFracDenom);
 }
 
-void MathParser::parse_frac_denom(const std::string& str)
+void MathParser::parse_frac_denom(std::shared_ptr<MathSymbol> mathsym)
 {
-  AtomBuilder builder{ math::Atom::Ord };
-  builder.setNucleus(std::make_shared<TextSymbol>(str));
+  AtomBuilder builder{ math::Atom::Ord }; // @TODO: is-it Ord ?
+  builder.setNucleus(mathsym);
 
   auto frac = std::dynamic_pointer_cast<math::Fraction>(mlist().back());
   frac->denom().push_back(builder.build());
@@ -546,8 +456,11 @@ void MathParser::parse_frac_denom(const std::string& str)
   leave(State::ParsingFrac);
 }
 
-void MathParser::cs_left()
+void MathParser::left()
 {
+  if (state() == State::ParsingAtom)
+    commitCurrentAtom();
+
   m_builders.emplace_back(AtomBuilder(math::Atom::Inner).setNucleus(pushMathList()));
   enter(State::ParsingAtom);
   enter(State::ParsingNucleus);
@@ -555,8 +468,11 @@ void MathParser::cs_left()
   enter(State::ParsingLeft);
 }
 
-void MathParser::cs_right()
+void MathParser::right()
 {
+  if (state() == State::ParsingAtom)
+    commitCurrentAtom();
+
   if (state() != State::ParsingBoundary)
   {
     throw std::runtime_error{ "Mismatching \\left & \\right" };
@@ -565,8 +481,11 @@ void MathParser::cs_right()
   enter(State::ParsingRight);
 }
 
-void MathParser::cs_over()
+void MathParser::over()
 {
+  if (state() == State::ParsingAtom)
+    commitCurrentAtom();
+
   MathList& ml = mlist();
   auto frac = std::make_shared<math::Fraction>(std::move(ml), MathList{});
   ml.clear();
@@ -575,36 +494,46 @@ void MathParser::cs_over()
   pushList(frac->denom());
 }
 
-void MathParser::cs_frac()
+void MathParser::frac()
 {
+  if (state() == State::ParsingAtom)
+    commitCurrentAtom();
+
   auto frac = std::make_shared<math::Fraction>();
   mlist().push_back(frac);
   enter(State::ParsingFrac);
   enter(State::ParsingFracNumer);
 }
 
-void MathParser::cs_sqrt()
+void MathParser::sqrt()
 {
+  if (state() == State::ParsingAtom)
+    commitCurrentAtom();
+
   enter(State::ParsingSqrt);
 }
 
-void MathParser::cs_rm()
+void MathParser::textstyle()
 {
-  mlist().push_back(std::make_shared<math::FontChange>(Font::MathRoman));
-}
+  if (state() == State::ParsingAtom)
+    commitCurrentAtom();
 
-void MathParser::cs_textstyle()
-{
   mlist().push_back(std::make_shared<math::StyleChange>(math::Style::T));
 }
 
-void MathParser::cs_scriptstyle()
+void MathParser::scriptstyle()
 {
+  if (state() == State::ParsingAtom)
+    commitCurrentAtom();
+
   mlist().push_back(std::make_shared<math::StyleChange>(math::Style::S));
 }
 
-void MathParser::cs_scriptscriptstyle()
+void MathParser::scriptscriptstyle()
 {
+  if (state() == State::ParsingAtom)
+    commitCurrentAtom();
+
   mlist().push_back(std::make_shared<math::StyleChange>(math::Style::SS));
 }
 

@@ -8,7 +8,7 @@
 #include "tex/parsing/mode.h"
 
 #include "tex/parsing/typesetting-machine.h"
-#include "tex/parsing/mathparser.h"
+#include "tex/parsing/mathparserfrontend.h"
 
 #include "tex/fontmetrics.h"
 #include "tex/typeset.h"
@@ -52,7 +52,7 @@ private:
   std::vector<Callback> m_callbacks;
   std::map<std::string, Callback> m_commands;
   std::string m_symbuf;
-  parsing::MathParser m_parser;
+  parsing::MathParserFrontend m_parser;
 };
 
 } // namespace parsing

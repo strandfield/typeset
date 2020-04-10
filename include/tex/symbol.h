@@ -33,11 +33,15 @@ class LIBTYPESET_API MathSymbol : public Symbol
 {
 private:
   Character m_char;
+  int m_class;
+  int m_family;
 
 public:
-  explicit MathSymbol(Character c) : m_char(c) { }
+  MathSymbol(Character c, int class_num, int f) : m_char(c), m_class(class_num), m_family(f) { }
 
   Character character() const { return m_char;  }
+  int classNumber() const { return m_class; }
+  int family() const { return m_family; }
 };
 
 } // namespace tex

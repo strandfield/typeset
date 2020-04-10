@@ -10,6 +10,7 @@
 #include "tex/math/style.h"
 
 #include "tex/fontmetrics.h"
+#include "tex/mathcode.h"
 #include "tex/hbox.h"
 
 #include <map>
@@ -81,37 +82,8 @@ public:
   State state() const;
   const std::vector<State>& states() const;
 
-  enum class CS
-  {
-    LEFT,
-    RIGHT,
-    OVER,
-    FRAC,
-    SQRT,
-    RM,
-    TEXTSTYLE,
-    SCRIPTSTYLE,
-    SCRIPTSCRIPTSTYLE,
-    /* Symbols */
-    BULLET,
-    CAP,
-    CDOT,
-    CIRC,
-    CUP,
-    SQCAP,
-    SQCUP,
-    TIMES,
-  };
+  void writeSymbol(std::shared_ptr<MathSymbol> mathsym);
 
-  static const std::map<std::string, CS>& csmap();
-  static CS cs(const std::string& name);
-
-  void writeControlSequence(CS csname);
-
-  // @TODO: maybe not that good, should be protected maybe 
-  void writeSymbol(Character c);
-
-  void writeSymbol(const std::string& str);  
   void writeBox(const std::shared_ptr<tex::Box>& box);
 
   void beginSuperscript();
@@ -119,6 +91,16 @@ public:
 
   void beginMathList();
   void endMathList();
+
+  /* Control sequences */
+  void left();
+  void right();
+  void over();
+  void frac();
+  void sqrt();
+  void textstyle();
+  void scriptstyle();
+  void scriptscriptstyle();
 
   void finish();
 
@@ -139,31 +121,20 @@ protected:
   bool isParsingMList() const;
 
   /* Parsing procedures */
-  void parse_mlist(const std::string& str);
+  void parse_mlist(std::shared_ptr<MathSymbol> mathsym);
 
-  void parse_atom(const std::string& str);
-  void parse_subsupscript(const std::string& str);
+  void parse_atom(std::shared_ptr<MathSymbol> mathsym);
+  void parse_subsupscript(std::shared_ptr<MathSymbol> mathsym);
 
-  void parse_left(const std::string& str);
-  void parse_right(const std::string& str);
+  void parse_left(std::shared_ptr<MathSymbol> mathsym);
+  void parse_right(std::shared_ptr<MathSymbol> mathsym);
 
-  void parse_sqrt(const std::string& str);
-  void parse_sqrt_degree(const std::string& str);
-  void parse_sqrt_radicand(const std::string& str);
+  void parse_sqrt(std::shared_ptr<MathSymbol> mathsym);
+  void parse_sqrt_degree(std::shared_ptr<MathSymbol> mathsym);
+  void parse_sqrt_radicand(std::shared_ptr<MathSymbol> mathsym);
 
-  void parse_frac_numer(const std::string& str);
-  void parse_frac_denom(const std::string& str);
-
-  /* Control sequences */
-  void cs_left();
-  void cs_right();
-  void cs_over();
-  void cs_frac();
-  void cs_sqrt();
-  void cs_rm();
-  void cs_textstyle();
-  void cs_scriptstyle();
-  void cs_scriptscriptstyle();
+  void parse_frac_numer(std::shared_ptr<MathSymbol> mathsym);
+  void parse_frac_denom(std::shared_ptr<MathSymbol> mathsym);
 
 private:
   std::vector<State> m_states;

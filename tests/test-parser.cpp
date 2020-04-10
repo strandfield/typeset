@@ -7,14 +7,14 @@
 #include "tex/math/fraction.h"
 #include "tex/math/root.h"
 
-#include "tex/parsing/mathparser.h"
+#include "tex/parsing/mathparserfrontend.h"
 
 TEST_CASE(test_parser_1)
 {
   using namespace tex;
 
-  parsing::MathParser parser;
-  parser.writeSymbol("a");
+  parsing::MathParserFrontend parser;
+  parser.writeChar('a');
   parser.finish();
 
   ASSERT(parser.output().size() == 1);
@@ -26,12 +26,12 @@ TEST_CASE(test_parser_2)
   using namespace tex;
   using namespace parsing;
 
-  parsing::MathParser parser;
-  parser.writeSymbol("1");
-  parser.writeSymbol("+");
-  parser.writeSymbol("2");
-  parser.writeControlSequence(MathParser::CS::OVER);
-  parser.writeSymbol("5");
+  parsing::MathParserFrontend parser;
+  parser.writeChar('1');
+  parser.writeChar('+');
+  parser.writeChar('2');
+  parser.writeControlSequence("over");
+  parser.writeChar('5');
   parser.finish();
 
   ASSERT(parser.output().size() == 1);
@@ -43,14 +43,14 @@ TEST_CASE(test_parser_3)
   using namespace tex;
   using namespace parsing;
 
-  parsing::MathParser parser;
-  parser.writeControlSequence(MathParser::CS::LEFT);
-  parser.writeSymbol("(");
-  parser.writeSymbol("a");
-  parser.writeSymbol("+");
-  parser.writeSymbol("b");
-  parser.writeControlSequence(MathParser::CS::RIGHT);
-  parser.writeSymbol(")");
+  parsing::MathParserFrontend parser;
+  parser.writeControlSequence("left");
+  parser.writeChar('(');
+  parser.writeChar('a');
+  parser.writeChar('+');
+  parser.writeChar('b');
+  parser.writeControlSequence("right");
+  parser.writeChar(')');
   parser.finish();
 
   ASSERT(parser.output().size() == 1);
@@ -63,15 +63,15 @@ TEST_CASE(test_parser_4)
   using namespace tex;
   using namespace parsing;
 
-  parsing::MathParser parser;
-  parser.writeSymbol("x");
+  parsing::MathParserFrontend parser;
+  parser.writeChar('x');
   parser.beginSuperscript();
-  parser.writeSymbol("2");
-  parser.writeSymbol("+");
-  parser.writeSymbol("2");
-  parser.writeSymbol("x");
-  parser.writeSymbol("+");
-  parser.writeSymbol("1");
+  parser.writeChar('2');
+  parser.writeChar('+');
+  parser.writeChar('2');
+  parser.writeChar('x');
+  parser.writeChar('+');
+  parser.writeChar('1');
   parser.finish();
 
   ASSERT(parser.output().size() == 6);
@@ -88,13 +88,13 @@ TEST_CASE(test_parser_sqrt)
   {
     // \sqrt{1 + \sqrt 2}
 
-    parsing::MathParser parser;
-    parser.writeControlSequence(MathParser::CS::SQRT);
+    parsing::MathParserFrontend parser;
+    parser.writeControlSequence("sqrt");
     parser.beginMathList();
-    parser.writeSymbol("1");
-    parser.writeSymbol("+");
-    parser.writeControlSequence(MathParser::CS::SQRT);
-    parser.writeSymbol("2");
+    parser.writeChar('1');
+    parser.writeChar('+');
+    parser.writeControlSequence("sqrt");
+    parser.writeChar('2');
     parser.endMathList();
     parser.finish();
 
@@ -106,13 +106,13 @@ TEST_CASE(test_parser_sqrt)
   {
     // \sqrt[3]{n}
 
-    parsing::MathParser parser;
-    parser.writeControlSequence(MathParser::CS::SQRT);
-    parser.writeSymbol("[");
-    parser.writeSymbol("3");
-    parser.writeSymbol("]");
+    parsing::MathParserFrontend parser;
+    parser.writeControlSequence("sqrt");
+    parser.writeChar('[');
+    parser.writeChar('3');
+    parser.writeChar(']');
     parser.beginMathList();
-    parser.writeSymbol("n");
+    parser.writeChar('n');
     parser.endMathList();
     parser.finish();
 
@@ -130,13 +130,13 @@ TEST_CASE(test_parser_frac)
   {
     // frac{a}{b}
 
-    parsing::MathParser parser;
-    parser.writeControlSequence(MathParser::CS::FRAC);
+    parsing::MathParserFrontend parser;
+    parser.writeControlSequence("frac");
     parser.beginMathList();
-    parser.writeSymbol("a");
+    parser.writeChar('a');
     parser.endMathList();
     parser.beginMathList();
-    parser.writeSymbol("b");
+    parser.writeChar('b');
     parser.endMathList();
     parser.finish();
 

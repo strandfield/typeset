@@ -119,7 +119,7 @@ void MathMode::main_callback(Token&& t)
     {
       try
       {
-        m_parser.writeControlSequence(MathParser::cs(t.controlSequence()));
+        m_parser.writeControlSequence(t.controlSequence());
       }
       catch (...)
       {
@@ -157,7 +157,8 @@ void MathMode::main_callback(Token&& t)
 
       if (is_utf8_char(symbuf()))
       {
-        m_parser.writeSymbol(symbuf());
+        auto it = symbuf().begin();
+        m_parser.writeSymbol(read_utf8_char(it));
         symbuf().clear();
       }
     }
