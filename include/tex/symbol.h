@@ -42,6 +42,8 @@ public:
   Character character() const { return m_char;  }
   int classNumber() const { return m_class; }
   int family() const { return m_family; }
+
+  bool isMathSymbol() const override { return true; }
 };
 
 } // namespace tex

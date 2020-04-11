@@ -10,6 +10,7 @@
 #include "tex/math/atom.h"
 #include "tex/math/fraction.h"
 #include "tex/math/math-typeset.h"
+#include "tex/parsing/mathparserfrontend.h"
 
 #include <QPaintEvent>
 
@@ -51,15 +52,43 @@ static std::shared_ptr<tex::math::Fraction> frac(std::shared_ptr<tex::Node> num,
 MathTextWidget::MathTextWidget(QWidget *parent)
   : Example(parent)
 {
-  tex::MathList mlist;
-  mlist.push_back(ord('2'));
-  mlist.push_back(op(QChar(0x00D7)));
-  mlist.push_back(frac(ord('x'), ord('7')));
+  tex::parsing::MathParserFrontend mathparser;
+
+  mathparser.writeChar('2');
+  mathparser.writeControlSequence("times");
+  mathparser.writeControlSequence("frac");
+  mathparser.beginMathList();
+  mathparser.writeChar('x');
+  mathparser.endMathList();
+  mathparser.beginMathList();
+  mathparser.writeChar('7');
+  mathparser.endMathList();
+  mathparser.finish();
+
+  tex::MathList mlist = mathparser.output();
+  //mlist.push_back(ord('2'));
+  //mlist.push_back(op(QChar(0x00D7)));
+  //mlist.push_back(frac(ord('x'), ord('7')));
 
   auto engine = std::make_shared<QtTypesetEngine>();
 
-  tex::Options opts{ engine };
-  tex::List hlist = tex::mlist_to_hlist(std::move(mlist), opts);
+  tex::MathTypesetter mt{ engine };
+  mt.setInsertPenalties(false);
+
+  {
+    std::array<tex::MathFont, 16> fonts;
+
+    for (size_t i(0); i < 16; ++i)
+    {
+      fonts[i].textfont = tex::Font(3 * i + 1);
+      fonts[i].scriptfont = tex::Font(3 * i + 2);
+      fonts[i].scriptscriptfont = tex::Font(3 * i + 3);
+    }
+
+    mt.setFonts(fonts);
+  }
+
+  tex::List hlist = mt.mlist2hlist(mlist);
   layout_ = tex::hbox(std::move(hlist));
 }
 

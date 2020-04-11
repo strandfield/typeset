@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -22,517 +22,13 @@
 #include <cassert>
 #include <cmath>
 #include <stdexcept>
+#include <set>
 
 namespace tex
 {
 
 namespace math
 {
-
-std::shared_ptr<Box> nullbox()
-{
-  static std::shared_ptr<Box> globalInstance = tex::hbox({});
-  return globalInstance;
-}
-
-std::shared_ptr<Box> typeset(std::shared_ptr<Symbol> symbol, const Options & opts)
-{
-  return opts.engine()->typeset(symbol, opts.font());
-}
-
-static std::shared_ptr<VBox> radicalSignBox(float minTotalHeight, const Options & opts)
-{
-  std::shared_ptr<Box> box = opts.engine()->typesetRadicalSign(minTotalHeight);
-  auto ret = tex::vbox({ box });
-  const float theta = opts.fontMetrics().defaultRuleThickness();
-  if (ret->height() != theta)
-  {
-    VBoxEditor editor{ *ret };
-    editor.changeHeight(theta);
-    editor.done();
-  }
-  return ret;
-}
-
-static std::shared_ptr<Box> boxit(std::shared_ptr<Node> node, const Options & opts)
-{
-  if (node == nullptr)
-  {
-    return nullbox();
-  }
-  else if (node->isDerivedFrom<Symbol>())
-  {
-    return typeset(cast<Symbol>(node), opts);
-  }
-  else if (node->isBox())
-  {
-    return cast<Box>(node);
-  }
-  else if (node->is<MathListNode>())
-  {
-    MathList mlist = cast<MathListNode>(node)->list();
-    List hlist = mlist_to_hlist(std::move(mlist), opts);
-    return tex::hbox(std::move(hlist));
-  }
-
-  throw std::runtime_error{ "boxit() : invalid input" };
-}
-
-static std::shared_ptr<HBox> boxit(MathList mlist, const Options & opts)
-{
-  List hlist = mlist_to_hlist(std::move(mlist), opts);
-  return tex::hbox(std::move(hlist));
-}
-
-static std::shared_ptr<HBox> hboxit(std::shared_ptr<Node> node, const Options & opts)
-{
-  auto box = boxit(node, opts);
-  if (!box->is<HBox>())
-    return tex::hbox(List{ box });
-  return cast<HBox>(box);
-}
-
-
-static void changeToOrd(MathList & mathlist, MathList::iterator & current, const Options & opts);
-static void attachSubSup(MathList & mlist, MathList::iterator & current, const Options & opts);
-static void processAtom(MathList & mathlist, MathList::iterator & current, const Options & opts);
-
-static void processOpAtom(MathList & mathlist, MathList::iterator & current, const Options & opts)
-{
-  auto atom = cast<Atom>(*current);
-  assert(atom->type() == Atom::Op);
-
-  const bool hasLimits = atom->limits() == Atom::Limits || (atom->limits() == Atom::DisplayLimits && opts.mathStyle() > Style::T);
-
-  float delta = 0.f;
-  if (atom->nucleus()->isDerivedFrom<Symbol>() && opts.mathStyle() > Style::T)
-  {
-    auto mathsymbol = cast<Symbol>(atom->nucleus());
-
-    auto x = opts.engine()->typesetLargeOp(mathsymbol);
-    delta = opts.fontMetrics().italicCorrection(mathsymbol);
-    const float a = opts.fontMetrics().axisHeight();
-    auto boxed_x = tex::hbox({ x });
-    boxed_x->setShiftAmount(0.5f * (x->height() - x->depth()) - a);
-    atom->changeNucleus(tex::hbox({ x }));
-  }
-
-  if (!hasLimits)
-  {
-    processAtom(mathlist, current, opts);
-    return;
-  }
-
-  auto x = boxit(atom->superscript(), opts.withStyle(opts.mathStyle().sup()));
-  auto y = boxit(atom->nucleus(), opts);
-  auto z = boxit(atom->subscript(), opts.withStyle(opts.mathStyle().sub()));
-
-  const float w = std::max({ x->width(), y->width(), z->width() });
-  const std::shared_ptr<Glue> reboxGlue = tex::glue(0.f, tex::Stretch{ 1.0f, GlueOrder::Fil });
-  if (x->width() < w)
-    x = tex::hbox({ reboxGlue, x, reboxGlue }, w);
-  if (y->width() < w)
-    y = tex::hbox({ reboxGlue, y, reboxGlue }, w);
-  if (z->width() < w)
-    z = tex::hbox({ reboxGlue, z, reboxGlue }, w);
-
-  List vlist;
-  if (atom->superscript() != nullptr)
-  {
-    vlist.push_back(tex::kern(opts.fontMetrics().bigOpSpacing5()));
-    cast<ListBox>(x)->shift(0.5f * delta);
-    vlist.push_back(x);
-    vlist.push_back(kern(std::max(opts.fontMetrics().bigOpSpacing1(), opts.fontMetrics().bigOpSpacing3() - x->depth())));
-  }
-  vlist.push_back(y);
-
-  auto vbox = tex::vbox(std::move(vlist));
-  const float h = vbox->totalHeight() - y->depth();
-
-  if (atom->subscript() != nullptr)
-  {
-    VBoxEditor editor{ *vbox };
-    editor.list().push_back(kern(std::max(opts.fontMetrics().bigOpSpacing2(), opts.fontMetrics().bigOpSpacing4() - z->height())));
-    cast<ListBox>(z)->shift(-0.5f * delta);
-    editor.list().push_back(z);
-    editor.list().push_back(kern(opts.fontMetrics().bigOpSpacing5()));
-    editor.rebox();
-    editor.changeHeight(h);
-    editor.done();
-  }
-
-  atom->changeNucleus(vbox);
-}
-
-
-static void processRadAtom(MathList & mathlist, MathList::iterator & current, const Options & opts)
-{
-  std::shared_ptr<Atom> atom = cast<Atom>(*current);
-  assert(atom->type() == Atom::Rad);
-
-  auto x = boxit(atom->nucleus(), opts.withCrampedStyle());
-  float theta = opts.fontMetrics().defaultRuleThickness();
-  const float phi = opts.mathStyle() > Style::T ? opts.fontMetrics().xHeight() : 0.f;
-  float psi = theta + 0.25f * std::abs(phi);
-  auto y = radicalSignBox(psi + theta + x->totalHeight(), opts);
-  const float radicalSignBoxWidth = y->width();
-  theta = y->height();
-  if (y->depth() > psi + y->totalHeight())
-    psi = 0.5f * (psi + y->depth() - x->totalHeight());
-  auto vbox = tex::vbox({ kern(theta), tex::hrule(x->width(), theta), kern(psi), x });
-  y->setShiftAmount(y->shiftAmount() - psi + x->height());
-  atom->changeNucleus(tex::hbox({ y, vbox }));
-  changeToOrd(mathlist, current, opts);
-}
-
-static void processAccAtom(MathList & mathlist, MathList::iterator & current, const Options & opts)
-{
-  std::shared_ptr<Atom> atom = cast<Atom>(*current);
-
-  std::shared_ptr<Box> x = boxit(atom->nucleus(), opts.withCrampedStyle());
-  const float u = x->width();
-  float delta = std::min(x->height(), opts.fontMetrics().xHeight());
-
-  if (atom->nucleus() != nullptr && atom->nucleus()->isDerivedFrom<Symbol>())
-  {
-    processAtom(mathlist, current, opts);
-    atom->clearSubSupscripts();
-    delta += (x->height() - cast<Box>(atom->nucleus())->height());
-    x = cast<Box>(atom->nucleus());
-  }
-
-  /// TODO : add support for extensible accent !
-  auto y = tex::hbox({ typeset(atom->accent(), opts) });
-  y->shift(0.5f * (u - y->width()));
-  auto z = tex::vbox({ y, kern(-delta), x });
-  if (z->height() < x->height())
-  {
-    VBoxEditor editor{ *z };
-    editor.list().push_front(kern(x->height() - z->height()));
-    editor.rebox();
-    editor.done();
-  }
-
-  if (z->width() != x->width())
-  {
-    /// TODO: set z.width to x.width
-  }
-
-  atom->changeNucleus(z);
-  changeToOrd(mathlist, current, opts);
-}
-
-static void changeToOrd(MathList & mathlist, MathList::iterator & current, const Options & opts)
-{
-  auto atom = cast<Atom>(*current);
-  atom->changeType(Atom::Ord);
-  processAtom(mathlist, current, opts);
-}
-
-static void processAtom(MathList & mathlist, MathList::iterator & current, const Options & opts)
-{
-  auto atom = cast<Atom>(*current);
-
-  atom->changeNucleus(boxit(atom->nucleus(), opts));
-
-  attachSubSup(mathlist, current, opts);
-}
-
-static bool isCharacterBox(const std::shared_ptr<Node> & node, float *w = nullptr, float *h = nullptr, float *d = nullptr)
-{
-  std::shared_ptr<Box> cbox = std::dynamic_pointer_cast<tex::Box>(node);
-
-  if (cbox == nullptr || cbox->is<VBox>())
-    return false;
-
-  if (node->is<HBox>())
-  {
-    auto hbox = cast<HBox>(node);
-    const auto & hlist = hbox->list();
-    if (hlist.size() != 2)
-      return false;
-    auto begin = hlist.begin();
-    if ((*begin)->isDerivedFrom<Box>() && !(*begin)->is<HBox>() && !(*begin)->is<VBox>())
-    {
-      begin++;
-      if ((*begin)->isKern())
-        cbox = cast<Box>(*hlist.begin());
-    }
-  }
-
-  if (w != nullptr)
-    *w = cbox->width();
-  if (h != nullptr)
-    *h = cbox->height();
-  if (d != nullptr)
-    *d = cbox->depth();
-  return true;
-
-  return true;
-}
-
-
-static void attachSubSup(MathList & mlist, MathList::iterator & current, const Options & opts)
-{
-  auto atom = cast<Atom>(*current);
-
-  if (atom->subscript() == nullptr && atom->superscript() == nullptr)
-    return;
-
-  float u, v;
-  if (isCharacterBox(atom->nucleus()))
-    u = v = 0.f;
-  else
-  {
-    const float q = opts.withStyle(opts.mathStyle().sup()).fontMetrics().supDrop();
-    const float r = opts.withStyle(opts.mathStyle().sub()).fontMetrics().subDrop();
-    auto box = cast<Box>(atom->nucleus());
-    u = box->height() - q;
-    v = box->depth() + r;
-  }
-
-
-  const float scriptspace = 0.5f * opts.fontMetrics().defaultRuleThickness();
-
-  if (atom->superscript() == nullptr)
-  {
-    auto x = boxit(atom->subscript(), opts.withStyle(opts.mathStyle().sub()));
-    if (isCharacterBox(x))
-    {
-      x = tex::hbox({ x, kern(scriptspace) });
-    }
-    else
-    {
-      ListBoxEditor editor{ *cast<ListBox>(x) };
-      editor.enlarge(scriptspace);
-    }
-
-    float shift = std::max({ v, opts.fontMetrics().sub1(), x->height() - (4.f / 5.f) * std::abs(opts.fontMetrics().xHeight()) });
-    cast<HBox>(x)->shift(shift);
-    atom->changeNucleus(tex::hbox({ atom->nucleus(), x }));
-    return;
-  }
-
-  auto x = boxit(atom->superscript(), opts.withStyle(opts.mathStyle().sup()));
-  if (isCharacterBox(x))
-  {
-    x = tex::hbox({ x, kern(scriptspace) });
-  }
-  else
-  {
-    ListBoxEditor editor{ *cast<ListBox>(x) };
-    editor.enlarge(scriptspace);
-  }
-
-  const float p = opts.mathStyle() == Style::D ? opts.fontMetrics().sup1() : (opts.mathStyle() == opts.mathStyle().cramp() ? opts.fontMetrics().sup3() : opts.fontMetrics().sup2());
-  u = std::max({ u, p, x->depth() + (4.f / 5.f) * std::abs(opts.fontMetrics().xHeight()) });
-
-  if (atom->subscript() == nullptr)
-  {
-    cast<HBox>(x)->shift(-u);
-    atom->changeNucleus(tex::hbox({ atom->nucleus(), x }));
-    return;
-  }
-
-  auto y = boxit(atom->superscript(), opts.withStyle(opts.mathStyle().sub()));
-  if (isCharacterBox(y))
-  {
-    y = tex::hbox({ y, kern(scriptspace) });
-  }
-  else
-  {
-    ListBoxEditor editor{ *cast<ListBox>(y) };
-    editor.enlarge(scriptspace);
-  }
-
-  v = std::max(v, opts.fontMetrics().sub2());
-
-  const float theta = opts.fontMetrics().defaultRuleThickness();
-
-  if ((u - x->depth()) - (y->height() - v) < 4 * theta)
-  {
-    v = 4.f * theta - (u - x->depth()) + y->height();
-    const float psi = (4.f / 5.f) * opts.fontMetrics().xHeight() - (u - x->depth());
-    if (psi > 0.f)
-    {
-      u += psi;
-      v -= psi;
-    }
-  }
-
-
-  float delta = 0.f;
-
-  cast<ListBox>(x)->shift(delta);
-  const float totalHeight = x->totalHeight() + u + v + y->totalHeight();
-  auto vbox = tex::vbox({ x, kern(totalHeight - (x->totalHeight() + y->totalHeight())), y });
-  {
-    ListBoxEditor editor{ *vbox };
-    editor.setHeight(x->height() + u);
-    editor.setDepth(y->depth() + v);
-  }
-  atom->changeNucleus(tex::hbox({ atom->nucleus(), vbox }));
-}
-
-
-static void processFraction(MathList & mlist, MathList::iterator & current, const Options & opts)
-{
-  std::shared_ptr<Fraction> frac = cast<Fraction>(*current);
-
-  float theta = opts.fontMetrics().defaultRuleThickness();
-
-
-  auto x = boxit(frac->numer(), opts.withStyle(opts.mathStyle().fracNum()));
-  auto z = boxit(frac->denom(), opts.withStyle(opts.mathStyle().fracDen()));
-  if (x->width() < z->width())
-  {
-    const std::shared_ptr<Glue> reboxGlue = tex::glue(0.f, tex::Stretch{ 1.0f, GlueOrder::Fil });
-    x = tex::hbox({ reboxGlue, x, reboxGlue }, z->width());
-  }
-  else if (z->width() < x->width())
-  {
-    const std::shared_ptr<Glue> reboxGlue = tex::glue(0.f, tex::Stretch{ 1.0f, GlueOrder::Fil });
-    z = tex::hbox({ reboxGlue, z, reboxGlue }, x->width());
-  }
-  const float w = z->width();
-
-  float u;
-  float v;
-  if (opts.mathStyle() > Style::T)
-  {
-    u = opts.fontMetrics().num1();
-    v = opts.fontMetrics().denom1();
-  }
-  else
-  {
-    u = opts.fontMetrics().num2();
-    v = opts.fontMetrics().denom2();
-  }
-
-  // Rule 15d
-  float phi = opts.mathStyle() > Style::T ? 3 * theta : theta;
-  float a = opts.fontMetrics().axisHeight();
-  if ((u - x->depth()) - (a + 0.5f * theta) < phi)
-  {
-    u += phi - ((u - x->depth()) - (a + 0.5f * theta));
-  }
-  if ((a - 0.5f * theta) - (z->height() - v) < phi)
-  {
-    v += phi - ((a - 0.5f * theta) - (z->height() - v));
-  }
-
-  const float h = x->height() + u;
-  const float d = z->depth() + v;
-
-  List vlist;
-  vlist.push_back(x);
-  vlist.push_back(kern(u - x->depth() - a - 0.5f * theta));
-  vlist.push_back(hrule(w, theta));
-  vlist.push_back(kern(a - 0.5f * theta + v - z->height()));
-  vlist.push_back(z);
-
-  auto vbox = tex::vbox(std::move(vlist));
-  
-  {
-    tex::VBoxEditor editor{ *vbox };
-    editor.changeHeight(h);
-    editor.done();
-  }
-
-  assert(vbox->height() == h);
-  assert(vbox->depth() == d);
-
-  *current = Atom::create<Atom::Inner>(vbox);
-}
-
-static void processRoot(MathList& mlist, MathList::iterator& current, const Options& opts)
-{
-  auto root = cast<Root>(*current);
-
-  // Do as with a Rad atom
-  auto x = boxit(root->radicand(), opts.withCrampedStyle());
-  float theta = opts.fontMetrics().defaultRuleThickness();
-  const float phi = opts.mathStyle() > Style::T ? opts.fontMetrics().xHeight() : 0.f;
-  float psi = theta + 0.25f * std::abs(phi);
-  auto y = radicalSignBox(psi + theta + x->totalHeight(), opts);
-  const float radicalSignBoxWidth = y->width();
-  theta = y->height();
-  if (y->depth() > psi + y->totalHeight())
-    psi = 0.5f * (psi + y->depth() - x->totalHeight());
-  auto vbox = tex::vbox({ kern(theta), tex::hrule(x->width(), theta), kern(psi), x });
-  y->setShiftAmount(y->shiftAmount() - psi + x->height());
-
-  // Handle the root index
-  auto index = boxit(root->degree(), opts.withStyle(Style::SS));
-
-  float h = std::max(y->height() - y->shiftAmount(), vbox->height());
-  float d = std::max(y->depth() + y->shiftAmount(), vbox->depth());
-
-  // The amount the index is shifted by. This is taken from the TeX
-  // source, in the definition of `\r@@t`.
-  const float shiftAmount = 0.6f * (h - d);
-  index->shift(-shiftAmount);
-
-  auto atom = Atom::create<Atom::Rad>(tex::hbox({ index, kern(-radicalSignBoxWidth), y, vbox }));
-  *current = atom;
-  changeToOrd(mlist, current, opts);
-}
-
-static std::shared_ptr<Box> typesetDelimiter(const std::shared_ptr<Symbol> & ms, float minTotalHeight, const Options & opts)
-{
-  if (ms == nullptr)
-    return nullbox();
-
-  return opts.engine()->typesetDelimiter(ms, minTotalHeight);
-}
-
-void processBoundary(MathList & mlist, const Options & opts)
-{
-  static const float delimiterfactor = 901.f;
-  static const float delimitershortfall = 0.5f;
-
-  auto first = mlist.front();
-  auto last = mlist.back();
-
-  if (!first->is<Boundary>())
-    return;
-
-  assert(last->is<Boundary>());
-
-  const float a = opts.fontMetrics().axisHeight();
-
-  float h = 0.f;
-  float d = 0.f;
-  for (auto it = mlist.begin(); it != mlist.end(); ++it)
-  {
-    auto node = *it;
-    if (node->is<Atom>())
-      node = cast<Atom>(node)->nucleus();
-
-    if (node->is<ListBox>())
-    {
-      h += cast<ListBox>(node)->height() - cast<ListBox>(node)->shiftAmount();
-      d += cast<ListBox>(node)->depth() + cast<ListBox>(node)->shiftAmount();
-    }
-    else if (node->isBox())
-    {
-      h += cast<Box>(node)->height();
-      d += cast<Box>(node)->depth();
-    }
-  }
-
-  float delta = std::max(h - a, d + a);
-
-  float tth = std::max(delimiterfactor * delta / 500.f, 2 * delta - delimitershortfall);
-  auto left = tex::hbox({ typesetDelimiter(cast<Boundary>(first)->symbol(), tth, opts) });
-  auto right = tex::hbox({ typesetDelimiter(cast<Boundary>(last)->symbol(), tth, opts) });
-  left->setShiftAmount(0.5f * (left->height() - left->depth()) - a);
-  right->setShiftAmount(0.5f * (right->height() - right->depth()) - a);
-
-  (*mlist.begin()) = Atom::create<Atom::Open>(left);
-  (*(--mlist.end())) = Atom::create<Atom::Close>(right);
-}
-
 
 namespace SpacingTable
 {
@@ -561,213 +57,112 @@ static const bool spacingNonScript[][8] = {
 
 } // namespace SpacingTable
 
-static std::shared_ptr<Glue> thinmuskip(const Options & opts)
+} // namespace math
+
+struct RAIIStyleGuard
 {
-  const float mu = opts.fontMetrics().quad() / 18.f;
-  return glue(3 * mu);
-}
+  math::Style& style;
+  math::Style saved_value;
 
-static std::shared_ptr<Glue> medmuskip(const Options & opts)
-{
-  const float mu = opts.fontMetrics().quad() / 18.f;
-  return glue(4 * mu, tex::Shrink(4 * mu), tex::Stretch(2 * mu));
-}
-
-static std::shared_ptr<Glue> thickmuskip(const Options & opts)
-{
-  const float mu = opts.fontMetrics().quad() / 18.f;
-  return tex::glue(5 * mu, tex::Stretch(5 * mu));
-}
-
-void insertSpace(List & list, const std::shared_ptr<Atom> & preceding, const std::shared_ptr<Atom> & next, const Options & opts)
-{
-  assert(static_cast<int>(preceding->type()) <= Atom::Inner);
-  assert(static_cast<int>(next->type()) <= Atom::Inner);
-
-  int amount = SpacingTable::spacing[preceding->type()][next->type()];
-  bool nonScript = SpacingTable::spacingNonScript[preceding->type()][next->type()];
-  if (amount == 0 || opts.mathStyle() <= Style::S && nonScript)
-    return;
-  else if (amount == 1)
-    list.push_back(thinmuskip(opts));
-  else if (amount == 2)
-    list.push_back(medmuskip(opts));
-  else if (amount == 3)
-    list.push_back(thickmuskip(opts));
-}
-
-inline static bool any_of(Atom::Type t, std::initializer_list<Atom::Type> types)
-{
-  return std::find(types.begin(), types.end(), t) != types.end();
-}
-
-void preprocess(MathList &mathlist, Options opts)
-{
-  // Based on TeXbook, Appendix G
-
-  std::shared_ptr<Atom> mostRecentAtom = nullptr;
-
-  for (auto it = mathlist.begin(); it != mathlist.end();)
+  RAIIStyleGuard(math::Style& s)
+    : style(s),
+      saved_value(s)
   {
-    auto & elem = *it;
-    if (elem->isPenalty() || elem->is<Rule>() || elem->is<Boundary>()) 
-    {
-      // Rule 1
-      ++it;
-    }
-    else if (elem->isGlue() || elem->isKern())
-    {
-      // Rule 2 (incomplete)
-      ++it;
-    }
-    else if(elem->is<StyleChange>() || elem->is<FontChange>()) 
-    { 
-      // Rule 3
-      if (elem->is<StyleChange>())
-      {
-        opts.withStyle(elem->as<StyleChange>().style());
-      }
-      else
-      {
-        opts.withFont(elem->as<FontChange>().font());
-      }
 
-      it = mathlist.erase(it);
-    } 
-    // else if(elem->is<MathChoice>()) { } // Rule 4
-    else if (elem->is<Atom>())
-    {
-      auto atom = cast<Atom>(elem);
-
-      if (atom->type() == Atom::Bin && (mostRecentAtom != nullptr && any_of(mostRecentAtom->type(), { Atom::Bin, Atom::Op, Atom::Rel, Atom::Open, Atom::Punct })))
-      {
-        // Rule 5
-        atom->changeType(Atom::Ord);
-        processAtom(mathlist, it, opts);
-      }
-      else if (any_of(atom->type(), { Atom::Rel, Atom::Close, Atom::Punct }))
-      {
-        // Rule 6
-        if (mostRecentAtom != nullptr && mostRecentAtom->type() == Atom::Bin)
-          mostRecentAtom->changeType(Atom::Ord);
-        processAtom(mathlist, it, opts);
-      }
-      else if (any_of(atom->type(), { Atom::Open, Atom::Inner }))
-      {
-        // Rule 7
-        processAtom(mathlist, it, opts);
-      }
-      else if (atom->type() == Atom::Vcent)
-      {
-        // Rule 8
-        auto x = boxit(atom->nucleus(), opts);
-        if (!x->is<VBox>())
-          x = tex::vbox({ x });
-        float v = x->totalHeight();
-        float a = opts.fontMetrics().axisHeight();
-        {
-          ListBoxEditor editor{ *cast<VBox>(x) };
-          editor.setHeight(0.5f * v + a);
-          editor.setDepth(0.5f * v - a);
-        }
-        atom->changeNucleus(x);
-        atom->changeType(Atom::Ord);
-        processAtom(mathlist, it, opts);
-      }
-      else if (atom->type() == Atom::Over)
-      {
-        // Rule 9
-        auto x = boxit(atom->nucleus(), opts.withCrampedStyle());
-        float theta = opts.fontMetrics().defaultRuleThickness();
-        auto box = tex::vbox({ kern(theta), hrule(x->width(), theta), kern(3 * theta), x });
-        atom->changeNucleus(box);
-        changeToOrd(mathlist, it, opts);
-      }
-      else if (atom->type() == Atom::Under)
-      {
-        // Rule 10
-        auto x = boxit(atom->nucleus(), opts.withCrampedStyle());
-        float theta = opts.fontMetrics().defaultRuleThickness();
-        auto box = tex::vtop({ x, kern(3 * theta), hrule(x->width(), theta) });
-        {
-          ListBoxEditor editor{ *box };
-          editor.increaseDepth(theta);
-        }
-        atom->changeNucleus(box);
-        changeToOrd(mathlist, it, opts);
-      }
-      else if (atom->type() == Atom::Rad)
-      {
-        // Rule 11
-        processRadAtom(mathlist, it, opts);
-      }
-      else if (atom->type() == Atom::Acc)
-      {
-        // Rule 12
-        processAccAtom(mathlist, it, opts);
-      }
-      else if (atom->type() == Atom::Op)
-      {
-        // Rule 13
-        processOpAtom(mathlist, it, opts);
-      }
-      else if (atom->type() == Atom::Ord)
-      {
-        // Rule 14 (incomplete)
-        processAtom(mathlist, it, opts);
-      }
-      else
-      {
-        assert(false);
-      }
-
-      mostRecentAtom = atom;
-      ++it;
-    }
-    else if (elem->is<Fraction>())
-    {
-      // Rule 15
-      processFraction(mathlist, it, opts);
-      ++it;
-    }
-    else if (elem->is<Root>())
-    {
-      processRoot(mathlist, it, opts);
-      mostRecentAtom = cast<Atom>(*it);
-      ++it;
-    }
   }
 
-  processBoundary(mathlist, opts);
+  ~RAIIStyleGuard()
+  {
+    style = saved_value;
+  }
+};
+
+
+MathTypesetter::MathTypesetter(std::shared_ptr<TypesetEngine> engine)
+  : m_engine(std::move(engine)),
+    m_fonts{}
+{
+
 }
 
-List mlist_to_hlist_impl(MathList && mathlist, const Options & opts, int relpenalty, int binoppenalty)
+TypesetEngine& MathTypesetter::engine() const
 {
-  preprocess(mathlist, opts);
+  return *m_engine;
+}
+
+std::shared_ptr<TypesetEngine> MathTypesetter::sharedEngine() const
+{
+  return m_engine;
+}
+
+void MathTypesetter::setFonts(const std::array<MathFont, 16>& fonts)
+{
+  m_fonts = fonts;
+}
+
+int MathTypesetter::relpenalty() const
+{
+  return m_relpenalty;
+}
+
+int MathTypesetter::binoppenalty() const
+{
+  return m_binoppenalty;
+}
+
+void MathTypesetter::setRelpenalty(int p)
+{
+  m_relpenalty = p;
+}
+
+void MathTypesetter::setBinoppenalty(int p)
+{
+  m_binoppenalty = p;
+}
+
+bool MathTypesetter::insertPenalties() const
+{
+  return m_insert_penalties;
+}
+
+void MathTypesetter::setInsertPenalties(bool on)
+{
+  m_insert_penalties = on;
+}
+
+List MathTypesetter::mlist2hlist(MathList mlist, math::Style style)
+{
+  if (mlist.empty())
+    return {};
+
+  m_most_recent_atom = nullptr;
+  m_current_style = style;
+
+  preprocess(mlist);
 
   List ret;
-  std::shared_ptr<Atom> mostRecentAtom = nullptr;
-  for (auto it = mathlist.begin(); it != mathlist.end(); ++it)
+
+  for (auto it = mlist.begin(); it != mlist.end(); ++it)
   {
     auto current = *it;
-    const bool isLast = current == mathlist.back();
+    const bool isLast = current == mlist.back();
     std::shared_ptr<Node> next = (isLast ? nullptr : *std::next(it));
-    const bool nextIsRel = next != nullptr && next->is<Atom>() && cast<Atom>(next)->type() == Atom::Rel;
+    const bool nextIsRel = next != nullptr && next->is<math::Atom>() && cast<math::Atom>(next)->type() == math::Atom::Rel;
 
-    if (current->is<Atom>() && mostRecentAtom != nullptr)
-      insertSpace(ret, mostRecentAtom, cast<Atom>(current), opts);
+    if (current->is<math::Atom>() && m_most_recent_atom != nullptr)
+      insertSpace(ret, m_most_recent_atom, cast<math::Atom>(current));
 
-    if (current->is<Atom>())
+    if (current->is<math::Atom>())
     {
-      mostRecentAtom = cast<Atom>(current);
-      ret.push_back(mostRecentAtom->nucleus());
+      m_most_recent_atom = cast<math::Atom>(current);
+      ret.push_back(m_most_recent_atom->nucleus());
 
-      if (!isLast && (next == nullptr || !next->isPenalty()))
+      if (!isLast && insertPenalties() && (next == nullptr || !next->isPenalty()))
       {
-        if (mostRecentAtom->type() == Atom::Op && binoppenalty != 0)
-          ret.push_back(tex::penalty(binoppenalty));
-        else if (mostRecentAtom->type() == Atom::Rel && relpenalty != 0 && !nextIsRel)
-          ret.push_back(tex::penalty(relpenalty));
+        if (m_most_recent_atom->type() == math::Atom::Op && binoppenalty() != 0)
+          ret.push_back(tex::penalty(binoppenalty()));
+        else if (m_most_recent_atom->type() == math::Atom::Rel && relpenalty() != 0 && !nextIsRel)
+          ret.push_back(tex::penalty(relpenalty()));
       }
 
     }
@@ -778,20 +173,725 @@ List mlist_to_hlist_impl(MathList && mathlist, const Options & opts, int relpena
   return ret;
 }
 
-std::shared_ptr<HBox> typeset(MathList & mathlist, const Options & opts)
+Font MathTypesetter::getFont(int fam) const
 {
-  List hlist = mlist_to_hlist(std::move(mathlist), opts);
+  return getFont(fam, m_current_style);
+}
+
+Font MathTypesetter::getFont(int fam, math::Style style) const
+{
+  if (style <= math::Style::SS)
+  {
+    return m_fonts[fam].scriptscriptfont;
+  }
+  else if (style <= math::Style::S)
+  {
+    return m_fonts[fam].scriptfont;
+  }
+  else
+  {
+    return m_fonts[fam].textfont;
+  }
+}
+
+FontMetrics MathTypesetter::getMetrics(int fam) const
+{
+  return FontMetrics{ getFont(fam), engine().metrics() };
+}
+
+FontMetrics MathTypesetter::getMetrics(int fam, math::Style style) const
+{
+  return FontMetrics{ getFont(fam, style), engine().metrics() };
+}
+
+std::shared_ptr<Box> MathTypesetter::nullbox()
+{
+  static std::shared_ptr<Box> globalInstance = tex::hbox({});
+  return globalInstance;
+}
+
+std::shared_ptr<Box> MathTypesetter::typeset(std::shared_ptr<MathSymbol> symbol)
+{
+  return engine().typeset(symbol, getFont(symbol->family()));
+}
+
+std::shared_ptr<Box> MathTypesetter::typesetDelimiter(const std::shared_ptr<Symbol>& ms, float minTotalHeight)
+{
+  if (ms == nullptr)
+    return nullbox();
+
+  return engine().typesetDelimiter(ms, minTotalHeight);
+}
+
+std::shared_ptr<VBox> MathTypesetter::radicalSignBox(float minTotalHeight)
+{
+  std::shared_ptr<Box> box = engine().typesetRadicalSign(minTotalHeight);
+  auto ret = tex::vbox({ box });
+  const float theta = getMetrics(XiFamily).defaultRuleThickness();
+  if (ret->height() != theta)
+  {
+    VBoxEditor editor{ *ret };
+    editor.changeHeight(theta);
+    editor.done();
+  }
+  return ret;
+}
+
+std::shared_ptr<Box> MathTypesetter::boxit(std::shared_ptr<Node> node)
+{
+  if (node == nullptr)
+  {
+    return nullbox();
+  }
+  else if (node->isMathSymbol())
+  {
+    return typeset(cast<MathSymbol>(node));
+  }
+  else if (node->isBox())
+  {
+    return cast<Box>(node);
+  }
+  else if (node->is<MathListNode>())
+  {
+    MathList mlist = cast<MathListNode>(node)->list();
+    MathTypesetter typesetter{ sharedEngine() };
+    typesetter.setFonts(m_fonts);
+    List hlist = typesetter.mlist2hlist(std::move(mlist), m_current_style);
+    return tex::hbox(std::move(hlist));
+  }
+
+  throw std::runtime_error{ "boxit() : invalid input" };
+}
+
+std::shared_ptr<Box> MathTypesetter::boxit(std::shared_ptr<Node> node, math::Style s)
+{
+  RAIIStyleGuard style_guard{ m_current_style };
+  m_current_style = s;
+  return boxit(node);
+}
+
+std::shared_ptr<HBox> MathTypesetter::boxit(MathList mlist)
+{
+  return boxit(std::move(mlist), m_current_style);
+}
+
+std::shared_ptr<HBox> MathTypesetter::boxit(MathList mlist, math::Style s)
+{
+  MathTypesetter typesetter{ sharedEngine() };
+  typesetter.setFonts(m_fonts);
+
+  List hlist = typesetter.mlist2hlist(std::move(mlist), s);
   return tex::hbox(std::move(hlist));
 }
 
-} // namespace math
-
-List mlist_to_hlist(MathList && mathlist, const Options & opts, int relpenalty, int binoppenalty)
+std::shared_ptr<HBox> MathTypesetter::hboxit(std::shared_ptr<Node> node)
 {
-  if (mathlist.empty())
-    return {};
-  
-  return tex::math::mlist_to_hlist_impl(std::move(mathlist), opts, relpenalty, binoppenalty);
+  auto box = boxit(node);
+  if (!box->is<HBox>())
+    return tex::hbox(List{ box });
+  return cast<HBox>(box);
+}
+
+
+void MathTypesetter::preprocess(MathList& mlist)
+{
+  // Based on TeXbook, Appendix G
+
+  RAIIStyleGuard style_guard{ m_current_style };
+
+  std::shared_ptr<math::Atom> most_recent_atom = nullptr;
+
+  for (auto it = mlist.begin(); it != mlist.end();)
+  {
+    auto& elem = *it;
+    if (elem->isPenalty() || elem->is<Rule>() || elem->is<math::Boundary>())
+    {
+      // Rule 1
+      ++it;
+    }
+    else if (elem->isGlue() || elem->isKern())
+    {
+      // Rule 2 (incomplete)
+      ++it;
+    }
+    else if (elem->is<math::StyleChange>())
+    {
+      // Rule 3
+      m_current_style = elem->as<math::StyleChange>().style();
+      it = mlist.erase(it);
+    }
+    // else if(elem->is<MathChoice>()) { } // Rule 4
+    else if (elem->is<math::Atom>())
+    {
+      auto atom = cast<math::Atom>(elem);
+
+      static const std::set<math::Atom::Type> rule5_types = { math::Atom::Bin, math::Atom::Op, math::Atom::Rel, math::Atom::Open, math::Atom::Punct };
+      static const std::set<math::Atom::Type> rule6_types = { math::Atom::Rel, math::Atom::Close, math::Atom::Punct };
+      static const std::set<math::Atom::Type> rule7_types = { math::Atom::Open, math::Atom::Inner };
+
+      if (atom->type() == math::Atom::Bin && (most_recent_atom != nullptr && rule5_types.find(most_recent_atom->type()) != rule5_types.end()))
+      {
+        // Rule 5
+        atom->changeType(math::Atom::Ord);
+        processAtom(mlist, it);
+      }
+      else if (rule6_types.find(atom->type()) != rule6_types.end())
+      {
+        // Rule 6
+        if (most_recent_atom != nullptr && most_recent_atom->type() == math::Atom::Bin)
+          most_recent_atom->changeType(math::Atom::Ord);
+        processAtom(mlist, it);
+      }
+      else if (rule7_types.find(atom->type()) != rule7_types.end())
+      {
+        // Rule 7
+        processAtom(mlist, it);
+      }
+      else if (atom->type() == math::Atom::Vcent)
+      {
+        // Rule 8
+        auto x = boxit(atom->nucleus());
+        if (!x->is<VBox>())
+          x = tex::vbox({ x });
+        float v = x->totalHeight();
+        float a = getMetrics(SigmaFamily).axisHeight();
+        {
+          ListBoxEditor editor{ *cast<VBox>(x) };
+          editor.setHeight(0.5f * v + a);
+          editor.setDepth(0.5f * v - a);
+        }
+        atom->changeNucleus(x);
+        atom->changeType(math::Atom::Ord);
+        processAtom(mlist, it);
+      }
+      else if (atom->type() == math::Atom::Over)
+      {
+        // Rule 9
+        auto x = boxit(atom->nucleus(), m_current_style.cramp());
+        float theta = getMetrics(XiFamily).defaultRuleThickness();
+        auto box = tex::vbox({ kern(theta), hrule(x->width(), theta), kern(3 * theta), x });
+        atom->changeNucleus(box);
+        changeToOrd(mlist, it);
+      }
+      else if (atom->type() == math::Atom::Under)
+      {
+        // Rule 10
+        auto x = boxit(atom->nucleus(), m_current_style.cramp());
+        float theta = getMetrics(XiFamily).defaultRuleThickness();
+        auto box = tex::vtop({ x, kern(3 * theta), hrule(x->width(), theta) });
+        {
+          ListBoxEditor editor{ *box };
+          editor.increaseDepth(theta);
+        }
+        atom->changeNucleus(box);
+        changeToOrd(mlist, it);
+      }
+      else if (atom->type() == math::Atom::Rad)
+      {
+        // Rule 11
+        processRadAtom(mlist, it);
+      }
+      else if (atom->type() == math::Atom::Acc)
+      {
+        // Rule 12
+        processAccAtom(mlist, it);
+      }
+      else if (atom->type() == math::Atom::Op)
+      {
+        // Rule 13
+        processOpAtom(mlist, it);
+      }
+      else if (atom->type() == math::Atom::Ord)
+      {
+        // Rule 14 (incomplete)
+        processAtom(mlist, it);
+      }
+      else
+      {
+        assert(false);
+      }
+
+      most_recent_atom = atom;
+      ++it;
+    }
+    else if (elem->is<math::Fraction>())
+    {
+      // Rule 15
+      processFraction(mlist, it);
+      ++it;
+    }
+    else if (elem->is<math::Root>())
+    {
+      processRoot(mlist, it);
+      most_recent_atom = cast<math::Atom>(*it);
+      ++it;
+    }
+  }
+
+  processBoundary(mlist);
+}
+
+void MathTypesetter::processOpAtom(MathList& mlist, MathList::iterator& current)
+{
+  auto atom = cast<math::Atom>(*current);
+  assert(atom->type() == math::Atom::Op);
+
+  const bool hasLimits = atom->limits() == math::Atom::Limits || (atom->limits() == math::Atom::DisplayLimits && m_current_style > math::Style::T);
+
+  float delta = 0.f;
+
+  if (atom->nucleus()->isMathSymbol() && m_current_style > math::Style::T)
+  {
+    auto mathsymbol = cast<MathSymbol>(atom->nucleus());
+
+    auto x = engine().typesetLargeOp(mathsymbol);
+    delta = getMetrics(mathsymbol->family()).italicCorrection(mathsymbol);
+    const float a = getMetrics(SigmaFamily).axisHeight();
+    auto boxed_x = tex::hbox({ x });
+    boxed_x->setShiftAmount(0.5f * (x->height() - x->depth()) - a);
+    atom->changeNucleus(tex::hbox({ x }));
+  }
+
+  if (!hasLimits)
+  {
+    processAtom(mlist, current);
+    return;
+  }
+
+  auto x = boxit(atom->superscript(), m_current_style.sup());
+  auto y = boxit(atom->nucleus());
+  auto z = boxit(atom->subscript(), m_current_style.sub());
+
+  const float w = std::max({ x->width(), y->width(), z->width() });
+  const std::shared_ptr<Glue> reboxGlue = tex::glue(0.f, tex::Stretch{ 1.0f, GlueOrder::Fil });
+  if (x->width() < w)
+    x = tex::hbox({ reboxGlue, x, reboxGlue }, w);
+  if (y->width() < w)
+    y = tex::hbox({ reboxGlue, y, reboxGlue }, w);
+  if (z->width() < w)
+    z = tex::hbox({ reboxGlue, z, reboxGlue }, w);
+
+  List vlist;
+  if (atom->superscript() != nullptr)
+  {
+    vlist.push_back(tex::kern(getMetrics(XiFamily).bigOpSpacing5()));
+    cast<ListBox>(x)->shift(0.5f * delta);
+    vlist.push_back(x);
+    vlist.push_back(kern(std::max({ getMetrics(XiFamily).bigOpSpacing1(), getMetrics(XiFamily).bigOpSpacing3() - x->depth() })));
+  }
+  vlist.push_back(y);
+
+  auto vbox = tex::vbox(std::move(vlist));
+  const float h = vbox->totalHeight() - y->depth();
+
+  if (atom->subscript() != nullptr)
+  {
+    VBoxEditor editor{ *vbox };
+    editor.list().push_back(kern(std::max({ getMetrics(XiFamily).bigOpSpacing2(), getMetrics(XiFamily).bigOpSpacing4() - z->height() })));
+    cast<ListBox>(z)->shift(-0.5f * delta);
+    editor.list().push_back(z);
+    editor.list().push_back(kern(getMetrics(XiFamily).bigOpSpacing5()));
+    editor.rebox();
+    editor.changeHeight(h);
+    editor.done();
+  }
+
+  atom->changeNucleus(vbox);
+}
+
+void MathTypesetter::processRadAtom(MathList& mathlist, MathList::iterator& current)
+{
+  std::shared_ptr<math::Atom> atom = cast<math::Atom>(*current);
+  assert(atom->type() == math::Atom::Rad);
+
+  auto x = boxit(atom->nucleus(), m_current_style.cramp());
+  float theta = getMetrics(XiFamily).defaultRuleThickness();
+  const float phi = m_current_style > math::Style::T ? getMetrics(SigmaFamily).xHeight() : 0.f;
+  float psi = theta + 0.25f * std::abs(phi);
+  auto y = radicalSignBox(psi + theta + x->totalHeight());
+  const float radicalSignBoxWidth = y->width();
+  theta = y->height();
+  if (y->depth() > psi + y->totalHeight())
+    psi = 0.5f * (psi + y->depth() - x->totalHeight());
+  auto vbox = tex::vbox({ kern(theta), tex::hrule(x->width(), theta), kern(psi), x });
+  y->setShiftAmount(y->shiftAmount() - psi + x->height());
+  atom->changeNucleus(tex::hbox({ y, vbox }));
+  changeToOrd(mathlist, current);
+}
+
+void MathTypesetter::processAccAtom(MathList& mathlist, MathList::iterator& current)
+{
+  std::shared_ptr<math::Atom> atom = cast<math::Atom>(*current);
+
+  std::shared_ptr<Box> x = boxit(atom->nucleus(), m_current_style.cramp());
+  const float u = x->width();
+  float delta = std::min(x->height(), getMetrics(SigmaFamily).xHeight());
+
+  if (atom->nucleus() != nullptr && atom->nucleus()->isDerivedFrom<Symbol>())
+  {
+    processAtom(mathlist, current);
+    atom->clearSubSupscripts();
+    delta += (x->height() - cast<Box>(atom->nucleus())->height());
+    x = cast<Box>(atom->nucleus());
+  }
+
+  /// TODO : add support for extensible accent !
+  auto y = tex::hbox({ typeset(std::dynamic_pointer_cast<MathSymbol>(atom->accent())) });
+  y->shift(0.5f * (u - y->width()));
+  auto z = tex::vbox({ y, kern(-delta), x });
+  if (z->height() < x->height())
+  {
+    VBoxEditor editor{ *z };
+    editor.list().push_front(kern(x->height() - z->height()));
+    editor.rebox();
+    editor.done();
+  }
+
+  if (z->width() != x->width())
+  {
+    /// TODO: set z.width to x.width
+  }
+
+  atom->changeNucleus(z);
+  changeToOrd(mathlist, current);
+}
+
+void MathTypesetter::changeToOrd(MathList& mathlist, MathList::iterator& current)
+{
+  auto atom = cast<math::Atom>(*current);
+  atom->changeType(math::Atom::Ord);
+  processAtom(mathlist, current);
+}
+
+void MathTypesetter::processAtom(MathList& mathlist, MathList::iterator& current)
+{
+  auto atom = cast<math::Atom>(*current);
+
+  atom->changeNucleus(boxit(atom->nucleus()));
+
+  attachSubSup(mathlist, current);
+}
+
+bool MathTypesetter::isCharacterBox(const std::shared_ptr<Node>& node, float* w, float* h, float* d)
+{
+  std::shared_ptr<Box> cbox = std::dynamic_pointer_cast<tex::Box>(node);
+
+  if (cbox == nullptr || cbox->is<VBox>())
+    return false;
+
+  if (node->is<HBox>())
+  {
+    auto hbox = cast<HBox>(node);
+    const auto& hlist = hbox->list();
+    if (hlist.size() != 2)
+      return false;
+    auto begin = hlist.begin();
+    if ((*begin)->isDerivedFrom<Box>() && !(*begin)->is<HBox>() && !(*begin)->is<VBox>())
+    {
+      begin++;
+      if ((*begin)->isKern())
+        cbox = cast<Box>(*hlist.begin());
+    }
+  }
+
+  if (w != nullptr)
+    *w = cbox->width();
+  if (h != nullptr)
+    *h = cbox->height();
+  if (d != nullptr)
+    *d = cbox->depth();
+  return true;
+
+  return true;
+}
+
+
+void MathTypesetter::attachSubSup(MathList& mlist, MathList::iterator& current)
+{
+  auto atom = cast<math::Atom>(*current);
+
+  if (atom->subscript() == nullptr && atom->superscript() == nullptr)
+    return;
+
+  float u, v;
+  if (isCharacterBox(atom->nucleus()))
+    u = v = 0.f;
+  else
+  {
+    const float q = getMetrics(SigmaFamily, m_current_style.sup()).supDrop();
+    const float r = getMetrics(SigmaFamily, m_current_style.sub()).subDrop();
+    auto box = cast<Box>(atom->nucleus());
+    u = box->height() - q;
+    v = box->depth() + r;
+  }
+
+  const float scriptspace = 0.5f * getMetrics(XiFamily).defaultRuleThickness();
+
+  if (atom->superscript() == nullptr)
+  {
+    auto x = boxit(atom->subscript(), m_current_style.sub());
+    if (isCharacterBox(x))
+    {
+      x = tex::hbox({ x, kern(scriptspace) });
+    }
+    else
+    {
+      ListBoxEditor editor{ *cast<ListBox>(x) };
+      editor.enlarge(scriptspace);
+    }
+
+    float shift = std::max({ v, getMetrics(SigmaFamily).sub1(), x->height() - (4.f / 5.f) * std::abs(getMetrics(SigmaFamily).xHeight()) });
+    cast<HBox>(x)->shift(shift);
+    atom->changeNucleus(tex::hbox({ atom->nucleus(), x }));
+    return;
+  }
+
+  auto x = boxit(atom->superscript(), m_current_style.sup());
+  if (isCharacterBox(x))
+  {
+    x = tex::hbox({ x, kern(scriptspace) });
+  }
+  else
+  {
+    ListBoxEditor editor{ *cast<ListBox>(x) };
+    editor.enlarge(scriptspace);
+  }
+
+  const float p = m_current_style == math::Style::D ? getMetrics(SigmaFamily).sup1() : (m_current_style == m_current_style.cramp() ? getMetrics(SigmaFamily).sup3() : getMetrics(SigmaFamily).sup2());
+  u = std::max({ u, p, x->depth() + (4.f / 5.f) * std::abs(getMetrics(SigmaFamily).xHeight()) });
+
+  if (atom->subscript() == nullptr)
+  {
+    cast<HBox>(x)->shift(-u);
+    atom->changeNucleus(tex::hbox({ atom->nucleus(), x }));
+    return;
+  }
+
+  auto y = boxit(atom->superscript(), m_current_style.sub());
+  if (isCharacterBox(y))
+  {
+    y = tex::hbox({ y, kern(scriptspace) });
+  }
+  else
+  {
+    ListBoxEditor editor{ *cast<ListBox>(y) };
+    editor.enlarge(scriptspace);
+  }
+
+  v = std::max({v, getMetrics(SigmaFamily).sub2()});
+
+  const float theta = getMetrics(XiFamily).defaultRuleThickness();
+
+  if ((u - x->depth()) - (y->height() - v) < 4 * theta)
+  {
+    v = 4.f * theta - (u - x->depth()) + y->height();
+    const float psi = (4.f / 5.f) * getMetrics(SigmaFamily).xHeight() - (u - x->depth());
+    if (psi > 0.f)
+    {
+      u += psi;
+      v -= psi;
+    }
+  }
+
+
+  float delta = 0.f;
+
+  cast<ListBox>(x)->shift(delta);
+  const float totalHeight = x->totalHeight() + u + v + y->totalHeight();
+  auto vbox = tex::vbox({ x, kern(totalHeight - (x->totalHeight() + y->totalHeight())), y });
+  {
+    ListBoxEditor editor{ *vbox };
+    editor.setHeight(x->height() + u);
+    editor.setDepth(y->depth() + v);
+  }
+  atom->changeNucleus(tex::hbox({ atom->nucleus(), vbox }));
+}
+
+
+void MathTypesetter::processFraction(MathList& mlist, MathList::iterator& current)
+{
+  std::shared_ptr<math::Fraction> frac = cast<math::Fraction>(*current);
+
+  float theta = getMetrics(XiFamily).defaultRuleThickness();
+
+
+  auto x = boxit(frac->numer(), m_current_style.fracNum());
+  auto z = boxit(frac->denom(), m_current_style.fracDen());
+  if (x->width() < z->width())
+  {
+    const std::shared_ptr<Glue> reboxGlue = tex::glue(0.f, tex::Stretch{ 1.0f, GlueOrder::Fil });
+    x = tex::hbox({ reboxGlue, x, reboxGlue }, z->width());
+  }
+  else if (z->width() < x->width())
+  {
+    const std::shared_ptr<Glue> reboxGlue = tex::glue(0.f, tex::Stretch{ 1.0f, GlueOrder::Fil });
+    z = tex::hbox({ reboxGlue, z, reboxGlue }, x->width());
+  }
+  const float w = z->width();
+
+  float u;
+  float v;
+  if (m_current_style > math::Style::T)
+  {
+    u = getMetrics(SigmaFamily).num1();
+    v = getMetrics(SigmaFamily).denom1();
+  }
+  else
+  {
+    u = getMetrics(SigmaFamily).num2();
+    v = getMetrics(SigmaFamily).denom2();
+  }
+
+  // Rule 15d
+  float phi = m_current_style > math::Style::T ? 3 * theta : theta;
+  float a = getMetrics(SigmaFamily).axisHeight();
+  if ((u - x->depth()) - (a + 0.5f * theta) < phi)
+  {
+    u += phi - ((u - x->depth()) - (a + 0.5f * theta));
+  }
+  if ((a - 0.5f * theta) - (z->height() - v) < phi)
+  {
+    v += phi - ((a - 0.5f * theta) - (z->height() - v));
+  }
+
+  const float h = x->height() + u;
+  const float d = z->depth() + v;
+
+  List vlist;
+  vlist.push_back(x);
+  vlist.push_back(kern(u - x->depth() - a - 0.5f * theta));
+  vlist.push_back(hrule(w, theta));
+  vlist.push_back(kern(a - 0.5f * theta + v - z->height()));
+  vlist.push_back(z);
+
+  auto vbox = tex::vbox(std::move(vlist));
+
+  {
+    tex::VBoxEditor editor{ *vbox };
+    editor.changeHeight(h);
+    editor.done();
+  }
+
+  assert(vbox->height() == h);
+  //assert(vbox->depth() == d);
+
+  *current = math::Atom::create<math::Atom::Inner>(vbox);
+}
+
+void MathTypesetter::processRoot(MathList& mlist, MathList::iterator& current)
+{
+  auto root = cast<math::Root>(*current);
+
+  // Do as with a Rad atom
+  auto x = boxit(root->radicand(), m_current_style.cramp());
+  float theta = getMetrics(XiFamily).defaultRuleThickness();
+  const float phi = m_current_style > math::Style::T ? getMetrics(SigmaFamily).xHeight() : 0.f;
+  float psi = theta + 0.25f * std::abs(phi);
+  auto y = radicalSignBox(psi + theta + x->totalHeight());
+  const float radicalSignBoxWidth = y->width();
+  theta = y->height();
+  if (y->depth() > psi + y->totalHeight())
+    psi = 0.5f * (psi + y->depth() - x->totalHeight());
+  auto vbox = tex::vbox({ kern(theta), tex::hrule(x->width(), theta), kern(psi), x });
+  y->setShiftAmount(y->shiftAmount() - psi + x->height());
+
+  // Handle the root index
+  auto index = boxit(root->degree(), math::Style::SS);
+
+  float h = std::max(y->height() - y->shiftAmount(), vbox->height());
+  float d = std::max(y->depth() + y->shiftAmount(), vbox->depth());
+
+  // The amount the index is shifted by. This is taken from the TeX
+  // source, in the definition of `\r@@t`.
+  const float shiftAmount = 0.6f * (h - d);
+  index->shift(-shiftAmount);
+
+  auto atom = math::Atom::create<math::Atom::Rad>(tex::hbox({ index, kern(-radicalSignBoxWidth), y, vbox }));
+  *current = atom;
+  changeToOrd(mlist, current);
+}
+
+void MathTypesetter::processBoundary(MathList& mlist)
+{
+  static const float delimiterfactor = 901.f;
+  static const float delimitershortfall = 0.5f;
+
+  auto first = mlist.front();
+  auto last = mlist.back();
+
+  if (!first->is<math::Boundary>())
+    return;
+
+  assert(last->is<math::Boundary>());
+
+  const float a = getMetrics(SigmaFamily).axisHeight();
+
+  float h = 0.f;
+  float d = 0.f;
+  for (auto it = mlist.begin(); it != mlist.end(); ++it)
+  {
+    auto node = *it;
+    if (node->is<math::Atom>())
+      node = cast<math::Atom>(node)->nucleus();
+
+    if (node->is<ListBox>())
+    {
+      h += cast<ListBox>(node)->height() - cast<ListBox>(node)->shiftAmount();
+      d += cast<ListBox>(node)->depth() + cast<ListBox>(node)->shiftAmount();
+    }
+    else if (node->isBox())
+    {
+      h += cast<Box>(node)->height();
+      d += cast<Box>(node)->depth();
+    }
+  }
+
+  float delta = std::max(h - a, d + a);
+
+  float tth = std::max(delimiterfactor * delta / 500.f, 2 * delta - delimitershortfall);
+  auto left = tex::hbox({ typesetDelimiter(cast<math::Boundary>(first)->symbol(), tth) });
+  auto right = tex::hbox({ typesetDelimiter(cast<math::Boundary>(last)->symbol(), tth) });
+  left->setShiftAmount(0.5f * (left->height() - left->depth()) - a);
+  right->setShiftAmount(0.5f * (right->height() - right->depth()) - a);
+
+  (*mlist.begin()) = math::Atom::create<math::Atom::Open>(left);
+  (*(--mlist.end())) = math::Atom::create<math::Atom::Close>(right);
+}
+
+
+void MathTypesetter::insertSpace(List& list, const std::shared_ptr<math::Atom>& preceding, const std::shared_ptr<math::Atom>& next)
+{
+  assert(static_cast<int>(preceding->type()) <= math::Atom::Inner);
+  assert(static_cast<int>(next->type()) <= math::Atom::Inner);
+
+  int amount = math::SpacingTable::spacing[preceding->type()][next->type()];
+  bool nonScript = math::SpacingTable::spacingNonScript[preceding->type()][next->type()];
+  if (amount == 0 || m_current_style <= math::Style::S && nonScript)
+    return;
+  else if (amount == 1)
+    list.push_back(thinmuskip());
+  else if (amount == 2)
+    list.push_back(medmuskip());
+  else if (amount == 3)
+    list.push_back(thickmuskip());
+}
+
+std::shared_ptr<Glue> MathTypesetter::thinmuskip()
+{
+  const float mu = getMetrics(SigmaFamily).quad() / 18.f;
+  return glue(3 * mu);
+}
+
+std::shared_ptr<Glue> MathTypesetter::medmuskip()
+{
+  const float mu = getMetrics(SigmaFamily).quad() / 18.f;
+  return glue(4 * mu, tex::Shrink(4 * mu), tex::Stretch(2 * mu));
+}
+
+std::shared_ptr<Glue> MathTypesetter::thickmuskip()
+{
+  const float mu = getMetrics(SigmaFamily).quad() / 18.f;
+  return tex::glue(5 * mu, tex::Stretch(5 * mu));
 }
 
 } // namespace tex

@@ -32,4 +32,9 @@ bool Node::isPenalty() const
   return is<Penalty>();
 }
 
+bool Node::isMathSymbol() const
+{
+  return false;
+}
+
 } // namespace tex

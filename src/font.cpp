@@ -14,4 +14,10 @@ const Font Font::Text = Font{ 1 };
 const Font Font::MathRoman = Font{ 2 };
 const Font Font::MathItalic = Font{ 3 };
 
+Font::Font()
+  : mFont(0)
+{
+
+}
+
 } // namespace tex

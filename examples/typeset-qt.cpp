@@ -43,7 +43,7 @@ QtFontMetricsProdiver::QtFontMetricsProdiver(const QtFontTable & fonts)
     mMetrics[i] = QFontMetricsF{ fonts[i] };
   }
 
-  for (size_t i(0); i < 4; ++i)
+  for (size_t i(0); i < fonts.size(); ++i)
   {
     const QFontMetricsF& m = info(tex::Font(i));
     auto& font_dimen = mFontDimen[i];
@@ -117,15 +117,32 @@ std::shared_ptr<tex::FontMetricsProdiver> QtTypesetEngine::metrics() const
 
 QtTypesetEngine::QtTypesetEngine()
 {
-  initFont(tex::Font::Default, "Times New Roman", 10);
-  initFont(tex::Font::Text, "Times New Roman", 10);
-  initFont(tex::Font::MathRoman, "Times New Roman", 10);
-  initFont(tex::Font::MathItalic, "Times New Roman", 10, true);
+  // textfont0
+  initFont(0, "Times New Roman", 10);
+  initFont(1, "Times New Roman", 7);
+  initFont(2, "Times New Roman", 5);
+  // textfont1
+  initFont(3, "Times New Roman", 10, true);
+  initFont(4, "Times New Roman", 7, true);
+  initFont(5, "Times New Roman", 5, true);
+  // textfont2
+  initFont(6, "Times New Roman", 10);
+  initFont(7, "Times New Roman", 7);
+  initFont(8, "Times New Roman", 5);
+  // textfont3
+  initFont(9, "Times New Roman", 10);
+  initFont(10, "Times New Roman", 7);
+  initFont(11, "Times New Roman", 5);
 
   QChar c{ 0x221A };
   mRadicalSign = std::make_shared<QCharSymbol>(c);
 
   mMetrics = std::make_shared<QtFontMetricsProdiver>(mFonts);
+}
+
+const QtFontTable& QtTypesetEngine::fonts() const
+{
+  return mFonts;
 }
 
 std::shared_ptr<tex::Box> QtTypesetEngine::typeset(const std::string& text, tex::Font font)
@@ -135,7 +152,12 @@ std::shared_ptr<tex::Box> QtTypesetEngine::typeset(const std::string& text, tex:
 
 std::shared_ptr<tex::Box> QtTypesetEngine::typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font)
 {
-  if (symbol->is<QCharSymbol>())
+  if (symbol->isMathSymbol())
+  {
+    QChar c = static_cast<tex::MathSymbol*>(symbol.get())->character();
+    return std::make_shared<StringBox>(c, this->font(font));
+  }
+  else if (symbol->is<QCharSymbol>())
   {
     QChar c = QCharSymbol::get(*symbol);
     return std::make_shared<StringBox>(c, this->font(font));
@@ -177,10 +199,10 @@ QFont & QtTypesetEngine::font(tex::Font f)
   return mFonts[f.id()];
 }
 
-void QtTypesetEngine::initFont(tex::Font f, const QString & name, int size, bool italic)
+void QtTypesetEngine::initFont(int id, const QString & name, int size, bool italic)
 {
   QFont qfont{ name };
   qfont.setItalic(italic);
   qfont.setPointSize(size);
-  mFonts[f.id()] = qfont;
+  mFonts[id] = qfont;
 }

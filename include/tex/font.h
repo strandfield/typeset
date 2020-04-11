@@ -13,11 +13,13 @@ namespace tex
 class LIBTYPESET_API Font
 {
 public:
+  Font();
   explicit Font(int val) : mFont(val) { }
   Font(const Font & ) = default;
   ~Font() = default;
 
   static const Font Default;
+  /* @TODO: remove the following */
   static const Font Text;
   static const Font MathRoman;
   static const Font MathItalic;

@@ -12,7 +12,7 @@
 
 #include <array>
 
-using QtFontTable = std::array<QFont, 4>;
+using QtFontTable = std::array<QFont, 12>;
 
 class QCharSymbol : public tex::Symbol
 {
@@ -76,8 +76,8 @@ protected:
   const QFontMetricsF & info(tex::Font f) const;
 
 private:
-  QtFontMetrics mMetrics[4];
-  tex::FontDimen mFontDimen[4];
+  QtFontMetrics mMetrics[12];
+  tex::FontDimen mFontDimen[12];
 };
 
 class QtTypesetEngine : public tex::TypesetEngine
@@ -85,6 +85,8 @@ class QtTypesetEngine : public tex::TypesetEngine
 public:
   QtTypesetEngine();
   ~QtTypesetEngine() = default;
+
+  const QtFontTable& fonts() const;
 
 protected:
 
@@ -97,7 +99,7 @@ protected:
   std::shared_ptr<tex::Box> typesetLargeOp(const std::shared_ptr<tex::Symbol> & symbol) override;
 
   QFont & font(tex::Font f);
-  void initFont(tex::Font, const QString & name, int size, bool italic = false);
+  void initFont(int id, const QString & name, int size, bool italic = false);
 
 private:
   QtFontTable mFonts;

@@ -48,6 +48,7 @@ public:
   bool isGlue() const;
   bool isKern() const;
   bool isPenalty() const;
+  virtual bool isMathSymbol() const;
 };
 
 template<typename T, typename U = Node>

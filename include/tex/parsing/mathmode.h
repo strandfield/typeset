@@ -9,6 +9,7 @@
 
 #include "tex/parsing/typesetting-machine.h"
 #include "tex/parsing/mathparserfrontend.h"
+#include "tex/math/math-typeset.h"
 
 #include "tex/fontmetrics.h"
 #include "tex/typeset.h"
@@ -53,6 +54,7 @@ private:
   std::map<std::string, Callback> m_commands;
   std::string m_symbuf;
   parsing::MathParserFrontend m_parser;
+  std::array<MathFont, 16> m_fonts;
 };
 
 } // namespace parsing

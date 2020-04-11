@@ -36,6 +36,17 @@ MathMode::MathMode(TypesettingMachine& m)
   m_commands = {};
 
   parsing::read(machine().preprocessor().output(), m_style == math::Style::T ? 1 : 2);
+
+  // @TODO: handle fonts correctly
+  {
+    for (size_t i(0); i < 16; ++i)
+    {
+      m_fonts[i].textfont = tex::Font(3 * i + 1);
+      m_fonts[i].scriptfont = tex::Font(3 * i + 2);
+      m_fonts[i].scriptscriptfont = tex::Font(3 * i + 3);
+    }
+  }
+
 }
 
 FontMetrics MathMode::metrics() const
@@ -87,9 +98,10 @@ void MathMode::writeOutput()
 
   if (vm)
   {
-    Options opts = machine().options().withStyle(math::Style::D)
-      .withFont(Font::MathItalic);
-    List hlist = tex::mlist_to_hlist(std::move(mlist()), opts);
+    MathTypesetter mt{ machine().typesetEngine() };
+    mt.setFonts(m_fonts);
+
+    List hlist = mt.mlist2hlist(mlist());
 
     std::shared_ptr<HBox> box = tex::hbox(std::move(hlist));
 
@@ -99,9 +111,10 @@ void MathMode::writeOutput()
   {
     HorizontalMode* hm = dynamic_cast<HorizontalMode*>(parent());
 
-    Options opts = machine().options().withStyle(math::Style::T)
-      .withFont(Font::MathItalic);
-    List hlist = tex::mlist_to_hlist(std::move(mlist()), opts);
+    MathTypesetter mt{ machine().typesetEngine() };
+    mt.setFonts(m_fonts);
+
+    List hlist = mt.mlist2hlist(mlist(), math::Style::T);
 
     hm->hlist().insert(hm->hlist().end(), hlist.begin(), hlist.end());
   }
