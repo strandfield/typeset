@@ -67,6 +67,15 @@ private:
   FontMetrics getMetrics(int fam) const;
   FontMetrics getMetrics(int fam, math::Style style) const;
 
+  template<size_t I>
+  float sigma() const;
+
+  template<size_t I>
+  float xi() const;
+
+  template<size_t I>
+  float sigma(math::Style style) const;
+
   static std::shared_ptr<Box> nullbox();
   
   std::shared_ptr<Box> typeset(std::shared_ptr<MathSymbol> symbol);

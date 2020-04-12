@@ -78,12 +78,43 @@ public:
   float bigOpSpacing4() const;
   float bigOpSpacing5() const;
 
+  template<size_t I>
+  float sigma() const;
+
+  template<size_t I>
+  float xi() const;
+
   FontMetrics & operator=(const FontMetrics &) = default;
 
 private:
   Font mFont;
   std::shared_ptr<FontMetricsProdiver> mMetricsProvider;
 };
+
+template<> inline float FontMetrics::sigma<5>() const { return xHeight(); }
+template<> inline float FontMetrics::sigma<6>() const { return quad(); }
+template<> inline float FontMetrics::sigma<8>() const { return num1(); }
+template<> inline float FontMetrics::sigma<9>() const { return num2(); }
+template<> inline float FontMetrics::sigma<10>() const { return num3(); }
+template<> inline float FontMetrics::sigma<11>() const { return denom1(); }
+template<> inline float FontMetrics::sigma<12>() const { return denom2(); }
+template<> inline float FontMetrics::sigma<13>() const { return sup1(); }
+template<> inline float FontMetrics::sigma<14>() const { return sup2(); }
+template<> inline float FontMetrics::sigma<15>() const { return sup3(); }
+template<> inline float FontMetrics::sigma<16>() const { return sub1(); }
+template<> inline float FontMetrics::sigma<17>() const { return sub2(); }
+template<> inline float FontMetrics::sigma<18>() const { return supDrop(); }
+template<> inline float FontMetrics::sigma<19>() const { return subDrop(); }
+template<> inline float FontMetrics::sigma<20>() const { return delim1(); }
+template<> inline float FontMetrics::sigma<21>() const { return delim2(); }
+template<> inline float FontMetrics::sigma<22>() const { return axisHeight(); }
+
+template<> inline float FontMetrics::xi<8>() const { return defaultRuleThickness(); }
+template<> inline float FontMetrics::xi<9>() const { return bigOpSpacing1(); }
+template<> inline float FontMetrics::xi<10>() const { return bigOpSpacing2(); }
+template<> inline float FontMetrics::xi<11>() const { return bigOpSpacing3(); }
+template<> inline float FontMetrics::xi<12>() const { return bigOpSpacing4(); }
+template<> inline float FontMetrics::xi<13>() const { return bigOpSpacing5(); }
 
 } // namespace tex
 

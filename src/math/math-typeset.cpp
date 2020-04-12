@@ -59,6 +59,25 @@ static const bool spacingNonScript[][8] = {
 
 } // namespace math
 
+
+template<size_t I>
+float MathTypesetter::sigma() const
+{
+  return sigma<I>(m_current_style);
+}
+
+template<size_t I>
+float MathTypesetter::sigma(math::Style style) const
+{
+  return getMetrics(SigmaFamily, style).sigma<I>();
+}
+
+template<size_t I>
+float MathTypesetter::xi() const
+{
+  return getMetrics(XiFamily).xi<I>();
+}
+
 struct RAIIStyleGuard
 {
   math::Style& style;
@@ -505,8 +524,8 @@ void MathTypesetter::processRadAtom(MathList& mathlist, MathList::iterator& curr
   assert(atom->type() == math::Atom::Rad);
 
   auto x = boxit(atom->nucleus(), m_current_style.cramp());
-  float theta = getMetrics(XiFamily).defaultRuleThickness();
-  const float phi = m_current_style > math::Style::T ? getMetrics(SigmaFamily).xHeight() : 0.f;
+  float theta = xi<8>(); // default_rule_thickness
+  const float phi = m_current_style > math::Style::T ? sigma<5>() : 0.f; // @TODO: should be theta and not zero ?
   float psi = theta + 0.25f * std::abs(phi);
   auto y = radicalSignBox(psi + theta + x->totalHeight());
   const float radicalSignBoxWidth = y->width();
@@ -525,7 +544,7 @@ void MathTypesetter::processAccAtom(MathList& mathlist, MathList::iterator& curr
 
   std::shared_ptr<Box> x = boxit(atom->nucleus(), m_current_style.cramp());
   const float u = x->width();
-  float delta = std::min(x->height(), getMetrics(SigmaFamily).xHeight());
+  float delta = std::min(x->height(), getMetrics(SigmaFamily).xHeight()); // @TODO: should be x-height in accent font
 
   if (atom->nucleus() != nullptr && atom->nucleus()->isDerivedFrom<Symbol>())
   {
@@ -618,7 +637,7 @@ void MathTypesetter::attachSubSup(MathList& mlist, MathList::iterator& current)
     u = v = 0.f;
   else
   {
-    const float q = getMetrics(SigmaFamily, m_current_style.sup()).supDrop();
+    const float q = sigma<18>(m_current_style.sup()); // sup_drop
     const float r = getMetrics(SigmaFamily, m_current_style.sub()).subDrop();
     auto box = cast<Box>(atom->nucleus());
     u = box->height() - q;
