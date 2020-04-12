@@ -70,7 +70,7 @@ void CharBox::deform(const tex::BoxMetrics& boxmetrics)
   deformed = true;
 }
 
-std::shared_ptr<tex::FontMetricsProdiver> TypesetEngine::metrics() const
+std::shared_ptr<tex::FontMetricsProvider> TypesetEngine::metrics() const
 {
   return mMetrics;
 }

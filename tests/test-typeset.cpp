@@ -56,7 +56,7 @@ TestTypesetEngine::TestTypesetEngine()
   m_metrics = std::make_shared<TestFontMetricsProvider>();
 }
 
-std::shared_ptr<tex::FontMetricsProdiver> TestTypesetEngine::metrics() const
+std::shared_ptr<tex::FontMetricsProvider> TestTypesetEngine::metrics() const
 {
   return m_metrics;
 }

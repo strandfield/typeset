@@ -55,7 +55,7 @@ const QFontMetricsF & QtFontMetricsProdiver::info(tex::Font f) const
   return m_fonts[f.id()].metrics;
 }
 
-std::shared_ptr<tex::FontMetricsProdiver> QtTypesetEngine::metrics() const
+std::shared_ptr<tex::FontMetricsProvider> QtTypesetEngine::metrics() const
 {
   return mMetrics;
 }

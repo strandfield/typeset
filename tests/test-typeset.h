@@ -25,7 +25,7 @@ public:
   }
 };
 
-class TestFontMetricsProvider : public tex::FontMetricsProdiver
+class TestFontMetricsProvider : public tex::FontMetricsProvider
 {
 private:
   tex::FontDimen m_fontdimen;
@@ -46,7 +46,7 @@ public:
 
   TestTypesetEngine();
 
-  std::shared_ptr<tex::FontMetricsProdiver> metrics() const override;
+  std::shared_ptr<tex::FontMetricsProvider> metrics() const override;
   
   std::shared_ptr<tex::Box> typeset(const std::string& text, tex::Font font) override;
   std::shared_ptr<tex::Box> typeset(const std::shared_ptr<tex::Symbol>& symbol, tex::Font font)  override;
@@ -55,7 +55,7 @@ public:
   std::shared_ptr<tex::Box> typesetLargeOp(const std::shared_ptr<tex::Symbol>& symbol)  override;
 
 private:
-  std::shared_ptr<tex::FontMetricsProdiver> m_metrics;
+  std::shared_ptr<tex::FontMetricsProvider> m_metrics;
 };
 
 #endif // LIBTYPESET_TEST_TYPESET_H

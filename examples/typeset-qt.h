@@ -44,7 +44,7 @@ private:
   QChar mChar;
 };
 
-class QtFontMetricsProdiver : public tex::FontMetricsProdiver
+class QtFontMetricsProdiver : public tex::FontMetricsProvider
 {
 public:
   QtFontMetricsProdiver(const FontTable& fonts);
@@ -72,7 +72,7 @@ public:
 
 protected:
 
-  std::shared_ptr<tex::FontMetricsProdiver> metrics() const override;
+  std::shared_ptr<tex::FontMetricsProvider> metrics() const override;
 
   std::shared_ptr<tex::Box> typeset(const std::string& text, tex::Font font) override;
   std::shared_ptr<tex::Box> typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) override;

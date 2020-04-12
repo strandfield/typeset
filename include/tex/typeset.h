@@ -22,7 +22,7 @@ public:
   TypesetEngine() = default;
   virtual ~TypesetEngine() = default;
 
-  virtual std::shared_ptr<tex::FontMetricsProdiver> metrics() const = 0;
+  virtual std::shared_ptr<tex::FontMetricsProvider> metrics() const = 0;
 
   virtual std::shared_ptr<tex::Box> typeset(const std::string& text, tex::Font font) = 0;
   virtual std::shared_ptr<tex::Box> typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) = 0;
@@ -30,7 +30,7 @@ public:
   virtual std::shared_ptr<tex::Box> typesetDelimiter(const std::shared_ptr<tex::Symbol> & symbol, float minTotalHeight) = 0;
   virtual std::shared_ptr<tex::Box> typesetLargeOp(const std::shared_ptr<tex::Symbol> & symbol) = 0;
 
-  FontMetricsProdiver & operator=(const FontMetricsProdiver &) = delete;
+  FontMetricsProvider & operator=(const FontMetricsProvider &) = delete;
 };
 
 class LIBTYPESET_API Options

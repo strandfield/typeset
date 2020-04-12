@@ -7,7 +7,148 @@
 namespace tex
 {
 
-FontMetrics::FontMetrics(Font font, std::shared_ptr<FontMetricsProdiver> mp)
+float FontMetricsProvider::slantPerPt(Font font)
+{
+  return fontdimen(font).slant_per_pt;
+}
+
+float FontMetricsProvider::interwordSpace(Font font)
+{
+  return fontdimen(font).interword_space;
+}
+
+float FontMetricsProvider::interwordStretch(Font font)
+{
+  return fontdimen(font).interword_stretch;
+}
+
+float FontMetricsProvider::interwordShrink(Font font)
+{
+  return fontdimen(font).interword_shrink;
+}
+
+float FontMetricsProvider::extraSpace(Font font)
+{
+  return fontdimen(font).extra_space;
+}
+
+
+float FontMetricsProvider::xHeight(Font font)
+{
+  return fontdimen(font).x_height;
+}
+
+float FontMetricsProvider::quad(Font font)
+{
+  return fontdimen(font).quad;
+}
+
+float FontMetricsProvider::num1(Font font)
+{
+  return fontdimen(font).num1;
+}
+
+float FontMetricsProvider::num2(Font font)
+{
+  return fontdimen(font).num2;
+}
+
+float FontMetricsProvider::num3(Font font)
+{
+  return fontdimen(font).num3;
+}
+
+float FontMetricsProvider::denom1(Font font)
+{
+  return fontdimen(font).denom1;
+}
+
+float FontMetricsProvider::denom2(Font font)
+{
+  return fontdimen(font).denom2;
+}
+
+float FontMetricsProvider::sup1(Font font)
+{
+  return fontdimen(font).sup1;
+}
+
+float FontMetricsProvider::sup2(Font font)
+{
+  return fontdimen(font).sup2;
+}
+
+float FontMetricsProvider::sup3(Font font)
+{
+  return fontdimen(font).sup3;
+}
+
+float FontMetricsProvider::sub1(Font font)
+{
+  return fontdimen(font).sub1;
+}
+
+float FontMetricsProvider::sub2(Font font)
+{
+  return fontdimen(font).sub2;
+}
+
+float FontMetricsProvider::supDrop(Font font)
+{
+  return fontdimen(font).sup_drop;
+}
+
+float FontMetricsProvider::subDrop(Font font)
+{
+  return fontdimen(font).sub_drop;
+}
+
+float FontMetricsProvider::delim1(Font font)
+{
+  return fontdimen(font).delim1;
+}
+
+float FontMetricsProvider::delim2(Font font)
+{
+  return fontdimen(font).delim2;
+}
+
+float FontMetricsProvider::axisHeight(Font font)
+{
+  return fontdimen(font).axis_height;
+}
+
+float FontMetricsProvider::defaultRuleThickness(Font font)
+{
+  return fontdimen(font).default_rule_thickness;
+}
+
+float FontMetricsProvider::bigOpSpacing1(Font font)
+{
+  return fontdimen(font).big_op_spacing1;
+}
+
+float FontMetricsProvider::bigOpSpacing2(Font font)
+{
+  return fontdimen(font).big_op_spacing2;
+}
+
+float FontMetricsProvider::bigOpSpacing3(Font font)
+{
+  return fontdimen(font).big_op_spacing3;
+}
+
+float FontMetricsProvider::bigOpSpacing4(Font font)
+{
+  return fontdimen(font).big_op_spacing4;
+}
+
+float FontMetricsProvider::bigOpSpacing5(Font font)
+{
+  return fontdimen(font).big_op_spacing5;
+}
+
+FontMetrics::FontMetrics(Font font, std::shared_ptr<FontMetricsProvider> mp)
   : mFont(font)
   , mMetricsProvider(mp)
 {
@@ -31,143 +172,143 @@ const FontDimen& FontMetrics::fontdimen() const
 
 float FontMetrics::slantPerPt() const
 {
-  return fontdimen().slant_per_pt;
+  return metricsProvider()->slantPerPt(mFont);
 }
 
 float FontMetrics::interwordSpace() const
 {
-  return fontdimen().interword_space;
+  return metricsProvider()->interwordSpace(mFont);
 }
 
 float FontMetrics::interwordStretch() const
 {
-  return fontdimen().interword_stretch;
+  return metricsProvider()->interwordStretch(mFont);
 }
 
 float FontMetrics::interwordShrink() const
 {
-  return fontdimen().interword_shrink;
+  return metricsProvider()->interwordShrink(mFont);
 }
 
 float FontMetrics::extraSpace() const
 {
-  return fontdimen().extra_space;
+  return metricsProvider()->extraSpace(mFont);
 }
 
 float FontMetrics::xHeight() const
 {
-  return fontdimen().x_height;
+  return metricsProvider()->xHeight(mFont);
 }
 
 float FontMetrics::quad() const
 {
-  return fontdimen().quad;
+  return metricsProvider()->quad(mFont);
 }
 
 float FontMetrics::num1() const
 {
-  return fontdimen().num1;
+  return metricsProvider()->num1(mFont);
 }
 
 float FontMetrics::num2() const
 {
-  return fontdimen().num2;
+  return metricsProvider()->num2(mFont);
 }
 
 float FontMetrics::num3() const
 {
-  return fontdimen().num3;
+  return metricsProvider()->num3(mFont);
 }
 
 float FontMetrics::denom1() const
 {
-  return fontdimen().denom1;
+  return metricsProvider()->denom1(mFont);
 }
 
 float FontMetrics::denom2() const
 {
-  return fontdimen().denom2;
+  return metricsProvider()->denom2(mFont);
 }
 
 float FontMetrics::sup1() const
 {
-  return fontdimen().sup1;
+  return metricsProvider()->sup1(mFont);
 }
 
 float FontMetrics::sup2() const
 {
-  return fontdimen().sup2;
+  return metricsProvider()->sup2(mFont);
 }
 
 float FontMetrics::sup3() const
 {
-  return fontdimen().sup3;
+  return metricsProvider()->sup3(mFont);
 }
 
 float FontMetrics::sub1() const
 {
-  return fontdimen().sub1;
+  return metricsProvider()->sub1(mFont);
 }
 
 float FontMetrics::sub2() const
 {
-  return fontdimen().sub2;
+  return metricsProvider()->sub2(mFont);
 }
 
 float FontMetrics::supDrop() const
 {
-  return fontdimen().sup_drop;
+  return metricsProvider()->supDrop(mFont);
 }
 
 float FontMetrics::subDrop() const
 {
-  return fontdimen().sub_drop;
+  return metricsProvider()->subDrop(mFont);
 }
 
 float FontMetrics::delim1() const
 {
-  return fontdimen().delim1;
+  return metricsProvider()->delim1(mFont);
 }
 
 float FontMetrics::delim2() const
 {
-  return fontdimen().delim2;
+  return metricsProvider()->delim2(mFont);
 }
 
 float FontMetrics::axisHeight() const
 {
-  return fontdimen().axis_height;
+  return metricsProvider()->axisHeight(mFont);
 }
 
 
 float FontMetrics::defaultRuleThickness() const
 {
-  return fontdimen().default_rule_thickness;
+  return metricsProvider()->defaultRuleThickness(mFont);
 }
 
 float FontMetrics::bigOpSpacing1() const
 {
-  return fontdimen().big_op_spacing1;
+  return metricsProvider()->bigOpSpacing1(mFont);
 }
 
 float FontMetrics::bigOpSpacing2() const
 {
-  return fontdimen().big_op_spacing2;
+  return metricsProvider()->bigOpSpacing2(mFont);
 }
 
 float FontMetrics::bigOpSpacing3() const
 {
-  return fontdimen().big_op_spacing3;
+  return metricsProvider()->bigOpSpacing3(mFont);
 }
 
 float FontMetrics::bigOpSpacing4() const
 {
-  return fontdimen().big_op_spacing4;
+  return metricsProvider()->bigOpSpacing4(mFont);
 }
 
 float FontMetrics::bigOpSpacing5() const
 {
-  return fontdimen().big_op_spacing5;
+  return metricsProvider()->bigOpSpacing5(mFont);
 }
 
 } // namespace tex

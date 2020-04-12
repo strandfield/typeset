@@ -15,32 +15,61 @@
 namespace tex
 {
 
-struct FontPropertyUnavailable {};
-
-class LIBTYPESET_API FontMetricsProdiver
+class LIBTYPESET_API FontMetricsProvider
 {
 public:
-  FontMetricsProdiver() = default;
-  virtual ~FontMetricsProdiver() = default;
+  FontMetricsProvider() = default;
+  virtual ~FontMetricsProvider() = default;
 
   virtual BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) = 0;
   virtual float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) = 0;
 
   virtual const FontDimen& fontdimen(Font font) = 0;
 
-  FontMetricsProdiver & operator=(const FontMetricsProdiver &) = delete;
+  virtual float slantPerPt(Font font);
+  virtual float interwordSpace(Font font);
+  virtual float interwordStretch(Font font);
+  virtual float interwordShrink(Font font);
+  virtual float extraSpace(Font font);
+
+  virtual float xHeight(Font font);
+  virtual float quad(Font font);
+  virtual float num1(Font font);
+  virtual float num2(Font font);
+  virtual float num3(Font font);
+  virtual float denom1(Font font);
+  virtual float denom2(Font font);
+  virtual float sup1(Font font);
+  virtual float sup2(Font font);
+  virtual float sup3(Font font);
+  virtual float sub1(Font font);
+  virtual float sub2(Font font);
+  virtual float supDrop(Font font);
+  virtual float subDrop(Font font);
+  virtual float delim1(Font font);
+  virtual float delim2(Font font);
+  virtual float axisHeight(Font font);
+
+  virtual float defaultRuleThickness(Font font);
+  virtual float bigOpSpacing1(Font font);
+  virtual float bigOpSpacing2(Font font);
+  virtual float bigOpSpacing3(Font font);
+  virtual float bigOpSpacing4(Font font);
+  virtual float bigOpSpacing5(Font font);
+
+  FontMetricsProvider & operator=(const FontMetricsProvider &) = delete;
 };
 
 
 class LIBTYPESET_API FontMetrics
 {
 public:
-  FontMetrics(Font font, std::shared_ptr<FontMetricsProdiver> mp);
+  FontMetrics(Font font, std::shared_ptr<FontMetricsProvider> mp);
   FontMetrics(const FontMetrics &) = default;
   ~FontMetrics() = default;
 
   inline Font font() const { return mFont; }
-  inline const std::shared_ptr<FontMetricsProdiver> & metricsProvider() const { return mMetricsProvider; }
+  inline const std::shared_ptr<FontMetricsProvider> & metricsProvider() const { return mMetricsProvider; }
 
   BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol) const;
   float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol) const;
@@ -88,7 +117,7 @@ public:
 
 private:
   Font mFont;
-  std::shared_ptr<FontMetricsProdiver> mMetricsProvider;
+  std::shared_ptr<FontMetricsProvider> mMetricsProvider;
 };
 
 template<> inline float FontMetrics::sigma<5>() const { return xHeight(); }
