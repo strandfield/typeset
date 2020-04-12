@@ -12,9 +12,9 @@ file(GLOB_RECURSE LIBTYPESET_EXAMPLES_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cp
 file(GLOB_RECURSE LIBTYPESET_EXAMPLES_HRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 
 add_executable(examples ${LIBTYPESET_EXAMPLES_HRC_FILES} ${LIBTYPESET_EXAMPLES_SRC_FILES} res.qrc)
-add_dependencies(examples libtypeset)
+add_dependencies(examples libtypeset tfm)
 
-target_link_libraries(examples libtypeset)
+target_link_libraries(examples libtypeset tfm)
 target_link_libraries(examples Qt5::Core)
 target_link_libraries(examples Qt5::Gui)
 target_link_libraries(examples Qt5::Widgets)

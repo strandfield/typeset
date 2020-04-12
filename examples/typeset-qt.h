@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -6,13 +6,29 @@
 #define LIBTYPESET_EXAMPLES_TYPESET_QT_H
 
 #include <tex/typeset.h>
+#include <tex/tfm.h>
 
 #include <QFont>
 #include <QFontMetricsF>
 
 #include <array>
 
-using QtFontTable = std::array<QFont, 12>;
+class QtFontMetrics : public QFontMetricsF
+{
+public:
+  QtFontMetrics();
+
+  using QFontMetricsF::operator=;
+};
+
+struct Font
+{
+  QFont font;
+  QtFontMetrics metrics;
+  tex::FontDimen fontdimen;
+};
+
+using FontTable = std::array<Font, 12>;
 
 class QCharSymbol : public tex::Symbol
 {
@@ -27,44 +43,11 @@ public:
 private:
   QChar mChar;
 };
-//
-//class QCharBox : public tex::Box
-//{
-//public:
-//  QCharBox(QChar c, tex::BoxMetrics metrics) :
-//    mChar(c),
-//    mMetrics(metrics)
-//  {
-//
-//  }
-//
-//  ~QCharBox() = default;
-//
-//  inline QChar character() const { return mChar; }
-//  inline const tex::BoxMetrics & metrics() const { return mMetrics; }
-//
-//protected:
-//  float height() const override;
-//  float depth() const override;
-//  float width() const override;
-//
-//private:
-//  QChar mChar;
-//  tex::BoxMetrics mMetrics;
-//};
-
-class QtFontMetrics : public QFontMetricsF
-{
-public:
-  QtFontMetrics();
-
-  using QFontMetricsF::operator=;
-};
 
 class QtFontMetricsProdiver : public tex::FontMetricsProdiver
 {
 public:
-  QtFontMetricsProdiver(const QtFontTable & fonts);
+  QtFontMetricsProdiver(const FontTable& fonts);
   ~QtFontMetricsProdiver() = default;
 
   tex::BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) override;
@@ -76,8 +59,7 @@ protected:
   const QFontMetricsF & info(tex::Font f) const;
 
 private:
-  QtFontMetrics mMetrics[12];
-  tex::FontDimen mFontDimen[12];
+  FontTable m_fonts;
 };
 
 class QtTypesetEngine : public tex::TypesetEngine
@@ -86,7 +68,7 @@ public:
   QtTypesetEngine();
   ~QtTypesetEngine() = default;
 
-  const QtFontTable& fonts() const;
+  const FontTable& fonts() const;
 
 protected:
 
@@ -99,10 +81,10 @@ protected:
   std::shared_ptr<tex::Box> typesetLargeOp(const std::shared_ptr<tex::Symbol> & symbol) override;
 
   QFont & font(tex::Font f);
-  void initFont(int id, const QString & name, int size, bool italic = false);
+  void initFont(int id, const QString & name, int size, bool italic, tex::TFM tfm);
 
 private:
-  QtFontTable mFonts;
+  FontTable m_fonts;
   std::shared_ptr<QtFontMetricsProdiver> mMetrics;
   std::shared_ptr<QCharSymbol> mRadicalSign;
 };

@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -14,21 +14,6 @@ QChar QCharSymbol::get(const tex::Symbol & s)
 {
   return static_cast<const QCharSymbol &>(s).character();
 }
-//
-//float QCharBox::height() const
-//{
-//  return mMetrics.height;
-//}
-//
-//float QCharBox::depth() const
-//{
-//  return mMetrics.depth;
-//}
-//
-//float QCharBox::width() const
-//{
-//  return mMetrics.width;
-//}
 
 QtFontMetrics::QtFontMetrics()
   : QFontMetricsF{ QFont{} }
@@ -36,47 +21,10 @@ QtFontMetrics::QtFontMetrics()
 
 }
 
-QtFontMetricsProdiver::QtFontMetricsProdiver(const QtFontTable & fonts)
+QtFontMetricsProdiver::QtFontMetricsProdiver(const FontTable & fonts)
+  : m_fonts(fonts)
 {
-  for (size_t i(0); i < fonts.size(); ++i)
-  {
-    mMetrics[i] = QFontMetricsF{ fonts[i] };
-  }
-
-  for (size_t i(0); i < fonts.size(); ++i)
-  {
-    const QFontMetricsF& m = info(tex::Font(i));
-    auto& font_dimen = mFontDimen[i];
-
-    font_dimen.slant_per_pt = 0.f;
-    font_dimen.interword_space = m.width(' ');
-    font_dimen.interword_stretch = 0.25f * font_dimen.interword_space;
-    font_dimen.interword_shrink = 0.1f * font_dimen.interword_space;
-    font_dimen.extra_space = font_dimen.interword_stretch;
-    font_dimen.x_height = -m.boundingRect(QChar('x')).top();
-    font_dimen.quad = m.width(QChar('m'));
-    font_dimen.num1 = font_dimen.x_height * 0.5f;
-    font_dimen.num2 = font_dimen.x_height / 3.f;
-    font_dimen.num3 = font_dimen.x_height / 4.f;
-    font_dimen.denom1 = font_dimen.x_height / 3.f;
-    font_dimen.denom2 = font_dimen.x_height / 4.f;
-    font_dimen.sup1 = font_dimen.quad / 4.f;
-    font_dimen.sup2 = font_dimen.quad / 5.f;
-    font_dimen.sup3 = font_dimen.quad / 6.f;
-    font_dimen.sub1 = font_dimen.quad / 4.f;
-    font_dimen.sub2 = font_dimen.quad / 5.f;
-    font_dimen.sup_drop = font_dimen.x_height;
-    font_dimen.sub_drop = font_dimen.x_height;
-    font_dimen.delim1 = m.boundingRect(QChar('(')).height();
-    font_dimen.delim2 = font_dimen.delim1 * 1.1f;
-    font_dimen.axis_height = font_dimen.x_height / 2.f;
-    font_dimen.default_rule_thickness = 2.f;
-    font_dimen.big_op_spacing1 = font_dimen.x_height / 2.f;
-    font_dimen.big_op_spacing2 = font_dimen.x_height / 2.f;
-    font_dimen.big_op_spacing3 = font_dimen.x_height * 0.75f;
-    font_dimen.big_op_spacing4 = font_dimen.x_height * 0.5f + m.height();
-    font_dimen.big_op_spacing5 = font_dimen.x_height * 0.25f;
-  }
+ 
 }
 
 tex::BoxMetrics QtFontMetricsProdiver::metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font)
@@ -99,15 +47,12 @@ float QtFontMetricsProdiver::italicCorrection(const std::shared_ptr<tex::Symbol>
 
 const tex::FontDimen& QtFontMetricsProdiver::fontdimen(tex::Font f)
 {
-  return mFontDimen[f.id()];
+  return m_fonts[f.id()].fontdimen;
 }
-
-
-
 
 const QFontMetricsF & QtFontMetricsProdiver::info(tex::Font f) const
 {
-  return mMetrics[f.id()];
+  return m_fonts[f.id()].metrics;
 }
 
 std::shared_ptr<tex::FontMetricsProdiver> QtTypesetEngine::metrics() const
@@ -118,31 +63,31 @@ std::shared_ptr<tex::FontMetricsProdiver> QtTypesetEngine::metrics() const
 QtTypesetEngine::QtTypesetEngine()
 {
   // textfont0
-  initFont(0, "Times New Roman", 10);
-  initFont(1, "Times New Roman", 7);
-  initFont(2, "Times New Roman", 5);
+  initFont(0, "Times New Roman", 10, false, tex::tfm::cmr10());
+  initFont(1, "Times New Roman", 7, false, tex::tfm::cmr7());
+  initFont(2, "Times New Roman", 5, false, tex::tfm::cmr5());
   // textfont1
-  initFont(3, "Times New Roman", 10, true);
-  initFont(4, "Times New Roman", 7, true);
-  initFont(5, "Times New Roman", 5, true);
+  initFont(3, "Times New Roman", 10, true, tex::tfm::cmmi10());
+  initFont(4, "Times New Roman", 7, true, tex::tfm::cmmi7());
+  initFont(5, "Times New Roman", 5, true, tex::tfm::cmmi5());
   // textfont2
-  initFont(6, "Times New Roman", 10);
-  initFont(7, "Times New Roman", 7);
-  initFont(8, "Times New Roman", 5);
+  initFont(6, "Times New Roman", 10, false, tex::tfm::cmsy10());
+  initFont(7, "Times New Roman", 7, false, tex::tfm::cmsy7());
+  initFont(8, "Times New Roman", 5, false, tex::tfm::cmsy5());
   // textfont3
-  initFont(9, "Times New Roman", 10);
-  initFont(10, "Times New Roman", 7);
-  initFont(11, "Times New Roman", 5);
+  initFont(9, "Times New Roman", 10, false, tex::tfm::cmex10());
+  initFont(10, "Times New Roman", 7, false, tex::tfm::cmex10());
+  initFont(11, "Times New Roman", 5, false, tex::tfm::cmex10());
 
   QChar c{ 0x221A };
   mRadicalSign = std::make_shared<QCharSymbol>(c);
 
-  mMetrics = std::make_shared<QtFontMetricsProdiver>(mFonts);
+  mMetrics = std::make_shared<QtFontMetricsProdiver>(m_fonts);
 }
 
-const QtFontTable& QtTypesetEngine::fonts() const
+const FontTable& QtTypesetEngine::fonts() const
 {
-  return mFonts;
+  return m_fonts;
 }
 
 std::shared_ptr<tex::Box> QtTypesetEngine::typeset(const std::string& text, tex::Font font)
@@ -196,13 +141,18 @@ std::shared_ptr<tex::Box> QtTypesetEngine::typesetLargeOp(const std::shared_ptr<
 
 QFont & QtTypesetEngine::font(tex::Font f)
 {
-  return mFonts[f.id()];
+  return m_fonts[f.id()].font;
 }
 
-void QtTypesetEngine::initFont(int id, const QString & name, int size, bool italic)
+void QtTypesetEngine::initFont(int id, const QString & name, int size, bool italic, tex::TFM tfm)
 {
   QFont qfont{ name };
   qfont.setItalic(italic);
   qfont.setPointSize(size);
-  mFonts[id] = qfont;
+  m_fonts[id].font = qfont;
+  m_fonts[id].metrics = QFontMetrics{ qfont };
+  
+  tfm.design_size = m_fonts[id].metrics.height();
+  tfm = tex::tfm::to_absolute(tfm);
+  m_fonts[id].fontdimen = tfm.fontdimen;
 }
