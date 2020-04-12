@@ -8,6 +8,7 @@
 #include <QWidget>
 
 class QComboBox;
+class QLabel;
 class QPlainTextEdit;
 class QSpinBox;
 
@@ -34,6 +35,7 @@ private:
   std::shared_ptr<TypesetEngine> m_engine;
   RenderWidget* m_renderwidget;
   QPlainTextEdit* m_textedit;
+  QLabel* m_report_widget;
 };
 
 #endif // LIBTYPESET_EQEDITOR_MAINWINDOW_H

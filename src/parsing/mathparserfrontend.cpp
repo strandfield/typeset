@@ -116,7 +116,7 @@ void MathParserFrontend::writeControlSequence(const std::string& csname)
 
 void MathParserFrontend::writeChar(char c)
 {
-  MathCode mc = m_mathcode_table[c];
+  MathCode mc = m_mathcode_table[static_cast<uint8_t>(c)];
 
   int class_num = mc.c();
   int f = mc.f();

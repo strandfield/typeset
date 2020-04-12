@@ -11,6 +11,7 @@
 #include "tex/parsing/mathparserfrontend.h"
 #include "tex/math/math-typeset.h"
 
+#include <QLabel>
 #include <QPlainTextEdit>
 #include <QSpinBox>
 
@@ -21,6 +22,8 @@
 #include <QFrame>
 #include <QGroupBox>
 #include <QSplitter>
+
+#include <chrono>
 
 #include <QDebug>
 
@@ -75,6 +78,9 @@ QWidget* MainWindow::createSettingsWidget()
 
   layout->addStretch();
 
+  m_report_widget = new QLabel;
+  layout->addWidget(m_report_widget);
+
   return w;
 }
 
@@ -90,9 +96,16 @@ void MainWindow::onTextChanged()
   }
 }
 
+static double duration_msec(std::chrono::duration<double> diff)
+{
+  return diff.count() * 1000;
+}
+
 void MainWindow::processText()
 {
   std::string text = m_textedit->toPlainText().toStdString();
+
+  auto start = std::chrono::high_resolution_clock::now();
 
   tex::parsing::Lexer lexer;
 
@@ -100,6 +113,8 @@ void MainWindow::processText()
   {
     lexer.write(c);
   }
+
+  auto tokenization_end = std::chrono::high_resolution_clock::now();
 
   tex::parsing::MathParserFrontend parser;
 
@@ -139,11 +154,22 @@ void MainWindow::processText()
 
   parser.finish();
 
+  auto mathparsing_end = std::chrono::high_resolution_clock::now();
+
   tex::MathTypesetter mathtypesetter{m_engine};
   mathtypesetter.setFonts(m_engine->mathfonts());
 
   auto hlist = mathtypesetter.mlist2hlist(parser.output());
   auto box = tex::hbox(std::move(hlist));
 
+  auto typesetting_end = std::chrono::high_resolution_clock::now();
+
   m_renderwidget->setBox(box);
+
+  QString report = 
+    "Tokenization: " + QString::number(duration_msec(tokenization_end - start)) + "\n"
+    + "Parsing: " + QString::number(duration_msec(mathparsing_end - tokenization_end)) + "\n"
+    + "Typesetting: " + QString::number(duration_msec(typesetting_end -mathparsing_end)) + "\n"
+    + "Total: " + QString::number(duration_msec(typesetting_end - start)) + "\n";
+  m_report_widget->setText(report);
 }
