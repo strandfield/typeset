@@ -272,7 +272,8 @@ void MathParser::finish()
     leaveState();
   }
 
-  assert(state() == State::ParsingMList);
+  if (state() != State::ParsingMList)
+    throw std::runtime_error{ "Missing ending '}'" };
 }
 
 MathList& MathParser::output()
