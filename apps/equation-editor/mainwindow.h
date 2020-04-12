@@ -12,18 +12,26 @@ class QPlainTextEdit;
 class QSpinBox;
 
 class RenderWidget;
+class TypesetEngine;
 
 class MainWindow : public QWidget
 {
   Q_OBJECT
 public:
   explicit MainWindow();
-  ~MainWindow() = default;
+  ~MainWindow();
 
 protected:
   QWidget* createSettingsWidget();
 
+protected Q_SLOTS:
+  void onTextChanged();
+
+protected:
+  void processText();
+
 private:
+  std::shared_ptr<TypesetEngine> m_engine;
   RenderWidget* m_renderwidget;
   QPlainTextEdit* m_textedit;
 };

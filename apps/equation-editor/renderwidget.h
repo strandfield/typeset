@@ -7,13 +7,20 @@
 
 #include <QWidget>
 
+#include "tex/box.h"
+
 class RenderWidget : public QWidget
 {
   Q_OBJECT
 public:
 
+  void setBox(std::shared_ptr<tex::Box> box);
+
 protected:
   void paintEvent(QPaintEvent* ev) override;
+
+private:
+  std::shared_ptr<tex::Box> m_box;
 };
 
 #endif // LIBTYPESET_EQEDITOR_RENDERWIDGET_H
