@@ -6,26 +6,31 @@
 #define LIBTYPESET_CHARACTERBOX_H
 
 #include "tex/box.h"
+#include "tex/font.h"
 #include "tex/unicode.h"
 
 namespace tex
 {
 
-// @TODO: should this class also store the Font & FontSize used ?
 class LIBTYPESET_API CharacterBox : public Box
 {
 private:
   Character m_char;
+  Font m_font;
 
 public:
-  CharacterBox(Character c, const BoxMetrics& metrics)
+  CharacterBox(Character c, Font f, const BoxMetrics& metrics)
     : Box(metrics),
-      m_char(c)
+      m_char(c),
+      m_font(f)
   {
     
   }
 
   Character character() const { return m_char; }
+  Font font() const { return m_font; }
+
+  bool isCharacterBox() const override { return true; }
 };
 
 } // namespace tex

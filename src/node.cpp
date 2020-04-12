@@ -32,6 +32,11 @@ bool Node::isPenalty() const
   return is<Penalty>();
 }
 
+bool Node::isCharacterBox() const
+{
+  return false;
+}
+
 bool Node::isMathSymbol() const
 {
   return false;

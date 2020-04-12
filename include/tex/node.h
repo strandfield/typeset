@@ -48,6 +48,7 @@ public:
   bool isGlue() const;
   bool isKern() const;
   bool isPenalty() const;
+  virtual bool isCharacterBox() const;
   virtual bool isMathSymbol() const;
 };
 
