@@ -67,6 +67,9 @@ auto get_field(FontTreeWidget::FontDimenName name, const T& fontdimen) -> declty
     return fontdimen.big_op_spacing4;
   case FontTreeWidget::BigOpSpacing5:
     return fontdimen.big_op_spacing5;
+  default:
+    assert(false);
+    return fontdimen.quad;
   }
 }
 
