@@ -25,6 +25,8 @@ public:
   explicit Box(const BoxMetrics& metrics);
   Box(float h, float d, float w);
 
+  bool isBox() const override;
+
   float height() const { return m_height; }
   float depth() const { return m_depth; }
   float width() const { return m_width; }

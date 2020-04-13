@@ -4,7 +4,6 @@
 
 #include "tex/node.h"
 
-#include "tex/box.h"
 #include "tex/glue.h"
 #include "tex/kern.h"
 #include "tex/penalty.h"
@@ -14,7 +13,7 @@ namespace tex
 
 bool Node::isBox() const
 {
-  return isDerivedFrom<Box>();
+  return false;
 }
 
 bool Node::isGlue() const

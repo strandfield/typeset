@@ -37,7 +37,7 @@ void HBox::getBoxingInfo(float *width, float *height, float *depth, GlueShrink *
     {
       auto box = std::static_pointer_cast<Box>(*it);
 
-      if ((*it)->isDerivedFrom<ListBox>())
+      if ((*it)->isListBox())
       {
         auto listbox = std::static_pointer_cast<ListBox>(box);
 

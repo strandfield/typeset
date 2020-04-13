@@ -31,6 +31,11 @@ Box::Box(float h, float d, float w)
 
 }
 
+bool Box::isBox() const
+{
+  return true;
+}
+
 void Box::setHeight(float h)
 {
   m_height = h;

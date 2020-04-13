@@ -44,7 +44,7 @@ public:
     return *static_cast<const T*>(this);
   }
 
-  bool isBox() const;
+  virtual bool isBox() const;
   bool isGlue() const;
   bool isKern() const;
   bool isPenalty() const;

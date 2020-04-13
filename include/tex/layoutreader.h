@@ -116,7 +116,7 @@ void read_vbox_full(Reader && reader, const std::shared_ptr<VBox> & layout, Pos 
       {
         reader(std::static_pointer_cast<Rule>(box), pos);
       }
-      else if (box->isDerivedFrom<ListBox>())
+      else if (box->isListBox())
       {
         auto listbox = std::static_pointer_cast<ListBox>(box);
         const float shift = listbox->shiftAmount();
@@ -178,7 +178,7 @@ bool read_hbox_partial(Reader && reader, const std::shared_ptr<HBox> & layout, P
         if (reader(std::static_pointer_cast<Rule>(box), pos))
           return PartialLayoutReader::Done;
       }
-      else if (box->isDerivedFrom<ListBox>())
+      else if (box->isListBox())
       {
         auto listbox = std::static_pointer_cast<ListBox>(box);
         const float shifted_baseline = pos.y + listbox->shiftAmount();
@@ -249,7 +249,7 @@ bool read_vbox_partial(Reader && reader, const std::shared_ptr<VBox> & layout, P
         if (reader(std::static_pointer_cast<Rule>(box), pos))
           return PartialLayoutReader::Done;
       }
-      else if (box->isDerivedFrom<ListBox>())
+      else if (box->isListBox())
       {
         auto listbox = std::static_pointer_cast<ListBox>(box);
         const float shift = listbox->shiftAmount();
@@ -313,7 +313,7 @@ struct layout_reader_impl<void>
     {
       reader(std::static_pointer_cast<Rule>(layout), pos);
     }
-    else if (layout->isDerivedFrom<ListBox>())
+    else if (layout->isListBox())
     {
       auto listbox = std::static_pointer_cast<ListBox>(layout);
       if (listbox->is<HBox>())
@@ -343,7 +343,7 @@ struct layout_reader_impl<bool>
     {
       reader(std::static_pointer_cast<Rule>(layout), pos);
     }
-    else if (layout->isDerivedFrom<ListBox>())
+    else if (layout->isListBox())
     {
       auto listbox = std::static_pointer_cast<ListBox>(layout);
       if (listbox->isHBox())

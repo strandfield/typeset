@@ -187,7 +187,7 @@ List MathTypesetter::mlist2hlist(MathList mlist, math::Style style)
       }
 
     }
-    else if (current->isDerivedFrom<Box>() || current->is<Kern>() || current->isPenalty())
+    else if (current->isBox() || current->is<Kern>() || current->isPenalty())
       ret.push_back(current);
   }
 
@@ -689,7 +689,7 @@ bool MathTypesetter::isCharacterBox(const std::shared_ptr<Node>& node, float* w,
     if (hlist.size() != 2)
       return false;
     auto begin = hlist.begin();
-    if ((*begin)->isDerivedFrom<Box>() && !(*begin)->isHBox() && !(*begin)->isVBox())
+    if ((*begin)->isBox() && !(*begin)->isHBox() && !(*begin)->isVBox())
     {
       begin++;
       if ((*begin)->isKern())

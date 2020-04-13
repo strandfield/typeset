@@ -31,7 +31,7 @@ TEST_CASE(test_machine_1)
   tex::List vlist = vm->vlist();
 
   ASSERT(vlist.size() == 1);
-  ASSERT(vlist.front()->isDerivedFrom<tex::HBox>());
+  ASSERT(vlist.front()->isHBox());
 }
 
 TEST_CASE(test_machine_2)
@@ -55,7 +55,7 @@ TEST_CASE(test_machine_2)
     tex::List vlist = vm->vlist();
 
     ASSERT(vlist.size() == 1);
-    ASSERT(vlist.front()->isDerivedFrom<tex::HBox>());
+    ASSERT(vlist.front()->isHBox());
   }
 
   {
@@ -73,7 +73,7 @@ TEST_CASE(test_machine_2)
     tex::List vlist = vm->vlist();
 
     ASSERT(vlist.size() == 1);
-    ASSERT(vlist.front()->isDerivedFrom<tex::HBox>());
+    ASSERT(vlist.front()->isHBox());
   }
 }
 
@@ -97,6 +97,6 @@ TEST_CASE(test_machine_3)
   tex::List vlist = vm->vlist();
 
   ASSERT(vlist.size() == 1);
-  ASSERT(vlist.front()->isDerivedFrom<tex::HBox>());
+  ASSERT(vlist.front()->isHBox());
   /// TODO: add some real check
 }
