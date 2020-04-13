@@ -12,6 +12,8 @@ namespace tfm
 
 inline static void zerofontdimen(FontDimen& fd)
 {
+  // @TODO consider using inf instead as it would allow to distinguish between zero
+  // and undefined values
   fd.slant_per_pt = 0.f;
   fd.interword_space = 0.f;
   fd.interword_stretch = 0.f;

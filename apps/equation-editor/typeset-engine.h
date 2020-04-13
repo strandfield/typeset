@@ -27,6 +27,7 @@ public:
 
 struct Font
 {
+  QString name;
   QFont font;
   QtFontMetrics metrics;
   tex::FontDimen fontdimen;
@@ -85,8 +86,8 @@ protected:
   std::shared_ptr<tex::Box> typesetDelimiter(const std::shared_ptr<tex::Symbol> & symbol, float minTotalHeight) override;
   std::shared_ptr<tex::Box> typesetLargeOp(const std::shared_ptr<tex::Symbol> & symbol) override;
 
-  QFont & font(tex::Font f);
-  void initFont(int id, const QString & name, int size, bool italic, tex::TFM tfm);
+  QFont& font(tex::Font f);
+  void initFont(int id, const QString& displayname, const QString & fontname, int size, bool italic, tex::TFM tfm);
 
 private:
   FontTable m_fonts;

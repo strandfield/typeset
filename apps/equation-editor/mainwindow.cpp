@@ -4,6 +4,7 @@
 
 #include "mainwindow.h"
 
+#include "fonttreewidget.h"
 #include "typeset-engine.h"
 #include "renderwidget.h"
 
@@ -36,22 +37,32 @@ MainWindow::MainWindow()
   QHBoxLayout* layout = new QHBoxLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
   layout->setSpacing(0);
+
+  QSplitter *horizontal_splitter = new QSplitter(Qt::Horizontal);
   
-  QSplitter* splitter = new QSplitter(Qt::Vertical);
+  QSplitter* vertical_splitter = new QSplitter(Qt::Vertical);
   m_renderwidget = new RenderWidget;
   m_textedit = new QPlainTextEdit;
-  splitter->addWidget(m_renderwidget);
-  splitter->addWidget(m_textedit);
+  vertical_splitter->addWidget(m_renderwidget);
+  vertical_splitter->addWidget(m_textedit);
 
-  layout->addWidget(splitter, 1);
+  horizontal_splitter->addWidget(vertical_splitter);
 
-  QFrame* line = new QFrame;
-  line->setFixedWidth(2);
-  line->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-  line->setStyleSheet(QString("background-color: #c0c0c0;"));
-  layout->addWidget(line);
+  //layout->addWidget(vertical_splitter, 1);
 
-  layout->addWidget(createSettingsWidget());
+  //QFrame* line = new QFrame;
+  //line->setFixedWidth(2);
+  //line->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+  //line->setStyleSheet(QString("background-color: #c0c0c0;"));
+  //layout->addWidget(line);
+
+  //layout->addWidget(createSettingsWidget());
+
+  horizontal_splitter->addWidget(createSettingsWidget());
+
+  horizontal_splitter->handle(0)->setStyleSheet("QSplitter::handle {background-color: rgb(100, 100, 100);} ");
+
+  layout->addWidget(horizontal_splitter);
 
   connect(m_textedit, &QPlainTextEdit::textChanged, this, &MainWindow::onTextChanged);
 }
@@ -70,8 +81,9 @@ QWidget* MainWindow::createSettingsWidget()
   {
     QGroupBox* gb = new QGroupBox("Font parameters");
 
-    QFormLayout* form = new QFormLayout(gb);
-    form->addRow("x-height", new QSpinBox());
+    QVBoxLayout* gbl = new QVBoxLayout(gb);
+    m_font_treewidget = new FontTreeWidget(m_engine);
+    gbl->addWidget(m_font_treewidget);
 
     layout->addWidget(gb);
   }

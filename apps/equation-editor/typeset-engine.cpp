@@ -77,22 +77,21 @@ std::shared_ptr<tex::FontMetricsProvider> TypesetEngine::metrics() const
 
 TypesetEngine::TypesetEngine()
 {
-  // textfont0
-  initFont(0, "Times New Roman", 10, false, tex::tfm::cmr10());
-  initFont(1, "Times New Roman", 7, false, tex::tfm::cmr7());
-  initFont(2, "Times New Roman", 5, false, tex::tfm::cmr5());
-  // textfont1
-  initFont(3, "Times New Roman", 10, true, tex::tfm::cmmi10());
-  initFont(4, "Times New Roman", 7, true, tex::tfm::cmmi7());
-  initFont(5, "Times New Roman", 5, true, tex::tfm::cmmi5());
-  // textfont2
-  initFont(6, "Times New Roman", 10, false, tex::tfm::cmsy10());
-  initFont(7, "Times New Roman", 7, false, tex::tfm::cmsy7());
-  initFont(8, "Times New Roman", 5, false, tex::tfm::cmsy5());
-  // textfont3
-  initFont(9, "Times New Roman", 10, false, tex::tfm::cmex10());
-  initFont(10, "Times New Roman", 7, false, tex::tfm::cmex10());
-  initFont(11, "Times New Roman", 5, false, tex::tfm::cmex10());
+  initFont(0, "textfont0", "Times New Roman", 10, false, tex::tfm::cmr10());
+  initFont(1, "scriptfont0", "Times New Roman", 7, false, tex::tfm::cmr7());
+  initFont(2, "scriptscriptfont0", "Times New Roman", 5, false, tex::tfm::cmr5());
+
+  initFont(3, "textfont1", "Times New Roman", 10, true, tex::tfm::cmmi10());
+  initFont(4, "scriptfont1", "Times New Roman", 7, true, tex::tfm::cmmi7());
+  initFont(5, "scriptscriptfont1", "Times New Roman", 5, true, tex::tfm::cmmi5());
+
+  initFont(6, "textfont2", "Times New Roman", 10, false, tex::tfm::cmsy10());
+  initFont(7, "scriptfont2", "Times New Roman", 7, false, tex::tfm::cmsy7());
+  initFont(8, "scriptscriptfont2", "Times New Roman", 5, false, tex::tfm::cmsy5());
+
+  initFont(9, "textfont3", "Times New Roman", 10, false, tex::tfm::cmex10());
+  initFont(10, "scriptfont3", "Times New Roman", 7, false, tex::tfm::cmex10());
+  initFont(11, "scriptscriptfont3", "Times New Roman", 5, false, tex::tfm::cmex10());
 
   const int class_num = 11; // this class num is not valid, but equals to math::Atom::Rad
   const int fam = 3;
@@ -172,11 +171,12 @@ QFont & TypesetEngine::font(tex::Font f)
   return m_fonts[f.id()].font;
 }
 
-void TypesetEngine::initFont(int id, const QString & name, int size, bool italic, tex::TFM tfm)
+void TypesetEngine::initFont(int id, const QString& displayname, const QString & fontname, int size, bool italic, tex::TFM tfm)
 {
-  QFont qfont{ name };
+  QFont qfont{ fontname };
   qfont.setItalic(italic);
   qfont.setPointSize(size * 2);
+  m_fonts[id].name = displayname;
   m_fonts[id].font = qfont;
   m_fonts[id].metrics = QFontMetrics{ qfont };
   

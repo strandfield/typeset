@@ -12,6 +12,7 @@ class QLabel;
 class QPlainTextEdit;
 class QSpinBox;
 
+class FontTreeWidget;
 class RenderWidget;
 class TypesetEngine;
 
@@ -33,6 +34,7 @@ protected:
 
 private:
   std::shared_ptr<TypesetEngine> m_engine;
+  FontTreeWidget* m_font_treewidget;
   RenderWidget* m_renderwidget;
   QPlainTextEdit* m_textedit;
   QLabel* m_report_widget;
