@@ -27,12 +27,6 @@ public:
   }
 
   template<typename T>
-  bool isDerivedFrom() const
-  {
-    return dynamic_cast<const T*>(this) != nullptr;
-  }
-
-  template<typename T>
   T & as()
   {
     return *static_cast<T*>(this);

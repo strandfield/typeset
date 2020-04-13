@@ -622,7 +622,7 @@ void MathTypesetter::rule12_accatom(MathList& mathlist, MathList::iterator& curr
   const float u = x->width();
   float delta = std::min(x->height(), getMetrics(SigmaFamily).xHeight()); // @TODO: should be x-height in accent font
 
-  if (atom->nucleus() != nullptr && atom->nucleus()->isDerivedFrom<Symbol>())
+  if (atom->nucleus() != nullptr && atom->nucleus()->isMathSymbol())
   {
     rule17_processatom(mathlist, current);
     atom->clearSubSupscripts();
