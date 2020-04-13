@@ -49,6 +49,9 @@ public:
   bool isKern() const;
   bool isPenalty() const;
   virtual bool isCharacterBox() const;
+  virtual bool isHBox() const;
+  virtual bool isVBox() const;
+  bool isListBox() const;
   virtual bool isMathSymbol() const;
 };
 

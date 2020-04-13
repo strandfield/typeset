@@ -37,6 +37,21 @@ bool Node::isCharacterBox() const
   return false;
 }
 
+bool Node::isHBox() const
+{
+  return false;
+}
+
+bool Node::isVBox() const
+{
+  return false;
+}
+
+bool Node::isListBox() const
+{
+  return isHBox() || isVBox();
+}
+
 bool Node::isMathSymbol() const
 {
   return false;

@@ -71,6 +71,11 @@ void HBox::getBoxingInfo(float *width, float *height, float *depth, GlueShrink *
     *width = w;
 }
 
+bool HBox::isHBox() const
+{
+  return true;
+}
+
 void HBox::rebox()
 {
   float natural_width, height, depth;

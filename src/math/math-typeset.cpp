@@ -306,7 +306,7 @@ std::shared_ptr<HBox> MathTypesetter::boxit(MathList mlist, math::Style s)
 std::shared_ptr<HBox> MathTypesetter::hboxit(std::shared_ptr<Node> node)
 {
   auto box = boxit(node);
-  if (!box->is<HBox>())
+  if (!box->isHBox())
     return tex::hbox(List{ box });
   return cast<HBox>(box);
 }
@@ -595,17 +595,17 @@ bool MathTypesetter::isCharacterBox(const std::shared_ptr<Node>& node, float* w,
 {
   std::shared_ptr<Box> cbox = std::dynamic_pointer_cast<tex::Box>(node);
 
-  if (cbox == nullptr || cbox->is<VBox>())
+  if (cbox == nullptr || cbox->isVBox())
     return false;
 
-  if (node->is<HBox>())
+  if (node->isHBox())
   {
     auto hbox = cast<HBox>(node);
     const auto& hlist = hbox->list();
     if (hlist.size() != 2)
       return false;
     auto begin = hlist.begin();
-    if ((*begin)->isDerivedFrom<Box>() && !(*begin)->is<HBox>() && !(*begin)->is<VBox>())
+    if ((*begin)->isDerivedFrom<Box>() && !(*begin)->isHBox() && !(*begin)->isVBox())
     {
       begin++;
       if ((*begin)->isKern())

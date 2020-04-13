@@ -19,6 +19,8 @@ public:
 
   void getBoxingInfo(float *width, float *height, float *depth, GlueShrink *shrink, GlueStretch *stretch) const;
 
+  bool isVBox() const override;
+
 protected:
   friend class VBoxEditor;
   friend LIBTYPESET_API std::shared_ptr<VBox> vtop(List && list);

@@ -76,6 +76,11 @@ void VBox::getBoxingInfo(float *width, float *height, float *depth, GlueShrink *
     *width = w;
 }
 
+bool VBox::isVBox() const
+{
+  return true;
+}
+
 void VBox::rebox_vbox()
 {
   float width, height, depth;

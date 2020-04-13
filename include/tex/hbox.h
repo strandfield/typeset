@@ -19,6 +19,8 @@ public:
 
   void getBoxingInfo(float *width, float *height, float *depth, GlueShrink *shrink, GlueStretch *stretch) const;
 
+  bool isHBox() const override;
+
 protected:
   friend class HBoxEditor;
 
