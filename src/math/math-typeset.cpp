@@ -159,6 +159,8 @@ List MathTypesetter::mlist2hlist(MathList mlist, math::Style style)
 
   preprocess(mlist);
 
+  m_most_recent_atom = nullptr;
+
   List ret;
 
   for (auto it = mlist.begin(); it != mlist.end(); ++it)
@@ -318,8 +320,6 @@ void MathTypesetter::preprocess(MathList& mlist)
 
   RAIIStyleGuard style_guard{ m_current_style };
 
-  std::shared_ptr<math::Atom> most_recent_atom = nullptr;
-
   for (auto it = mlist.begin(); it != mlist.end();)
   {
     auto& elem = *it;
@@ -330,8 +330,15 @@ void MathTypesetter::preprocess(MathList& mlist)
     }
     else if (elem->isGlue() || elem->isKern())
     {
-      // Rule 2 (incomplete)
-      ++it;
+      // Rule 2
+      if (elem->isGlue())
+      {
+        rule2_translateglue(mlist, it);
+      }
+      else
+      {
+        ++it;
+      }
     }
     else if (elem->is<math::StyleChange>())
     {
@@ -344,105 +351,69 @@ void MathTypesetter::preprocess(MathList& mlist)
     {
       auto atom = cast<math::Atom>(elem);
 
-      static const std::set<math::Atom::Type> rule5_types = { math::Atom::Bin, math::Atom::Op, math::Atom::Rel, math::Atom::Open, math::Atom::Punct };
-      static const std::set<math::Atom::Type> rule6_types = { math::Atom::Rel, math::Atom::Close, math::Atom::Punct };
-      static const std::set<math::Atom::Type> rule7_types = { math::Atom::Open, math::Atom::Inner };
-
-      if (atom->type() == math::Atom::Bin && (most_recent_atom != nullptr && rule5_types.find(most_recent_atom->type()) != rule5_types.end()))
+      if (atom->type() == math::Atom::Bin)
       {
-        // Rule 5
-        atom->changeType(math::Atom::Ord);
-        processAtom(mlist, it);
+        rule5_binatom(mlist, it);
       }
-      else if (rule6_types.find(atom->type()) != rule6_types.end())
+      else if (atom->type() == math::Atom::Rel || atom->type() == math::Atom::Close || atom->type() == math::Atom::Punct)
       {
         // Rule 6
-        if (most_recent_atom != nullptr && most_recent_atom->type() == math::Atom::Bin)
-          most_recent_atom->changeType(math::Atom::Ord);
-        processAtom(mlist, it);
+        if (m_most_recent_atom != nullptr && m_most_recent_atom->type() == math::Atom::Bin)
+          m_most_recent_atom->changeType(math::Atom::Ord);
+        rule17_processatom(mlist, it);
       }
-      else if (rule7_types.find(atom->type()) != rule7_types.end())
+      else if (atom->type() == math::Atom::Open || atom->type() == math::Atom::Inner)
       {
         // Rule 7
-        processAtom(mlist, it);
+        rule17_processatom(mlist, it);
       }
       else if (atom->type() == math::Atom::Vcent)
       {
-        // Rule 8
-        auto x = boxit(atom->nucleus());
-        if (!x->is<VBox>())
-          x = tex::vbox({ x });
-        float v = x->totalHeight();
-        float a = getMetrics(SigmaFamily).axisHeight();
-        {
-          ListBoxEditor editor{ *cast<VBox>(x) };
-          editor.setHeight(0.5f * v + a);
-          editor.setDepth(0.5f * v - a);
-        }
-        atom->changeNucleus(x);
-        atom->changeType(math::Atom::Ord);
-        processAtom(mlist, it);
+        rule8_vcent(mlist, it);
       }
       else if (atom->type() == math::Atom::Over)
       {
-        // Rule 9
-        auto x = boxit(atom->nucleus(), m_current_style.cramp());
-        float theta = getMetrics(XiFamily).defaultRuleThickness();
-        auto box = tex::vbox({ kern(theta), hrule(x->width(), theta), kern(3 * theta), x });
-        atom->changeNucleus(box);
-        changeToOrd(mlist, it);
+        rule9_over(mlist, it);
       }
       else if (atom->type() == math::Atom::Under)
       {
-        // Rule 10
-        auto x = boxit(atom->nucleus(), m_current_style.cramp());
-        float theta = getMetrics(XiFamily).defaultRuleThickness();
-        auto box = tex::vtop({ x, kern(3 * theta), hrule(x->width(), theta) });
-        {
-          ListBoxEditor editor{ *box };
-          editor.increaseDepth(theta);
-        }
-        atom->changeNucleus(box);
-        changeToOrd(mlist, it);
+        rule10_underline(mlist, it);
       }
       else if (atom->type() == math::Atom::Rad)
       {
-        // Rule 11
-        processRadAtom(mlist, it);
+        rule11_radatom(mlist, it);
       }
       else if (atom->type() == math::Atom::Acc)
       {
-        // Rule 12
-        processAccAtom(mlist, it);
+        rule12_accatom(mlist, it);
       }
       else if (atom->type() == math::Atom::Op)
       {
-        // Rule 13
-        processOpAtom(mlist, it);
+        rule13_opatom(mlist, it);
       }
       else if (atom->type() == math::Atom::Ord)
       {
         // Rule 14 (incomplete)
-        processAtom(mlist, it);
+        rule17_processatom(mlist, it);
       }
       else
       {
         assert(false);
       }
 
-      most_recent_atom = atom;
+      m_most_recent_atom = atom;
       ++it;
     }
     else if (elem->is<math::Fraction>())
     {
       // Rule 15
-      processFraction(mlist, it);
+      rule15_fraction(mlist, it);
       ++it;
     }
     else if (elem->is<math::Root>())
     {
       processRoot(mlist, it);
-      most_recent_atom = cast<math::Atom>(*it);
+      m_most_recent_atom = cast<math::Atom>(*it);
       ++it;
     }
   }
@@ -450,8 +421,114 @@ void MathTypesetter::preprocess(MathList& mlist)
   processBoundary(mlist);
 }
 
-void MathTypesetter::processOpAtom(MathList& mlist, MathList::iterator& current)
+void MathTypesetter::rule2_translateglue(MathList& mlist, MathList::iterator& current)
 {
+  auto g = std::static_pointer_cast<Glue>(*current);
+
+  if (g->origin() == GlueOrigin::nonscript)
+  {
+    if (std::next(current) != mlist.end() && (*std::next(current))->isGlueOrKern())
+    {
+      if (m_current_style <= math::Style::S)
+      {
+        mlist.erase(std::next(current));
+      }
+    }
+  }
+  else if (g->origin() == GlueOrigin::mskip)
+  {
+    float factor = sigma<6>() / 18.f;
+    g->spec().space *= factor;
+
+    if (g->spec().shrinkOrder == GlueOrder::Normal)
+      g->spec().shrink *= factor;
+
+    if (g->spec().stretchOrder == GlueOrder::Normal)
+      g->spec().stretch *= factor;
+  }
+ 
+  ++current;
+}
+
+void MathTypesetter::rule5_binatom(MathList& mlist, MathList::iterator& current)
+{
+  auto atom = std::static_pointer_cast<math::Atom>(*current);
+
+  auto filter = [](math::Atom::Type t) -> bool {
+    switch (t)
+    {
+    case math::Atom::Bin:
+    case math::Atom::Op:
+    case math::Atom::Rel:
+    case math::Atom::Open: 
+    case math::Atom::Punct:
+      return true;
+    default:
+      return false;
+    }
+  };
+
+  if (current == mlist.begin() && (m_most_recent_atom != nullptr && filter(m_most_recent_atom->type())))
+  {
+    atom->changeType(math::Atom::Ord);
+    rule14(mlist, current);
+  }
+  else
+  {
+    rule17_processatom(mlist, current);
+  }
+}
+
+void MathTypesetter::rule8_vcent(MathList& mlist, MathList::iterator& current)
+{
+  auto atom = std::static_pointer_cast<math::Atom>(*current);
+
+  auto x = boxit(atom->nucleus());
+  if (!x->is<VBox>())
+    x = tex::vbox({ x });
+  float v = x->totalHeight();
+  float a = sigma<22>();
+  {
+    ListBoxEditor editor{ *cast<VBox>(x) };
+    editor.setHeight(0.5f * v + a);
+    editor.setDepth(0.5f * v - a);
+  }
+  atom->changeNucleus(x);
+  atom->changeType(math::Atom::Ord);
+
+  rule17_processatom(mlist, current);
+}
+
+void MathTypesetter::rule9_over(MathList& mlist, MathList::iterator& current)
+{
+  auto atom = std::static_pointer_cast<math::Atom>(*current);
+
+  auto x = boxit(atom->nucleus(), m_current_style.cramp());
+  float theta = xi<8>(); // default_rule_thickness
+  auto box = tex::vbox({ kern(theta), hrule(x->width(), theta), kern(3 * theta), x });
+  atom->changeNucleus(box);
+  rule16_changeToOrd(mlist, current);
+}
+
+void MathTypesetter::rule10_underline(MathList& mlist, MathList::iterator& current)
+{
+  auto atom = std::static_pointer_cast<math::Atom>(*current);
+
+  auto x = boxit(atom->nucleus(), m_current_style.cramp());
+  float theta = xi<8>(); // default_rule_thickness
+  auto box = tex::vtop({ x, kern(3 * theta), hrule(x->width(), theta) });
+  {
+    ListBoxEditor editor{ *box };
+    editor.increaseDepth(theta);
+  }
+  atom->changeNucleus(box);
+  rule16_changeToOrd(mlist, current);
+}
+
+void MathTypesetter::rule13_opatom(MathList& mlist, MathList::iterator& current)
+{
+  // @TODO: split with rule 13a
+
   auto atom = cast<math::Atom>(*current);
   assert(atom->type() == math::Atom::Op);
 
@@ -473,7 +550,7 @@ void MathTypesetter::processOpAtom(MathList& mlist, MathList::iterator& current)
 
   if (!hasLimits)
   {
-    processAtom(mlist, current);
+    rule17_processatom(mlist, current);
     return;
   }
 
@@ -518,27 +595,26 @@ void MathTypesetter::processOpAtom(MathList& mlist, MathList::iterator& current)
   atom->changeNucleus(vbox);
 }
 
-void MathTypesetter::processRadAtom(MathList& mathlist, MathList::iterator& current)
+void MathTypesetter::rule11_radatom(MathList& mathlist, MathList::iterator& current)
 {
   std::shared_ptr<math::Atom> atom = cast<math::Atom>(*current);
   assert(atom->type() == math::Atom::Rad);
 
   auto x = boxit(atom->nucleus(), m_current_style.cramp());
   float theta = xi<8>(); // default_rule_thickness
-  const float phi = m_current_style > math::Style::T ? sigma<5>() : 0.f; // @TODO: should be theta and not zero ?
+  const float phi = m_current_style > math::Style::T ? sigma<5>() : theta;
   float psi = theta + 0.25f * std::abs(phi);
   auto y = radicalSignBox(psi + theta + x->totalHeight());
-  const float radicalSignBoxWidth = y->width();
   theta = y->height();
   if (y->depth() > psi + y->totalHeight())
     psi = 0.5f * (psi + y->depth() - x->totalHeight());
   auto vbox = tex::vbox({ kern(theta), tex::hrule(x->width(), theta), kern(psi), x });
-  y->setShiftAmount(y->shiftAmount() - psi + x->height());
+  y->setShiftAmount(y->shiftAmount() - psi + x->height()); // @TODO: looks suspicious
   atom->changeNucleus(tex::hbox({ y, vbox }));
-  changeToOrd(mathlist, current);
+  rule16_changeToOrd(mathlist, current);
 }
 
-void MathTypesetter::processAccAtom(MathList& mathlist, MathList::iterator& current)
+void MathTypesetter::rule12_accatom(MathList& mathlist, MathList::iterator& current)
 {
   std::shared_ptr<math::Atom> atom = cast<math::Atom>(*current);
 
@@ -548,7 +624,7 @@ void MathTypesetter::processAccAtom(MathList& mathlist, MathList::iterator& curr
 
   if (atom->nucleus() != nullptr && atom->nucleus()->isDerivedFrom<Symbol>())
   {
-    processAtom(mathlist, current);
+    rule17_processatom(mathlist, current);
     atom->clearSubSupscripts();
     delta += (x->height() - cast<Box>(atom->nucleus())->height());
     x = cast<Box>(atom->nucleus());
@@ -572,18 +648,26 @@ void MathTypesetter::processAccAtom(MathList& mathlist, MathList::iterator& curr
   }
 
   atom->changeNucleus(z);
-  changeToOrd(mathlist, current);
+  rule16_changeToOrd(mathlist, current);
 }
 
-void MathTypesetter::changeToOrd(MathList& mathlist, MathList::iterator& current)
+void MathTypesetter::rule16_changeToOrd(MathList& mathlist, MathList::iterator& current)
 {
   auto atom = cast<math::Atom>(*current);
   atom->changeType(math::Atom::Ord);
-  processAtom(mathlist, current);
+  rule17_processatom(mathlist, current);
 }
 
-void MathTypesetter::processAtom(MathList& mathlist, MathList::iterator& current)
+void MathTypesetter::rule14(MathList& mlist, MathList::iterator& current)
 {
+  // @TODO: implement this rule
+  rule17_processatom(mlist, current);
+}
+
+void MathTypesetter::rule17_processatom(MathList& mathlist, MathList::iterator& current)
+{
+  // Rule 17
+
   auto atom = cast<math::Atom>(*current);
 
   atom->changeNucleus(boxit(atom->nucleus()));
@@ -727,12 +811,11 @@ void MathTypesetter::attachSubSup(MathList& mlist, MathList::iterator& current)
 }
 
 
-void MathTypesetter::processFraction(MathList& mlist, MathList::iterator& current)
+void MathTypesetter::rule15_fraction(MathList& mlist, MathList::iterator& current)
 {
   std::shared_ptr<math::Fraction> frac = cast<math::Fraction>(*current);
 
   float theta = getMetrics(XiFamily).defaultRuleThickness();
-
 
   auto x = boxit(frac->numer(), m_current_style.fracNum());
   auto z = boxit(frac->denom(), m_current_style.fracDen());
@@ -827,7 +910,7 @@ void MathTypesetter::processRoot(MathList& mlist, MathList::iterator& current)
 
   auto atom = math::Atom::create<math::Atom::Rad>(tex::hbox({ index, kern(-radicalSignBoxWidth), y, vbox }));
   *current = atom;
-  changeToOrd(mlist, current);
+  rule16_changeToOrd(mlist, current);
 }
 
 void MathTypesetter::processBoundary(MathList& mlist)

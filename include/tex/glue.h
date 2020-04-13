@@ -86,6 +86,7 @@ public:
 
   void accumulate(GlueShrink & shrink, GlueStretch & stretch) const;
 
+  GlueSpec& spec() { return m_spec; }
   const GlueSpec& spec() const { return m_spec; }
 
 private:

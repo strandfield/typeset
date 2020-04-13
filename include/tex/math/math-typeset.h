@@ -89,14 +89,20 @@ private:
 
   void preprocess(MathList& mlist);
 
-  void processOpAtom(MathList& mlist, MathList::iterator& current);
-  void processRadAtom(MathList& mathlist, MathList::iterator& current);
-  void processAccAtom(MathList& mlist, MathList::iterator& current);
-  void changeToOrd(MathList& mlist, MathList::iterator& current);
-  void processAtom(MathList& mlist, MathList::iterator& current);
+  void rule2_translateglue(MathList& mlist, MathList::iterator& current);
+  void rule5_binatom(MathList& mlist, MathList::iterator& current);
+  void rule8_vcent(MathList& mlist, MathList::iterator& current);
+  void rule9_over(MathList& mlist, MathList::iterator& current);
+  void rule10_underline(MathList& mlist, MathList::iterator& current);
+  void rule13_opatom(MathList& mlist, MathList::iterator& current);
+  void rule11_radatom(MathList& mathlist, MathList::iterator& current);
+  void rule12_accatom(MathList& mlist, MathList::iterator& current);
+  void rule16_changeToOrd(MathList& mlist, MathList::iterator& current);
+  void rule14(MathList& mlist, MathList::iterator& current);
+  void rule17_processatom(MathList& mlist, MathList::iterator& current);
   bool isCharacterBox(const std::shared_ptr<Node>& node, float* w = nullptr, float* h = nullptr, float* d = nullptr);
   void attachSubSup(MathList& mlist, MathList::iterator& current);
-  void processFraction(MathList& mlist, MathList::iterator& current);
+  void rule15_fraction(MathList& mlist, MathList::iterator& current);
   void processRoot(MathList& mlist, MathList::iterator& current);
   void processBoundary(MathList& mlist);
 

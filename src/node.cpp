@@ -32,6 +32,11 @@ bool Node::isPenalty() const
   return is<Penalty>();
 }
 
+bool Node::isGlueOrKern() const
+{
+  return isGlue() || isKern();
+}
+
 bool Node::isCharacterBox() const
 {
   return false;

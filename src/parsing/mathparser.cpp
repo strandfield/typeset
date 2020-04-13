@@ -349,6 +349,7 @@ void MathParser::parse_mlist(std::shared_ptr<MathSymbol> mathsym)
 {
   enter(State::ParsingAtom);
   m_builders.emplace_back();
+  m_builders.back().type = static_cast<math::Atom::Type>(mathsym->classNumber());
   m_builders.back().setNucleus(mathsym);
 }
 
