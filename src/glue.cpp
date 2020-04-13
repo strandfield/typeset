@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -38,41 +38,47 @@ GlueShrinkStretch operator-(const GlueShrinkStretch & lhs, const GlueShrinkStret
 }
 
 Glue::Glue(float spc, float shrnk, float strtch, GlueOrder shrnkOrder, GlueOrder strtchOrder)
-  : mGlue(GlueSpec{ spc, shrnk, strtch, shrnkOrder, strtchOrder })
+  : m_origin(GlueOrigin::normal),
+    m_spec(GlueSpec{ spc, shrnk, strtch, shrnkOrder, strtchOrder })
 {
 
 }
 
+void Glue::setOrigin(GlueOrigin ori)
+{
+  m_origin = ori;
+}
+
 void Glue::accumulate(GlueShrink & shrink, GlueStretch & stretch) const
 {
-  switch (mGlue.shrinkOrder)
+  switch (m_spec.shrinkOrder)
   {
   case GlueOrder::Normal:
-    shrink.normal += mGlue.shrink;
+    shrink.normal += m_spec.shrink;
     break;
   case GlueOrder::Fil:
-    shrink.fil += mGlue.shrink;
+    shrink.fil += m_spec.shrink;
     break;
   case GlueOrder::Fill:
-    shrink.fill += mGlue.shrink;
+    shrink.fill += m_spec.shrink;
     break;
   case GlueOrder::Filll:
-    shrink.filll += mGlue.shrink;
+    shrink.filll += m_spec.shrink;
   }
 
-  switch (mGlue.stretchOrder)
+  switch (m_spec.stretchOrder)
   {
   case GlueOrder::Normal:
-    stretch.normal += mGlue.stretch;
+    stretch.normal += m_spec.stretch;
     break;
   case GlueOrder::Fil:
-    stretch.fil += mGlue.stretch;
+    stretch.fil += m_spec.stretch;
     break;
   case GlueOrder::Fill:
-    stretch.fill += mGlue.stretch;
+    stretch.fill += m_spec.stretch;
     break;
   case GlueOrder::Filll:
-    stretch.filll += mGlue.stretch;
+    stretch.filll += m_spec.stretch;
   }
 }
 

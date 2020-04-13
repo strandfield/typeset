@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -18,6 +18,13 @@ enum class GlueOrder
   Fil,
   Fill,
   Filll,
+};
+
+enum class GlueOrigin
+{
+  normal,
+  mskip,
+  nonscript,
 };
 
 struct GlueSpec
@@ -68,18 +75,22 @@ public:
   Glue(float spc, float shrnk, float strtch, GlueOrder shrnkOrder = GlueOrder::Normal, GlueOrder strtchOrder = GlueOrder::Normal);
   ~Glue() = default;
 
-  inline float space() const { return mGlue.space; }
-  inline float shrink() const { return mGlue.shrink; }
-  inline float stretch() const { return mGlue.stretch; }
-  inline GlueOrder shrinkOrder() const { return mGlue.shrinkOrder; }
-  inline GlueOrder stretchOrder() const { return mGlue.stretchOrder; }
+  float space() const { return m_spec.space; }
+  float shrink() const { return m_spec.shrink; }
+  float stretch() const { return m_spec.stretch; }
+  GlueOrder shrinkOrder() const { return m_spec.shrinkOrder; }
+  GlueOrder stretchOrder() const { return m_spec.stretchOrder; }
+
+  GlueOrigin origin() const { return m_origin; }
+  void setOrigin(GlueOrigin ori);
 
   void accumulate(GlueShrink & shrink, GlueStretch & stretch) const;
 
-  inline const GlueSpec & spec() const { return mGlue; }
+  const GlueSpec& spec() const { return m_spec; }
 
 private:
-  const GlueSpec mGlue;
+  GlueOrigin m_origin;
+  GlueSpec m_spec;
 };
 
 struct LIBTYPESET_API Shrink
