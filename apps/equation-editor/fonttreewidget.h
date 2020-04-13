@@ -56,6 +56,8 @@ public:
     BigOpSpacing5,
   };
 
+  void showOnlyUsedFontDimen(bool on);
+
   void sync();
 
 protected:
@@ -65,6 +67,7 @@ protected:
 
 private:
   std::shared_ptr<TypesetEngine> m_engine;
+  bool m_show_only_used_fontdimen = false;
 };
 
 #endif // LIBTYPESET_EQEDITOR_FONTTREEWIDGET_H

@@ -8,6 +8,7 @@
 #include <QWidget>
 
 class QComboBox;
+class QCheckBox;
 class QLabel;
 class QPlainTextEdit;
 class QSpinBox;
@@ -28,12 +29,14 @@ protected:
 
 protected Q_SLOTS:
   void onTextChanged();
+  void onShowOnlyUsedFontDimenChanged();
 
 protected:
   void processText();
 
 private:
   std::shared_ptr<TypesetEngine> m_engine;
+  QCheckBox* m_showonlyused_checkbox;
   FontTreeWidget* m_font_treewidget;
   RenderWidget* m_renderwidget;
   QPlainTextEdit* m_textedit;

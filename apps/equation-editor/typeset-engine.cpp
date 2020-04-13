@@ -16,7 +16,7 @@ QtFontMetrics::QtFontMetrics()
 
 }
 
-QtFontMetricsProdiver::QtFontMetricsProdiver(const FontTable & fonts)
+QtFontMetricsProdiver::QtFontMetricsProdiver(FontTable & fonts)
   : m_fonts(fonts)
 {
  
@@ -50,6 +50,175 @@ float QtFontMetricsProdiver::italicCorrection(const std::shared_ptr<tex::Symbol>
 const tex::FontDimen& QtFontMetricsProdiver::fontdimen(tex::Font f)
 {
   return m_fonts[f.id()].fontdimen;
+}
+
+float QtFontMetricsProdiver::slantPerPt(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.slant_per_pt = true;
+  return m_fonts[font.id()].fontdimen.slant_per_pt;
+}
+
+float QtFontMetricsProdiver::interwordSpace(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.interword_space = true;
+  return m_fonts[font.id()].fontdimen.interword_space;
+}
+
+float QtFontMetricsProdiver::interwordStretch(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.interword_stretch = true;
+  return m_fonts[font.id()].fontdimen.interword_stretch;
+}
+
+float QtFontMetricsProdiver::interwordShrink(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.interword_shrink = true;
+  return m_fonts[font.id()].fontdimen.interword_shrink;
+}
+
+float QtFontMetricsProdiver::extraSpace(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.extra_space = true;
+  return m_fonts[font.id()].fontdimen.extra_space;
+}
+
+
+float QtFontMetricsProdiver::xHeight(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.x_height = true;
+  return m_fonts[font.id()].fontdimen.x_height;
+}
+
+float QtFontMetricsProdiver::quad(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.quad = true;
+  return m_fonts[font.id()].fontdimen.quad;
+}
+
+float QtFontMetricsProdiver::num1(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.num1 = true;
+  return m_fonts[font.id()].fontdimen.num1;
+}
+
+float QtFontMetricsProdiver::num2(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.num2 = true;
+  return m_fonts[font.id()].fontdimen.num2;
+}
+
+float QtFontMetricsProdiver::num3(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.num3 = true;
+  return m_fonts[font.id()].fontdimen.num3;
+}
+
+float QtFontMetricsProdiver::denom1(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.denom1 = true;
+  return m_fonts[font.id()].fontdimen.denom1;
+}
+
+float QtFontMetricsProdiver::denom2(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.denom2 = true;
+  return m_fonts[font.id()].fontdimen.denom2;
+}
+
+float QtFontMetricsProdiver::sup1(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.sup1 = true;
+  return m_fonts[font.id()].fontdimen.sup1;
+}
+
+float QtFontMetricsProdiver::sup2(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.sup2 = true;
+  return m_fonts[font.id()].fontdimen.sup2;
+}
+
+float QtFontMetricsProdiver::sup3(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.sup3 = true;
+  return m_fonts[font.id()].fontdimen.sup3;
+}
+
+float QtFontMetricsProdiver::sub1(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.sub1 = true;
+  return m_fonts[font.id()].fontdimen.sub1;
+}
+
+float QtFontMetricsProdiver::sub2(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.sub2 = true;
+  return m_fonts[font.id()].fontdimen.sub2;
+}
+
+float QtFontMetricsProdiver::supDrop(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.sup_drop = true;
+  return m_fonts[font.id()].fontdimen.sup_drop;
+}
+
+float QtFontMetricsProdiver::subDrop(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.sub_drop = true;
+  return m_fonts[font.id()].fontdimen.sub_drop;
+}
+
+float QtFontMetricsProdiver::delim1(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.delim1 = true;
+  return m_fonts[font.id()].fontdimen.delim1;
+}
+
+float QtFontMetricsProdiver::delim2(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.delim2 = true;
+  return m_fonts[font.id()].fontdimen.delim2;
+}
+
+float QtFontMetricsProdiver::axisHeight(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.axis_height = true;
+  return m_fonts[font.id()].fontdimen.axis_height;
+}
+
+float QtFontMetricsProdiver::defaultRuleThickness(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.default_rule_thickness = true;
+  return m_fonts[font.id()].fontdimen.default_rule_thickness;
+}
+
+float QtFontMetricsProdiver::bigOpSpacing1(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.big_op_spacing1 = true;
+  return m_fonts[font.id()].fontdimen.big_op_spacing1;
+}
+
+float QtFontMetricsProdiver::bigOpSpacing2(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.big_op_spacing2 = true;
+  return m_fonts[font.id()].fontdimen.big_op_spacing2;
+}
+
+float QtFontMetricsProdiver::bigOpSpacing3(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.big_op_spacing3 = true;
+  return m_fonts[font.id()].fontdimen.big_op_spacing3;
+}
+
+float QtFontMetricsProdiver::bigOpSpacing4(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.big_op_spacing4 = true;
+  return m_fonts[font.id()].fontdimen.big_op_spacing4;
+}
+
+float QtFontMetricsProdiver::bigOpSpacing5(tex::Font font)
+{
+  m_fonts[font.id()].fontdimenusage.big_op_spacing5 = true;
+  return m_fonts[font.id()].fontdimen.big_op_spacing5;
 }
 
 const QFontMetricsF & QtFontMetricsProdiver::info(tex::Font f) const
@@ -98,6 +267,14 @@ TypesetEngine::TypesetEngine()
   mRadicalSign = std::make_shared<tex::MathSymbol>(tex::mathchars::SQRT, class_num, fam);
 
   mMetrics = std::make_shared<QtFontMetricsProdiver>(m_fonts);
+}
+
+void TypesetEngine::reset()
+{
+  for (auto& f : m_fonts)
+  {
+    f.fontdimenusage = FontDimenUsage();
+  }
 }
 
 const FontTable& TypesetEngine::fonts() const

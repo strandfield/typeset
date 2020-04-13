@@ -169,6 +169,15 @@ QTreeWidgetItem* FontTreeWidget::createFontDimenItem(const QString& text, FontDi
   return result;
 }
 
+void FontTreeWidget::showOnlyUsedFontDimen(bool on)
+{
+  if (m_show_only_used_fontdimen != on)
+  {
+    m_show_only_used_fontdimen = on;
+    sync();
+  }
+}
+
 void FontTreeWidget::sync()
 {
   for (int i(0); i < topLevelItemCount(); ++i)
@@ -180,8 +189,11 @@ void FontTreeWidget::sync()
     for (int j(0); j < toplevel_item->childCount(); ++j)
     {
       QTreeWidgetItem* fontdimen_item = toplevel_item->child(j);
-
       FontDimenName name = static_cast<FontDimenName>(fontdimen_item->data(0, FontDimenNameRole).toInt());
+
+      bool used = get_field(name, fontinfo.fontdimenusage);
+      fontdimen_item->setHidden(m_show_only_used_fontdimen && !used);
+
       fontdimen_item->setText(1, QString::number(get_field(name, fontinfo.fontdimen)));
     }
   }

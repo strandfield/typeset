@@ -25,12 +25,45 @@ public:
   using QFontMetricsF::operator=;
 };
 
+struct FontDimenUsage
+{
+  bool slant_per_pt = false;
+  bool interword_space = false;
+  bool interword_stretch = false;
+  bool interword_shrink = false;
+  bool x_height = false;
+  bool quad = false;
+  bool extra_space = false;
+  bool num1 = false;
+  bool num2 = false;
+  bool num3 = false;
+  bool denom1 = false;
+  bool denom2 = false;
+  bool sup1 = false;
+  bool sup2 = false;
+  bool sup3 = false;
+  bool sub1 = false;
+  bool sub2 = false;
+  bool sup_drop = false;
+  bool sub_drop = false;
+  bool delim1 = false;
+  bool delim2 = false;
+  bool axis_height = false;
+  bool default_rule_thickness = false;
+  bool big_op_spacing1 = false;
+  bool big_op_spacing2 = false;
+  bool big_op_spacing3 = false;
+  bool big_op_spacing4 = false;
+  bool big_op_spacing5 = false;
+};
+
 struct Font
 {
   QString name;
   QFont font;
   QtFontMetrics metrics;
   tex::FontDimen fontdimen;
+  FontDimenUsage fontdimenusage;
 };
 
 using FontTable = std::array<Font, 12>;
@@ -38,7 +71,7 @@ using FontTable = std::array<Font, 12>;
 class QtFontMetricsProdiver : public tex::FontMetricsProvider
 {
 public:
-  QtFontMetricsProdiver(const FontTable& fonts);
+  QtFontMetricsProdiver(FontTable& fonts);
   ~QtFontMetricsProdiver() = default;
 
   tex::BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) override;
@@ -46,11 +79,42 @@ public:
 
   const tex::FontDimen& fontdimen(tex::Font f) override;
 
+  float slantPerPt(tex::Font font) override;
+  float interwordSpace(tex::Font font) override;
+  float interwordStretch(tex::Font font) override;
+  float interwordShrink(tex::Font font) override;
+  float extraSpace(tex::Font font) override;
+
+  float xHeight(tex::Font font) override;
+  float quad(tex::Font font) override;
+  float num1(tex::Font font) override;
+  float num2(tex::Font font) override;
+  float num3(tex::Font font) override;
+  float denom1(tex::Font font) override;
+  float denom2(tex::Font font) override;
+  float sup1(tex::Font font) override;
+  float sup2(tex::Font font) override;
+  float sup3(tex::Font font) override;
+  float sub1(tex::Font font) override;
+  float sub2(tex::Font font) override;
+  float supDrop(tex::Font font) override;
+  float subDrop(tex::Font font) override;
+  float delim1(tex::Font font) override;
+  float delim2(tex::Font font) override;
+  float axisHeight(tex::Font font) override;
+
+  float defaultRuleThickness(tex::Font font) override;
+  float bigOpSpacing1(tex::Font font) override;
+  float bigOpSpacing2(tex::Font font) override;
+  float bigOpSpacing3(tex::Font font) override;
+  float bigOpSpacing4(tex::Font font) override;
+  float bigOpSpacing5(tex::Font font) override;
+
 protected:
   const QFontMetricsF & info(tex::Font f) const;
 
 private:
-  FontTable m_fonts;
+  FontTable& m_fonts;
 };
 
 class CharBox : public tex::CharacterBox
@@ -71,6 +135,8 @@ class TypesetEngine : public tex::TypesetEngine
 public:
   TypesetEngine();
   ~TypesetEngine() = default;
+
+  void reset();
 
   const FontTable& fonts() const;
 

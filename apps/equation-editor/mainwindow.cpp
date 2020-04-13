@@ -12,6 +12,7 @@
 #include "tex/parsing/mathparserfrontend.h"
 #include "tex/math/math-typeset.h"
 
+#include <QCheckBox>
 #include <QLabel>
 #include <QPlainTextEdit>
 #include <QSpinBox>
@@ -82,6 +83,11 @@ QWidget* MainWindow::createSettingsWidget()
     QGroupBox* gb = new QGroupBox("Font parameters");
 
     QVBoxLayout* gbl = new QVBoxLayout(gb);
+
+    m_showonlyused_checkbox = new QCheckBox("Show only used");
+    m_showonlyused_checkbox->setChecked(false);
+    gbl->addWidget(m_showonlyused_checkbox);
+
     m_font_treewidget = new FontTreeWidget(m_engine);
     gbl->addWidget(m_font_treewidget);
 
@@ -92,6 +98,8 @@ QWidget* MainWindow::createSettingsWidget()
 
   m_report_widget = new QLabel;
   layout->addWidget(m_report_widget);
+
+  connect(m_showonlyused_checkbox, &QCheckBox::toggled, this, &MainWindow::onShowOnlyUsedFontDimenChanged);
 
   return w;
 }
@@ -108,6 +116,11 @@ void MainWindow::onTextChanged()
   }
 }
 
+void MainWindow::onShowOnlyUsedFontDimenChanged()
+{
+  m_font_treewidget->showOnlyUsedFontDimen(m_showonlyused_checkbox->isChecked());
+}
+
 static double duration_msec(std::chrono::duration<double> diff)
 {
   return diff.count() * 1000;
@@ -115,6 +128,8 @@ static double duration_msec(std::chrono::duration<double> diff)
 
 void MainWindow::processText()
 {
+  m_engine->reset();
+
   std::string text = m_textedit->toPlainText().toStdString();
 
   auto start = std::chrono::high_resolution_clock::now();
@@ -184,4 +199,6 @@ void MainWindow::processText()
     + "Typesetting: " + QString::number(duration_msec(typesetting_end -mathparsing_end)) + "\n"
     + "Total: " + QString::number(duration_msec(typesetting_end - start)) + "\n";
   m_report_widget->setText(report);
+
+  m_font_treewidget->sync();
 }
