@@ -15,12 +15,18 @@ class RenderWidget : public QWidget
 public:
 
   void setBox(std::shared_ptr<tex::Box> box);
+  void setDrawChars(bool on = true);
+  void setDrawCharBoxes(bool on);
+  void setDrawListBox(bool on);
 
 protected:
   void paintEvent(QPaintEvent* ev) override;
 
 private:
   std::shared_ptr<tex::Box> m_box;
+  bool m_draw_chars = true;
+  bool m_draw_char_bbox = false;
+  bool m_draw_listbox = false;
 };
 
 #endif // LIBTYPESET_EQEDITOR_RENDERWIDGET_H

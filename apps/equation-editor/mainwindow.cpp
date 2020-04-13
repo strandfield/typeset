@@ -49,19 +49,7 @@ MainWindow::MainWindow()
 
   horizontal_splitter->addWidget(vertical_splitter);
 
-  //layout->addWidget(vertical_splitter, 1);
-
-  //QFrame* line = new QFrame;
-  //line->setFixedWidth(2);
-  //line->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-  //line->setStyleSheet(QString("background-color: #c0c0c0;"));
-  //layout->addWidget(line);
-
-  //layout->addWidget(createSettingsWidget());
-
   horizontal_splitter->addWidget(createSettingsWidget());
-
-  horizontal_splitter->handle(0)->setStyleSheet("QSplitter::handle {background-color: rgb(100, 100, 100);} ");
 
   layout->addWidget(horizontal_splitter);
 
@@ -78,6 +66,26 @@ QWidget* MainWindow::createSettingsWidget()
   QWidget* w = new QWidget;
 
   QVBoxLayout* layout = new QVBoxLayout(w);
+
+  {
+    QGroupBox* gb = new QGroupBox("Rendering");
+
+    QVBoxLayout* gbl = new QVBoxLayout(gb);
+
+    m_drawchars_checkbox = new QCheckBox("Draw chars");
+    m_drawchars_checkbox->setChecked(true);
+    gbl->addWidget(m_drawchars_checkbox);
+
+    m_drawcharbox_checkbox = new QCheckBox("Draw char boxes");
+    m_drawcharbox_checkbox->setChecked(false);
+    gbl->addWidget(m_drawcharbox_checkbox);
+
+    m_drawlistbox_checkbox = new QCheckBox("Draw list boxes");
+    m_drawlistbox_checkbox->setChecked(false);
+    gbl->addWidget(m_drawlistbox_checkbox);
+
+    layout->addWidget(gb);
+  }
 
   {
     QGroupBox* gb = new QGroupBox("Font parameters");
@@ -99,6 +107,9 @@ QWidget* MainWindow::createSettingsWidget()
   m_report_widget = new QLabel;
   layout->addWidget(m_report_widget);
 
+  connect(m_drawchars_checkbox, &QCheckBox::toggled, this, &MainWindow::onDrawCharChanged);
+  connect(m_drawcharbox_checkbox, &QCheckBox::toggled, this, &MainWindow::onDrawCharBoxesChanged);
+  connect(m_drawlistbox_checkbox, &QCheckBox::toggled, this, &MainWindow::onDrawListBoxChanged);
   connect(m_showonlyused_checkbox, &QCheckBox::toggled, this, &MainWindow::onShowOnlyUsedFontDimenChanged);
 
   return w;
@@ -119,6 +130,21 @@ void MainWindow::onTextChanged()
 void MainWindow::onShowOnlyUsedFontDimenChanged()
 {
   m_font_treewidget->showOnlyUsedFontDimen(m_showonlyused_checkbox->isChecked());
+}
+
+void MainWindow::onDrawCharChanged()
+{
+  m_renderwidget->setDrawChars(m_drawchars_checkbox->isChecked());
+}
+
+void MainWindow::onDrawCharBoxesChanged()
+{
+  m_renderwidget->setDrawCharBoxes(m_drawcharbox_checkbox->isChecked());
+}
+
+void MainWindow::onDrawListBoxChanged()
+{
+  m_renderwidget->setDrawListBox(m_drawlistbox_checkbox->isChecked());
 }
 
 static double duration_msec(std::chrono::duration<double> diff)

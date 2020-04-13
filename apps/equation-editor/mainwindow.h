@@ -30,12 +30,18 @@ protected:
 protected Q_SLOTS:
   void onTextChanged();
   void onShowOnlyUsedFontDimenChanged();
+  void onDrawCharChanged();
+  void onDrawCharBoxesChanged();
+  void onDrawListBoxChanged();
 
 protected:
   void processText();
 
 private:
   std::shared_ptr<TypesetEngine> m_engine;
+  QCheckBox* m_drawchars_checkbox;
+  QCheckBox* m_drawcharbox_checkbox;
+  QCheckBox* m_drawlistbox_checkbox;
   QCheckBox* m_showonlyused_checkbox;
   FontTreeWidget* m_font_treewidget;
   RenderWidget* m_renderwidget;
