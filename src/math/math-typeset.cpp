@@ -249,12 +249,18 @@ std::shared_ptr<VBox> MathTypesetter::radicalSignBox(float minTotalHeight)
   std::shared_ptr<Box> box = engine().typesetRadicalSign(minTotalHeight);
   auto ret = tex::vbox({ box });
   const float theta = getMetrics(XiFamily).defaultRuleThickness();
+
+  // @TODO: TeX takes the radical sign from font family 3 (math extension font),
+  // and expects the height of the box to be the default rule thickness;
+  // we are kind of cheating here (the vbox will not fully contain the character box) 
+  // and I'm not sure if this is not going to break in some cases. V - 2020/04/14
   if (ret->height() != theta)
   {
     VBoxEditor editor{ *ret };
     editor.changeHeight(theta);
     editor.done();
   }
+
   return ret;
 }
 
@@ -609,7 +615,7 @@ void MathTypesetter::rule11_radatom(MathList& mathlist, MathList::iterator& curr
   if (y->depth() > psi + y->totalHeight())
     psi = 0.5f * (psi + y->depth() - x->totalHeight());
   auto vbox = tex::vbox({ kern(theta), tex::hrule(x->width(), theta), kern(psi), x });
-  y->setShiftAmount(y->shiftAmount() - psi + x->height()); // @TODO: looks suspicious
+  y->setShiftAmount(y->shiftAmount() - (psi + x->height()));
   atom->changeNucleus(tex::hbox({ y, vbox }));
   rule16_changeToOrd(mathlist, current);
 }
@@ -884,18 +890,19 @@ void MathTypesetter::processRoot(MathList& mlist, MathList::iterator& current)
 {
   auto root = cast<math::Root>(*current);
 
+  // @TODO: try refactor this part with rule11
   // Do as with a Rad atom
   auto x = boxit(root->radicand(), m_current_style.cramp());
-  float theta = getMetrics(XiFamily).defaultRuleThickness();
-  const float phi = m_current_style > math::Style::T ? getMetrics(SigmaFamily).xHeight() : 0.f;
+  float theta = xi<8>(); // default_rule_thickness
+  const float phi = m_current_style > math::Style::T ? sigma<5>() : theta;
   float psi = theta + 0.25f * std::abs(phi);
   auto y = radicalSignBox(psi + theta + x->totalHeight());
-  const float radicalSignBoxWidth = y->width();
+  const float radicalSignBoxWidth = y->width(); // @TODO: can we move this down
   theta = y->height();
   if (y->depth() > psi + y->totalHeight())
     psi = 0.5f * (psi + y->depth() - x->totalHeight());
   auto vbox = tex::vbox({ kern(theta), tex::hrule(x->width(), theta), kern(psi), x });
-  y->setShiftAmount(y->shiftAmount() - psi + x->height());
+  y->setShiftAmount(y->shiftAmount() - (psi + x->height()));
 
   // Handle the root index
   auto index = boxit(root->degree(), math::Style::SS);

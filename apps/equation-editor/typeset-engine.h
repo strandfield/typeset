@@ -12,6 +12,7 @@
 
 #include <QFont>
 #include <QFontMetricsF>
+#include <QRawFont>
 
 #include <array>
 
@@ -61,6 +62,7 @@ struct Font
 {
   QString name;
   QFont font;
+  QRawFont rawfont;
   QtFontMetrics metrics;
   tex::FontDimen fontdimen;
   FontDimenUsage fontdimenusage;
@@ -121,7 +123,9 @@ class CharBox : public tex::CharacterBox
 {
 public:
   QFont qfont;
+  QRawFont rawfont;
   QString text;
+  tex::BoxMetrics oribox;
   bool deformed = false;
 
 public:

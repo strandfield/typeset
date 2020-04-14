@@ -10,6 +10,7 @@
 #include <tex/layoutreader.h>
 
 #include <QBrush>
+#include <QGlyphRun>
 #include <QPainter>
 
 // borrowed from the examples
@@ -83,8 +84,27 @@ struct TextPainter : tex::LayoutReader
     {
       painter->save();
       painter->setFont(cbox->qfont);
-      //painter->drawText(getRect(pos, box), stringbox->text);
-      painter->drawText(getReferencePoint(pos), cbox->text);
+
+      if (!cbox->deformed)
+      {
+        painter->drawText(getReferencePoint(pos), cbox->text);
+      }
+      else
+      {
+        painter->translate(getReferencePoint(pos));
+        const float sx = cbox->metrics().width / cbox->oribox.width;
+        const float sy = (cbox->metrics().height + cbox->metrics().depth) / (cbox->oribox.height + cbox->oribox.depth);
+        painter->scale(sx, sy);
+
+        QGlyphRun run;
+        run.setRawFont(cbox->rawfont);
+        QVector<quint32> indices = cbox->rawfont.glyphIndexesForString(cbox->text);
+        run.setGlyphIndexes(indices);
+        run.setPositions({ { 0.f, 0.f } });
+        painter->drawGlyphRun(QPointF{ 0.f, 0.f }, run);
+      }
+
+
       painter->restore();
     }
   }

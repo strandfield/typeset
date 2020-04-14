@@ -31,7 +31,8 @@ tex::BoxMetrics QtFontMetricsProdiver::metrics(const std::shared_ptr<tex::Symbol
     QRectF rect = m.boundingRect(c);
 
     tex::BoxMetrics ret;
-    ret.width = rect.width();
+    //ret.width = rect.width();
+    ret.width = m.width(c);
     ret.height = -rect.top();
     ret.depth = rect.bottom();
     return ret;
@@ -228,7 +229,8 @@ const QFontMetricsF & QtFontMetricsProdiver::info(tex::Font f) const
 
 CharBox::CharBox(tex::Character c, tex::Font f, tex::BoxMetrics box, const QFont& qf)
   : tex::CharacterBox(c, f, box),
-    qfont(qf)
+    qfont(qf),
+    oribox(box)
 {
   text = QString(QChar(c));
 }
@@ -321,10 +323,18 @@ std::shared_ptr<tex::Box> TypesetEngine::typesetRadicalSign(float minTotalHeight
 {
   tex::Font font = tex::Font(mRadicalSign->family() * 3);
   auto metrics = mMetrics->metrics(mRadicalSign, font);
+  auto ret = std::make_shared<CharBox>(mRadicalSign->character(), font, metrics, m_fonts[font.id()].font);
   const float ratio = minTotalHeight / (metrics.height + metrics.depth);
-  metrics.height *= ratio;
-  metrics.depth *= ratio;
-  return std::make_shared<CharBox>(mRadicalSign->character(), font, metrics, m_fonts[font.id()].font);
+
+  if (ratio > 1.f)
+  {
+    metrics.height *= ratio;
+    metrics.depth *= ratio;
+    ret->deform(metrics);
+    ret->rawfont = m_fonts[mRadicalSign->family() * 3].rawfont;
+  }
+
+  return ret;
 }
 
 std::shared_ptr<tex::Box> TypesetEngine::typesetDelimiter(const std::shared_ptr<tex::Symbol> & symbol, float minTotalHeight)
@@ -355,6 +365,7 @@ void TypesetEngine::initFont(int id, const QString& displayname, const QString &
   qfont.setPointSize(size * 2);
   m_fonts[id].name = displayname;
   m_fonts[id].font = qfont;
+  m_fonts[id].rawfont = QRawFont::fromFont(qfont);
   m_fonts[id].metrics = QFontMetrics{ qfont };
   
   tfm.design_size = m_fonts[id].metrics.height();
