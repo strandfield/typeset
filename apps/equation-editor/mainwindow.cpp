@@ -84,6 +84,10 @@ QWidget* MainWindow::createSettingsWidget()
     m_drawlistbox_checkbox->setChecked(false);
     gbl->addWidget(m_drawlistbox_checkbox);
 
+    m_drawbaselines_checkbox = new QCheckBox("Draw baselines");
+    m_drawbaselines_checkbox->setChecked(false);
+    gbl->addWidget(m_drawbaselines_checkbox);
+
     layout->addWidget(gb);
   }
 
@@ -110,6 +114,7 @@ QWidget* MainWindow::createSettingsWidget()
   connect(m_drawchars_checkbox, &QCheckBox::toggled, this, &MainWindow::onDrawCharChanged);
   connect(m_drawcharbox_checkbox, &QCheckBox::toggled, this, &MainWindow::onDrawCharBoxesChanged);
   connect(m_drawlistbox_checkbox, &QCheckBox::toggled, this, &MainWindow::onDrawListBoxChanged);
+  connect(m_drawbaselines_checkbox, &QCheckBox::toggled, this, &MainWindow::onDrawBaselinesChanged);
   connect(m_showonlyused_checkbox, &QCheckBox::toggled, this, &MainWindow::onShowOnlyUsedFontDimenChanged);
 
   return w;
@@ -145,6 +150,11 @@ void MainWindow::onDrawCharBoxesChanged()
 void MainWindow::onDrawListBoxChanged()
 {
   m_renderwidget->setDrawListBox(m_drawlistbox_checkbox->isChecked());
+}
+
+void MainWindow::onDrawBaselinesChanged()
+{
+  m_renderwidget->setDrawBaselines(m_drawbaselines_checkbox->isChecked());
 }
 
 static double duration_msec(std::chrono::duration<double> diff)

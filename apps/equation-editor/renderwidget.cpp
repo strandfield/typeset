@@ -20,6 +20,7 @@ struct TextPainter : tex::LayoutReader
   bool draw_chars = true;
   bool draw_char_bbox = false;
   bool draw_listbox = false;
+  bool draw_baselines = false;
 
   TextPainter(QPainter* p)
     : painter(p)
@@ -77,6 +78,15 @@ struct TextPainter : tex::LayoutReader
       painter->setPen(QPen(Qt::blue));
       QRectF rect = getRect(pos, box);
       painter->drawRect(rect);
+      painter->restore();
+    }
+
+    if (draw_baselines)
+    {
+      painter->save();
+      painter->setPen(QPen(Qt::darkMagenta));
+      QRectF rect = getRect(pos, box);
+      painter->drawLine(getReferencePoint(pos), getReferencePoint(pos) + QPointF(rect.width(), 0));
       painter->restore();
     }
 
@@ -153,6 +163,15 @@ void RenderWidget::setDrawListBox(bool on)
   }
 }
 
+void RenderWidget::setDrawBaselines(bool on)
+{
+  if (m_draw_baselines != on)
+  {
+    m_draw_baselines = on;
+    update();
+  }
+}
+
 void RenderWidget::paintEvent(QPaintEvent* ev)
 {
   QPainter p{ this };
@@ -168,6 +187,7 @@ void RenderWidget::paintEvent(QPaintEvent* ev)
     painter.draw_chars = m_draw_chars;
     painter.draw_char_bbox = m_draw_char_bbox;
     painter.draw_listbox = m_draw_listbox;
+    painter.draw_baselines = m_draw_baselines;
 
     const float x = (width() - m_box->width()) * 0.5f;
     const float y = (height() - m_box->totalHeight()) * 0.5f;

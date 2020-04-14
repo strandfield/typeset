@@ -33,6 +33,7 @@ protected Q_SLOTS:
   void onDrawCharChanged();
   void onDrawCharBoxesChanged();
   void onDrawListBoxChanged();
+  void onDrawBaselinesChanged();
 
 protected:
   void processText();
@@ -42,6 +43,7 @@ private:
   QCheckBox* m_drawchars_checkbox;
   QCheckBox* m_drawcharbox_checkbox;
   QCheckBox* m_drawlistbox_checkbox;
+  QCheckBox* m_drawbaselines_checkbox;
   QCheckBox* m_showonlyused_checkbox;
   FontTreeWidget* m_font_treewidget;
   RenderWidget* m_renderwidget;

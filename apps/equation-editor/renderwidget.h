@@ -18,6 +18,7 @@ public:
   void setDrawChars(bool on = true);
   void setDrawCharBoxes(bool on);
   void setDrawListBox(bool on);
+  void setDrawBaselines(bool on);
 
 protected:
   void paintEvent(QPaintEvent* ev) override;
@@ -27,6 +28,7 @@ private:
   bool m_draw_chars = true;
   bool m_draw_char_bbox = false;
   bool m_draw_listbox = false;
+  bool m_draw_baselines = false;
 };
 
 #endif // LIBTYPESET_EQEDITOR_RENDERWIDGET_H
