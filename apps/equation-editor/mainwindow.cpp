@@ -5,10 +5,12 @@
 #include "mainwindow.h"
 
 #include "fonttreewidget.h"
-#include "typeset-engine.h"
 #include "renderwidget.h"
+#include "suggestionbar.h"
+#include "typeset-engine.h"
 
 #include "tex/lexer.h"
+#include "tex/mathchars.h"
 #include "tex/parsing/mathparserfrontend.h"
 #include "tex/math/math-typeset.h"
 
@@ -29,6 +31,21 @@
 
 #include <QDebug>
 
+static QWidget* vbox(std::vector<QWidget*> widgets, int spacing = 0)
+{
+  QWidget* result = new QWidget;
+  QVBoxLayout* layout = new QVBoxLayout(result);
+  layout->setSpacing(spacing);
+  layout->setContentsMargins(0, 0, 0, 0);
+  
+  for (QWidget* w : widgets)
+  {
+    layout->addWidget(w);
+  }
+
+  return result;
+}
+
 MainWindow::MainWindow()
 {
   setWindowTitle("Equation Editor");
@@ -43,9 +60,11 @@ MainWindow::MainWindow()
   
   QSplitter* vertical_splitter = new QSplitter(Qt::Vertical);
   m_renderwidget = new RenderWidget;
-  m_textedit = new QPlainTextEdit;
   vertical_splitter->addWidget(m_renderwidget);
-  vertical_splitter->addWidget(m_textedit);
+
+  m_suggestionbar = new SuggestionBar;
+  m_textedit = new QPlainTextEdit;
+  vertical_splitter->addWidget(vbox({ m_suggestionbar, m_textedit }));
 
   horizontal_splitter->addWidget(vertical_splitter);
 
@@ -53,12 +72,39 @@ MainWindow::MainWindow()
 
   layout->addWidget(horizontal_splitter);
 
+  fillSuggestionBar();
+
+  connect(m_suggestionbar, &SuggestionBar::suggestionSelected, this, &MainWindow::onSuggestionSelected);
   connect(m_textedit, &QPlainTextEdit::textChanged, this, &MainWindow::onTextChanged);
 }
 
 MainWindow::~MainWindow()
 {
 
+}
+
+void MainWindow::fillSuggestionBar()
+{
+  const bool text_empty = m_textedit->toPlainText().isEmpty();
+  const bool has_empty_suggestions = m_suggestionbar->property("empty_suggestions").toBool();
+
+  if (text_empty == has_empty_suggestions)
+    return;
+
+  m_suggestionbar->clear();
+   
+  if (text_empty)
+  {
+    m_suggestionbar->addSuggestion("polynomial", "ax^2+bx+c");
+    m_suggestionbar->addSuggestion("roots", "\\sqrt{2} + \\sqrt{\\frac{1}{2}}");
+  }
+  else
+  {
+    m_suggestionbar->addSuggestion(QChar(tex::mathchars::TIMES), "\\times ");
+    m_suggestionbar->addSuggestion(QChar(tex::mathchars::CAP), "\\cap ");
+  }
+
+  m_suggestionbar->setProperty("empty_suggestions", text_empty);
 }
 
 QWidget* MainWindow::createSettingsWidget()
@@ -120,8 +166,15 @@ QWidget* MainWindow::createSettingsWidget()
   return w;
 }
 
+void MainWindow::onSuggestionSelected(const std::string& str)
+{
+  m_textedit->textCursor().insertText(QString::fromStdString(str));
+}
+
 void MainWindow::onTextChanged()
 {
+  fillSuggestionBar();
+
   try 
   {
     processText();

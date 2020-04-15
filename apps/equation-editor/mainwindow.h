@@ -15,6 +15,7 @@ class QSpinBox;
 
 class FontTreeWidget;
 class RenderWidget;
+class SuggestionBar;
 class TypesetEngine;
 
 class MainWindow : public QWidget
@@ -25,9 +26,12 @@ public:
   ~MainWindow();
 
 protected:
+  void fillSuggestionBar();
   QWidget* createSettingsWidget();
 
+
 protected Q_SLOTS:
+  void onSuggestionSelected(const std::string& str);
   void onTextChanged();
   void onShowOnlyUsedFontDimenChanged();
   void onDrawCharChanged();
@@ -47,6 +51,7 @@ private:
   QCheckBox* m_showonlyused_checkbox;
   FontTreeWidget* m_font_treewidget;
   RenderWidget* m_renderwidget;
+  SuggestionBar* m_suggestionbar;
   QPlainTextEdit* m_textedit;
   QLabel* m_report_widget;
 };
