@@ -170,7 +170,7 @@ void MathMode::main_callback(Token&& t)
 
       if (is_utf8_char(symbuf()))
       {
-        auto it = symbuf().begin();
+        auto it = symbuf().cbegin();
         m_parser.writeSymbol(read_utf8_char(it));
         symbuf().clear();
       }

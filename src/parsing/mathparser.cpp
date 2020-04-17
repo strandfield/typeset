@@ -15,6 +15,7 @@
 
 #include "tex/mathchars.h"
 
+#include <algorithm>
 #include <cassert>
 #include <stdexcept>
 
