@@ -13,10 +13,10 @@ class QLabel;
 class QPlainTextEdit;
 class QSpinBox;
 
+class EquationEditorRenderWidget;
 class FontTreeWidget;
-class RenderWidget;
+class RecordingTypesetEngine;
 class SuggestionBar;
-class TypesetEngine;
 
 class MainWindow : public QWidget
 {
@@ -43,14 +43,14 @@ protected:
   void processText();
 
 private:
-  std::shared_ptr<TypesetEngine> m_engine;
+  std::shared_ptr<RecordingTypesetEngine> m_engine;
   QCheckBox* m_drawchars_checkbox;
   QCheckBox* m_drawcharbox_checkbox;
   QCheckBox* m_drawlistbox_checkbox;
   QCheckBox* m_drawbaselines_checkbox;
   QCheckBox* m_showonlyused_checkbox;
   FontTreeWidget* m_font_treewidget;
-  RenderWidget* m_renderwidget;
+  EquationEditorRenderWidget* m_renderwidget;
   SuggestionBar* m_suggestionbar;
   QPlainTextEdit* m_textedit;
   QLabel* m_report_widget;

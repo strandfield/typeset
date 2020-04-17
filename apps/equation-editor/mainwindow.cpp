@@ -50,7 +50,7 @@ MainWindow::MainWindow()
 {
   setWindowTitle("Equation Editor");
 
-  m_engine = std::make_shared<TypesetEngine>();
+  m_engine = std::make_shared<RecordingTypesetEngine>();
 
   QHBoxLayout* layout = new QHBoxLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
@@ -59,7 +59,7 @@ MainWindow::MainWindow()
   QSplitter *horizontal_splitter = new QSplitter(Qt::Horizontal);
   
   QSplitter* vertical_splitter = new QSplitter(Qt::Vertical);
-  m_renderwidget = new RenderWidget;
+  m_renderwidget = new EquationEditorRenderWidget;
   vertical_splitter->addWidget(m_renderwidget);
 
   m_suggestionbar = new SuggestionBar;

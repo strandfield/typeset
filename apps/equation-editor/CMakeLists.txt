@@ -13,8 +13,12 @@ if(LIBTYPESET_BUILD_EQUATIONEDITOR)
   
   add_executable(equation-editor ${LIBTYPESET_EQUATIONEDITOR_HDR_FILES} ${LIBTYPESET_EQUATIONEDITOR_SRC_FILES})
   add_dependencies(equation-editor texnetium tfm)
-  
+  add_dependencies(equation-editor app-common)
+
+  target_include_directories(equation-editor PUBLIC "..")
+
   target_link_libraries(equation-editor texnetium tfm)
+  target_link_libraries(equation-editor app-common)
   target_link_libraries(equation-editor Qt5::Core Qt5::Gui Qt5::Widgets)
 
 endif()

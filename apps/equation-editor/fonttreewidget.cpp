@@ -73,7 +73,7 @@ auto get_field(FontTreeWidget::FontDimenName name, const T& fontdimen) -> declty
   }
 }
 
-FontTreeWidget::FontTreeWidget(std::shared_ptr<TypesetEngine> engine, QWidget* parent)
+FontTreeWidget::FontTreeWidget(std::shared_ptr<RecordingTypesetEngine> engine, QWidget* parent)
   : QTreeWidget(parent),
     m_engine(engine)
 {
@@ -188,13 +188,14 @@ void FontTreeWidget::sync()
     QTreeWidgetItem* toplevel_item = topLevelItem(i);
     int fontid = toplevel_item->data(0, FontIdRole).toInt();
     const auto& fontinfo = m_engine->fonts().at(fontid);
+    const auto& fontusage = m_engine->fontdimenUsage().at(fontid);
 
     for (int j(0); j < toplevel_item->childCount(); ++j)
     {
       QTreeWidgetItem* fontdimen_item = toplevel_item->child(j);
       FontDimenName name = static_cast<FontDimenName>(fontdimen_item->data(0, FontDimenNameRole).toInt());
 
-      bool used = get_field(name, fontinfo.fontdimenusage);
+      bool used = get_field(name, fontusage);
       fontdimen_item->setHidden(m_show_only_used_fontdimen && !used);
 
       fontdimen_item->setText(1, QString::number(get_field(name, fontinfo.fontdimen)));

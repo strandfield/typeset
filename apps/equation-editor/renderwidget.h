@@ -5,23 +5,20 @@
 #ifndef LIBTYPESET_EQEDITOR_RENDERWIDGET_H
 #define LIBTYPESET_EQEDITOR_RENDERWIDGET_H
 
-#include <QWidget>
+#include "common/renderwidget.h"
 
-#include "tex/box.h"
-
-class RenderWidget : public QWidget
+class EquationEditorRenderWidget : public RenderWidget
 {
   Q_OBJECT
 public:
 
-  void setBox(std::shared_ptr<tex::Box> box);
   void setDrawChars(bool on = true);
   void setDrawCharBoxes(bool on);
   void setDrawListBox(bool on);
   void setDrawBaselines(bool on);
 
 protected:
-  void paintEvent(QPaintEvent* ev) override;
+  void paint(QPainter& painter, const std::shared_ptr<tex::Box>& box, const QPointF& pos) override;
 
 private:
   std::shared_ptr<tex::Box> m_box;

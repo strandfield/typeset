@@ -9,13 +9,13 @@
 
 #include <memory>
 
-class TypesetEngine;
+class RecordingTypesetEngine;
 
 class FontTreeWidget : public QTreeWidget
 {
   Q_OBJECT
 public:
-  explicit FontTreeWidget(std::shared_ptr<TypesetEngine> engine, QWidget* parent = nullptr);
+  explicit FontTreeWidget(std::shared_ptr<RecordingTypesetEngine> engine, QWidget* parent = nullptr);
 
   enum Role
   {
@@ -66,7 +66,7 @@ protected:
   QTreeWidgetItem* createFontDimenItem(const QString& text, FontDimenName name);
 
 private:
-  std::shared_ptr<TypesetEngine> m_engine;
+  std::shared_ptr<RecordingTypesetEngine> m_engine;
   bool m_show_only_used_fontdimen = false;
 };
 
