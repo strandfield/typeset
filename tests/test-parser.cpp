@@ -1,8 +1,8 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the typeset project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include "test.h"
+#include "catch.hpp"
 
 #include "tex/math/fraction.h"
 #include "tex/math/matrix.h"
@@ -10,7 +10,7 @@
 
 #include "tex/parsing/mathparserfrontend.h"
 
-TEST_CASE(test_parser_1)
+TEST_CASE("The parser can process a simple atom", "[math-parsing]")
 {
   using namespace tex;
 
@@ -18,11 +18,11 @@ TEST_CASE(test_parser_1)
   parser.writeChar('a');
   parser.finish();
 
-  ASSERT(parser.output().size() == 1);
-  ASSERT(parser.output().front()->is<math::Atom>());
+  REQUIRE(parser.output().size() == 1);
+  REQUIRE(parser.output().front()->is<math::Atom>());
 }
 
-TEST_CASE(test_parser_2)
+TEST_CASE("The parser handles \\over", "[math-parsing]")
 {
   using namespace tex;
   using namespace parsing;
@@ -35,11 +35,11 @@ TEST_CASE(test_parser_2)
   parser.writeChar('5');
   parser.finish();
 
-  ASSERT(parser.output().size() == 1);
-  ASSERT(parser.output().front()->is<math::Fraction>());
+  REQUIRE(parser.output().size() == 1);
+  REQUIRE(parser.output().front()->is<math::Fraction>());
 }
 
-TEST_CASE(test_parser_3)
+TEST_CASE("The parser handles \\left and \\right", "[math-parsing]")
 {
   using namespace tex;
   using namespace parsing;
@@ -54,12 +54,12 @@ TEST_CASE(test_parser_3)
   parser.writeChar(')');
   parser.finish();
 
-  ASSERT(parser.output().size() == 1);
-  ASSERT(parser.output().front()->is<math::Atom>());
-  ASSERT(parser.output().front()->as<math::Atom>().type() == math::Atom::Inner);
+  REQUIRE(parser.output().size() == 1);
+  REQUIRE(parser.output().front()->is<math::Atom>());
+  REQUIRE(parser.output().front()->as<math::Atom>().type() == math::Atom::Inner);
 }
 
-TEST_CASE(test_parser_4)
+TEST_CASE("The parser handles a superscript", "[math-parsing]")
 {
   using namespace tex;
   using namespace parsing;
@@ -75,13 +75,13 @@ TEST_CASE(test_parser_4)
   parser.writeChar('1');
   parser.finish();
 
-  ASSERT(parser.output().size() == 6);
-  ASSERT(parser.output().front()->is<math::Atom>());
-  ASSERT(parser.output().front()->as<math::Atom>().type() == math::Atom::Ord);
-  ASSERT(parser.output().front()->as<math::Atom>().superscript() != nullptr);
+  REQUIRE(parser.output().size() == 6);
+  REQUIRE(parser.output().front()->is<math::Atom>());
+  REQUIRE(parser.output().front()->as<math::Atom>().type() == math::Atom::Ord);
+  REQUIRE(parser.output().front()->as<math::Atom>().superscript() != nullptr);
 }
 
-TEST_CASE(test_parser_sqrt)
+TEST_CASE("The parser handles a square root", "[math-parsing]")
 {
   using namespace tex;
   using namespace parsing;
@@ -99,9 +99,9 @@ TEST_CASE(test_parser_sqrt)
     parser.endMathList();
     parser.finish();
 
-    ASSERT(parser.output().size() == 1);
-    ASSERT(parser.output().front()->is<math::Atom>());
-    ASSERT(parser.output().front()->as<math::Atom>().type() == math::Atom::Rad);
+    REQUIRE(parser.output().size() == 1);
+    REQUIRE(parser.output().front()->is<math::Atom>());
+    REQUIRE(parser.output().front()->as<math::Atom>().type() == math::Atom::Rad);
   }
 
   {
@@ -117,13 +117,13 @@ TEST_CASE(test_parser_sqrt)
     parser.endMathList();
     parser.finish();
 
-    ASSERT(parser.output().size() == 1);
-    ASSERT(parser.output().front()->is<math::Root>());
-    ASSERT(parser.output().front()->as<math::Root>().degree().size() == 1);
+    REQUIRE(parser.output().size() == 1);
+    REQUIRE(parser.output().front()->is<math::Root>());
+    REQUIRE(parser.output().front()->as<math::Root>().degree().size() == 1);
   }
 }
 
-TEST_CASE(test_parser_frac)
+TEST_CASE("The parser handles a \\frac", "[math-parsing]")
 {
   using namespace tex;
   using namespace parsing;
@@ -141,13 +141,13 @@ TEST_CASE(test_parser_frac)
     parser.endMathList();
     parser.finish();
 
-    ASSERT(parser.output().size() == 1);
-    ASSERT(parser.output().front()->is<math::Fraction>());
+    REQUIRE(parser.output().size() == 1);
+    REQUIRE(parser.output().front()->is<math::Fraction>());
   }
 
 }
 
-TEST_CASE(test_parser_matrix)
+TEST_CASE("The parser handles a \\matrix", "[math-parsing]")
 {
   using namespace tex;
   using namespace parsing;
@@ -168,7 +168,7 @@ TEST_CASE(test_parser_matrix)
     parser.endMathList();
     parser.finish();
 
-    ASSERT(parser.output().size() == 1);
-    ASSERT(parser.output().front()->is<math::Matrix>());
+    REQUIRE(parser.output().size() == 1);
+    REQUIRE(parser.output().front()->is<math::Matrix>());
   }
 }

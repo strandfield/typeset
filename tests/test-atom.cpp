@@ -1,12 +1,12 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the typeset project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include "test.h"
+#include "catch.hpp"
 
 #include "tex/math/atom.h"
 
-TEST_CASE(test_atom_creation)
+TEST_CASE("Helper functions for creating atoms are working", "[atom]")
 {
   using namespace tex;
 
@@ -16,20 +16,20 @@ TEST_CASE(test_atom_creation)
   auto z = std::make_shared<Symbol>();
 
   auto acc = math::Atom::create<math::Atom::Acc>(x, dot);
-  ASSERT_EQ(acc->type(), math::Atom::Acc);
-  ASSERT_EQ(acc->nucleus(), x);
-  ASSERT_EQ(acc->accent(), dot);
-  ASSERT_EQ(acc->limits(), math::Atom::NoLimits);
+  REQUIRE(acc->type() == math::Atom::Acc);
+  REQUIRE(acc->nucleus() == x);
+  REQUIRE(acc->accent() == dot);
+  REQUIRE(acc->limits() == math::Atom::NoLimits);
 
   auto rad = math::Atom::create<math::Atom::Rad>(x);
-  ASSERT_EQ(rad->type(), math::Atom::Rad);
-  ASSERT_EQ(rad->nucleus(), x);
-  ASSERT_EQ(rad->limits(), math::Atom::NoLimits);
+  REQUIRE(rad->type() == math::Atom::Rad);
+  REQUIRE(rad->nucleus() == x);
+  REQUIRE(rad->limits() == math::Atom::NoLimits);
 
   auto ord = math::Atom::create<math::Atom::Ord>(x, y, z);
-  ASSERT_EQ(ord->type(), math::Atom::Ord);
-  ASSERT_EQ(ord->nucleus(), x);
-  ASSERT_EQ(ord->subscript(), y);
-  ASSERT_EQ(ord->superscript(), z);
+  REQUIRE(ord->type() == math::Atom::Ord);
+  REQUIRE(ord->nucleus() == x);
+  REQUIRE(ord->subscript() == y);
+  REQUIRE(ord->superscript() == z);
 }
 

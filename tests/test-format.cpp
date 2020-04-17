@@ -2,7 +2,7 @@
 // This file is part of the typeset project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include "test.h"
+#include "catch.hpp"
 
 #include "tex/parsing/format.h"
 
@@ -34,23 +34,23 @@ const char* fmt_bytecode =
   "e";
 
 
-TEST_CASE(test_format_begin_end)
+TEST_CASE("Formats can be loaded", "[format]")
 {
  using namespace parsing;
 
  auto result = Format::load(Format(fmt_src, fmt_bytecode));
 
- ASSERT(result.size() == 2);
+ REQUIRE(result.size() == 2);
 
  const Macro& begin = result.front();
 
- ASSERT_EQ(begin.controlSequence(), "begin");
- ASSERT_EQ(begin.parameterText().size(), 1);
- ASSERT_EQ(begin.replacementText().size(), 3);
+ REQUIRE(begin.controlSequence() == "begin");
+ REQUIRE(begin.parameterText().size() == 1);
+ REQUIRE(begin.replacementText().size() == 3);
 
  const Macro& end = result.back();
 
- ASSERT_EQ(end.controlSequence(), "end");
- ASSERT_EQ(end.parameterText().size(), 1);
- ASSERT_EQ(end.replacementText().size(), 6);
+ REQUIRE(end.controlSequence() == "end");
+ REQUIRE(end.parameterText().size() == 1);
+ REQUIRE(end.replacementText().size() == 6);
 }

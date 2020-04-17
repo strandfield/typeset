@@ -1,8 +1,8 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the typeset project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include "test.h"
+#include "catch.hpp"
 
 #include "test-typeset.h"
 
@@ -11,7 +11,7 @@
 #include "tex/parsing/verticalmode.h"
 #include "tex/parsing/typesetting-machine.h"
 
-TEST_CASE(test_machine_1)
+TEST_CASE("Grouping doesn't alter the ouput", "[parsing-machine]")
 {
   using namespace tex;
 
@@ -30,11 +30,11 @@ TEST_CASE(test_machine_1)
 
   tex::List vlist = vm->vlist();
 
-  ASSERT(vlist.size() == 1);
-  ASSERT(vlist.front()->isHBox());
+  REQUIRE(vlist.size() == 1);
+  REQUIRE(vlist.front()->isHBox());
 }
 
-TEST_CASE(test_machine_2)
+TEST_CASE("Macros are correctly expanded", "[parsing-machine]")
 {
   using namespace tex;
 
@@ -54,8 +54,8 @@ TEST_CASE(test_machine_2)
 
     tex::List vlist = vm->vlist();
 
-    ASSERT(vlist.size() == 1);
-    ASSERT(vlist.front()->isHBox());
+    REQUIRE(vlist.size() == 1);
+    REQUIRE(vlist.front()->isHBox());
   }
 
   {
@@ -72,12 +72,12 @@ TEST_CASE(test_machine_2)
 
     tex::List vlist = vm->vlist();
 
-    ASSERT(vlist.size() == 1);
-    ASSERT(vlist.front()->isHBox());
+    REQUIRE(vlist.size() == 1);
+    REQUIRE(vlist.front()->isHBox());
   }
 }
 
-TEST_CASE(test_machine_3)
+TEST_CASE("Inline math is handled correctly", "[parsing-machine]")
 {
   using namespace tex;
 
@@ -96,7 +96,7 @@ TEST_CASE(test_machine_3)
 
   tex::List vlist = vm->vlist();
 
-  ASSERT(vlist.size() == 1);
-  ASSERT(vlist.front()->isHBox());
+  REQUIRE(vlist.size() == 1);
+  REQUIRE(vlist.front()->isHBox());
   /// TODO: add some real check
 }

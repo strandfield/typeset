@@ -12,9 +12,9 @@ if(LIBTYPESET_BUILD_FORMATEDITOR)
   file(GLOB_RECURSE LIBTYPESET_FORMATEDITOR_HDR_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
   
   add_executable(format-editor ${LIBTYPESET_FORMATEDITOR_HDR_FILES} ${LIBTYPESET_FORMATEDITOR_SRC_FILES})
-  add_dependencies(format-editor libtypeset)
+  add_dependencies(format-editor texnetium)
   
-  target_link_libraries(format-editor libtypeset)
+  target_link_libraries(format-editor texnetium)
   target_link_libraries(format-editor Qt5::Core Qt5::Gui Qt5::Widgets)
 
 endif()

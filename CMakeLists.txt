@@ -27,7 +27,7 @@ if(ENABLE_COVERAGE)
 endif()
 
 ##################################################################
-####### libtypeset library
+####### texnetium library
 ##################################################################
 
 file(GLOB_RECURSE LIBTYPESET_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
@@ -35,8 +35,8 @@ file(GLOB_RECURSE LIBTYPESET_HDR_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
   ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
 )
-add_library(libtypeset ${LIBTYPESET_HDR_FILES} ${LIBTYPESET_SRC_FILES})
-target_include_directories(libtypeset PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+add_library(texnetium ${LIBTYPESET_HDR_FILES} ${LIBTYPESET_SRC_FILES})
+target_include_directories(texnetium PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 foreach(_source IN ITEMS ${LIBTYPESET_HDR_FILES} ${LIBTYPESET_SRC_FILES})
     get_filename_component(_source_path "${_source}" PATH)
@@ -45,7 +45,7 @@ foreach(_source IN ITEMS ${LIBTYPESET_HDR_FILES} ${LIBTYPESET_SRC_FILES})
     source_group("${_group_path}" FILES "${_source}")
 endforeach()
 
-target_compile_definitions(libtypeset PUBLIC -DLIBTYPESET_BUILD_LIB)
+target_compile_definitions(texnetium PUBLIC -DLIBTYPESET_BUILD_LIB)
 
 ##################################################################
 ####### TFM

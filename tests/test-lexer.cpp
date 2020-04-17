@@ -2,11 +2,11 @@
 // This file is part of the typeset project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include "test.h"
+#include "catch.hpp"
 
 #include "tex/lexer.h"
 
-TEST_CASE(test_lexer)
+TEST_CASE("Tokens can be produced by the Lexer", "[lexer]")
 {
   using namespace tex;
 
@@ -20,38 +20,38 @@ TEST_CASE(test_lexer)
 
   write("a\\cmd b\n\n#1##");
 
-  ASSERT(toks.size() == 7);
-  ASSERT(toks.front().isCharacterToken());
-  ASSERT(toks.at(1).isControlSequence());
-  ASSERT(toks.at(1).controlSequence() == "cmd");
-  ASSERT(toks.at(2).isCharacterToken());
-  ASSERT(toks.at(3).isCharacterToken());
-  ASSERT(toks.at(3).characterToken().value == ' ');
-  ASSERT(toks.at(4).isControlSequence());
-  ASSERT(toks.at(4).controlSequence() == "par");
-  ASSERT(toks.at(5).isParameterToken());
-  ASSERT(toks.at(5).parameterNumber() == 1);
-  ASSERT(toks.at(6).isCharacterToken());
-  ASSERT(toks.at(6).characterToken().value == '#');
+  REQUIRE(toks.size() == 7);
+  REQUIRE(toks.front().isCharacterToken());
+  REQUIRE(toks.at(1).isControlSequence());
+  REQUIRE(toks.at(1).controlSequence() == "cmd");
+  REQUIRE(toks.at(2).isCharacterToken());
+  REQUIRE(toks.at(3).isCharacterToken());
+  REQUIRE(toks.at(3).characterToken().value == ' ');
+  REQUIRE(toks.at(4).isControlSequence());
+  REQUIRE(toks.at(4).controlSequence() == "par");
+  REQUIRE(toks.at(5).isParameterToken());
+  REQUIRE(toks.at(5).parameterNumber() == 1);
+  REQUIRE(toks.at(6).isCharacterToken());
+  REQUIRE(toks.at(6).characterToken().value == '#');
 
   toks.clear();
 
   write("Hello   World!");
-  ASSERT(toks.size() == 12);
-  ASSERT(toks.at(4).characterToken().value == 'o');
-  ASSERT(toks.at(5).characterToken().value == ' ');
-  ASSERT(toks.at(6).characterToken().value == 'W');
+  REQUIRE(toks.size() == 12);
+  REQUIRE(toks.at(4).characterToken().value == 'o');
+  REQUIRE(toks.at(5).characterToken().value == ' ');
+  REQUIRE(toks.at(6).characterToken().value == 'W');
 
   toks.clear();
 
   write("K % This is a comment \n");
-  ASSERT(toks.size() == 2);
-  ASSERT(toks.at(0).characterToken().value == 'K');
-  ASSERT(toks.at(1).characterToken().value == ' ');
+  REQUIRE(toks.size() == 2);
+  REQUIRE(toks.at(0).characterToken().value == 'K');
+  REQUIRE(toks.at(1).characterToken().value == ' ');
 
   toks.clear();
 
   write("L");
-  ASSERT(toks.size() == 1);
-  ASSERT(toks.at(0).characterToken().value == 'L');
+  REQUIRE(toks.size() == 1);
+  REQUIRE(toks.at(0).characterToken().value == 'L');
 }

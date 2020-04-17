@@ -1,8 +1,8 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the typeset project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include "test.h"
+#include "catch.hpp"
 
 #include "tex/lexer.h"
 #include "tex/parsing/preprocessor.h"
@@ -20,7 +20,7 @@ static std::vector<parsing::Token> tokenize(const std::string& text)
   return lex.output();
 }
 
-TEST_CASE(test_macro)
+TEST_CASE("The macro-expansion functions perform correctly", "[preprocessor]")
 {
   using namespace tex;
   using namespace parsing;
@@ -30,12 +30,12 @@ TEST_CASE(test_macro)
 
     Macro::MatchResult r = m.match(tokenize("{there}"));
 
-    ASSERT(r.result == Macro::MatchResult::CompleteMatch);
-    ASSERT(r.arguments.at(0) == tokenize("there"));
+    REQUIRE(r.result == Macro::MatchResult::CompleteMatch);
+    REQUIRE(r.arguments.at(0) == tokenize("there"));
 
     std::vector<Token> exp = m.expand(r.arguments);
 
-    ASSERT(exp == tokenize("Hello there!"));
+    REQUIRE(exp == tokenize("Hello there!"));
   }
 
   {
@@ -43,13 +43,13 @@ TEST_CASE(test_macro)
 
     Macro::MatchResult r = m.match(tokenize("Theorem 1. Macros are great\\par "));
 
-    ASSERT(r.result == Macro::MatchResult::CompleteMatch);
-    ASSERT(r.arguments.at(0) == tokenize("Theorem 1"));
-    ASSERT(r.arguments.at(1) == tokenize("Macros are great"));
+    REQUIRE(r.result == Macro::MatchResult::CompleteMatch);
+    REQUIRE(r.arguments.at(0) == tokenize("Theorem 1"));
+    REQUIRE(r.arguments.at(1) == tokenize("Macros are great"));
 
     std::vector<Token> exp = m.expand(r.arguments);
 
-    ASSERT(exp == tokenize("Statement: Macros are great"));
+    REQUIRE(exp == tokenize("Statement: Macros are great"));
   }
 
 }
@@ -67,7 +67,7 @@ void write(tex::parsing::Preprocessor& preproc, const std::string& str)
   }
 }
 
-TEST_CASE(test_preprocessor_macro)
+TEST_CASE("The preprocessor performs replacement correctly", "[preprocessor]")
 {
   using namespace tex;
   using namespace parsing;
@@ -85,7 +85,7 @@ TEST_CASE(test_preprocessor_macro)
     preproc.advance();
   }
 
-  ASSERT(preproc.output() == tokenize("Expanded!"));
+  REQUIRE(preproc.output() == tokenize("Expanded!"));
 
   preproc.output().clear();
 
@@ -99,10 +99,10 @@ TEST_CASE(test_preprocessor_macro)
     preproc.advance();
   }
 
-  ASSERT(preproc.output() == tokenize("Statement: Macros are great"));
+  REQUIRE(preproc.output() == tokenize("Statement: Macros are great"));
 }
 
-TEST_CASE(test_preprocessor_if)
+TEST_CASE("The preprocessor supports \\if", "[preprocessor]")
 {
   using namespace tex;
   using namespace parsing;
@@ -113,20 +113,20 @@ TEST_CASE(test_preprocessor_if)
   registers.br = true;
 
   write(preproc, "\\ifbr T\\else F\\fi ");
-  ASSERT(preproc.output() == tokenize("T"));
+  REQUIRE(preproc.output() == tokenize("T"));
   preproc.output().clear();
 
   registers.br = false;
   write(preproc, "\\ifbr T\\else F\\fi ");
-  ASSERT(preproc.output() == tokenize("F"));
+  REQUIRE(preproc.output() == tokenize("F"));
   preproc.output().clear();
 
   write(preproc, "\\ifbr \\ifbr A \\fi \\else F\\fi ");
-  ASSERT(preproc.output() == tokenize("F"));
+  REQUIRE(preproc.output() == tokenize("F"));
   preproc.output().clear();
 }
 
-TEST_CASE(test_preprocessor_csname)
+TEST_CASE("The preprocessor supports \\csname", "[preprocessor]")
 {
   using namespace tex;
   using namespace parsing;
@@ -138,11 +138,11 @@ TEST_CASE(test_preprocessor_csname)
 
   write(preproc, "\\csname foo\\endcsname ");
 
-  ASSERT(preproc.output() == tokenize("K"));
+  REQUIRE(preproc.output() == tokenize("K"));
   preproc.output().clear();
 }
 
-TEST_CASE(test_preprocessor_expandafter)
+TEST_CASE("The preprocessor supports \\expandafter", "[preprocessor]")
 {
   using namespace tex;
   using namespace parsing;
@@ -151,24 +151,24 @@ TEST_CASE(test_preprocessor_expandafter)
   Preprocessor preproc{ registers };
 
   write(preproc, "\\expandafter\\def\\csname 123\\endcsname{H}");
-  ASSERT(preproc.find("123") != nullptr);
+  REQUIRE(preproc.find("123") != nullptr);
 
   write(preproc, "\\csname 123\\endcsname ");
-  ASSERT(preproc.output() == tokenize("H"));
+  REQUIRE(preproc.output() == tokenize("H"));
   preproc.output().clear();
 
   write(preproc, "\\def\\a[#1]{#1}");
-  ASSERT(preproc.find("a") != nullptr);
+  REQUIRE(preproc.find("a") != nullptr);
   write(preproc, "\\def\\args{[FOO]}");
-  ASSERT(preproc.find("args") != nullptr);
+  REQUIRE(preproc.find("args") != nullptr);
   write(preproc, "\\expandafter\\a\\args ");
-  ASSERT(preproc.output() == tokenize("FOO"));
+  REQUIRE(preproc.output() == tokenize("FOO"));
   preproc.output().clear();
 
   write(preproc, "\\def\\foo{F}\\def\\bar{B}\\def\\qux{Q}");
-  ASSERT(preproc.find("foo") != nullptr && preproc.find("bar") != nullptr && preproc.find("qux") != nullptr);
+  REQUIRE((preproc.find("foo") != nullptr && preproc.find("bar") != nullptr && preproc.find("qux") != nullptr));
 
   write(preproc, "\\expandafter\\foo\\expandafter\\bar\\qux ");
-  ASSERT(preproc.output() == tokenize("FBQ"));
+  REQUIRE(preproc.output() == tokenize("FBQ"));
   preproc.output().clear();
 }
