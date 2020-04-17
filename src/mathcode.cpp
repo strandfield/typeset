@@ -48,7 +48,7 @@ const MathCode::Table MathCode::DefaultTable = {
   MathCode(37),  // '%'
   MathCode(38), // '&'
   MathCode(0x8000), // '\''
-  MathCode(4028), // '('
+  MathCode(0x4028), // '('
   MathCode(0x5029), // ')'
   MathCode(0x2203), // '*'
   MathCode(0x202B), // '+'

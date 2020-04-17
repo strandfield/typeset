@@ -30,6 +30,8 @@ public:
     OVER,
     FRAC,
     SQRT,
+    MATRIX,
+    CR,
     TEXTSTYLE,
     SCRIPTSTYLE,
     SCRIPTSCRIPTSTYLE,
@@ -64,6 +66,8 @@ public:
 
   void beginMathList();
   void endMathList();
+
+  void alignmentTab();
 
   void finish();
 

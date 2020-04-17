@@ -17,6 +17,8 @@ namespace math
 class Atom;
 } // namespace math
 
+class Kern;
+
 class HBox;
 class VBox;
 
@@ -35,6 +37,8 @@ private:
   int m_relpenalty = 500;
   int m_binoppenalty = 700;
   bool m_insert_penalties = true;
+  float m_baselineskip;
+  float m_lineskip;
   math::Style m_current_style = math::Style::D;
   std::shared_ptr<math::Atom> m_most_recent_atom;
 
@@ -86,6 +90,8 @@ private:
   std::shared_ptr<HBox> boxit(MathList mlist);
   std::shared_ptr<HBox> boxit(MathList mlist, math::Style s);
   std::shared_ptr<HBox> hboxit(std::shared_ptr<Node> node);
+  std::shared_ptr<Box> mathstrut();
+  std::shared_ptr<Kern> quad();
 
   void preprocess(MathList& mlist);
 
@@ -104,6 +110,7 @@ private:
   void attachSubSup(MathList& mlist, MathList::iterator& current);
   void rule15_fraction(MathList& mlist, MathList::iterator& current);
   void processRoot(MathList& mlist, MathList::iterator& current);
+  void processMatrix(MathList& mlist, MathList::iterator& current);
   void processBoundary(MathList& mlist);
 
   void insertSpace(List& list, const std::shared_ptr<math::Atom>& preceding, const std::shared_ptr<math::Atom>& next);

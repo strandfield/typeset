@@ -41,6 +41,8 @@ const std::map<std::string, MathParserFrontend::CS>& MathParserFrontend::csmap()
     {"over", CS::OVER},
     {"frac", CS::FRAC},
     {"sqrt", CS::SQRT},
+    {"matrix", CS::MATRIX},
+    {"cr", CS::CR},
     {"textstyle", CS::TEXTSTYLE},
     {"scriptstyle", CS::SCRIPTSTYLE},
     {"scriptscriptstyle", CS::SCRIPTSCRIPTSTYLE},
@@ -82,6 +84,10 @@ void MathParserFrontend::writeControlSequence(CS cs)
     return parser().frac();
   case CS::SQRT:
     return parser().sqrt();
+  case CS::MATRIX:
+    return parser().matrix();
+  case CS::CR:
+    return parser().cr();
   case CS::TEXTSTYLE:
     return parser().textstyle();
   case CS::SCRIPTSTYLE:
@@ -177,6 +183,11 @@ void MathParserFrontend::beginMathList()
 void MathParserFrontend::endMathList()
 {
   parser().endMathList();
+}
+
+void MathParserFrontend::alignmentTab()
+{
+  parser().alignmentTab();
 }
 
 void MathParserFrontend::finish()

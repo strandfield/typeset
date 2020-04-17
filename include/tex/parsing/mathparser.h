@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -46,6 +46,23 @@ public:
   std::shared_ptr<math::Atom> build() const;
 };
 
+struct LIBTYPESET_API MatrixBuilder
+{
+  struct Row
+  {
+    std::vector<std::shared_ptr<MathListNode>> cells;
+
+    MathList& newCell();
+  };
+
+  std::vector<Row> rows;
+
+  Row& newRow();
+  Row& lastRow();
+
+  std::shared_ptr<Node> build() const;
+};
+
 class LIBTYPESET_API MathParser
 {
 public:
@@ -77,6 +94,9 @@ public:
     ParsingFracNumerMList,
     ParsingFracDenom,
     ParsingFracDenomMList,
+    /* Matrix */
+    ParsingMatrix, // the cs \matrix was just read
+    ParsingMatrixCell,
   };
 
   State state() const;
@@ -98,6 +118,9 @@ public:
   void over();
   void frac();
   void sqrt();
+  void matrix();
+  void alignmentTab();
+  void cr();
   void textstyle();
   void scriptstyle();
   void scriptscriptstyle();
@@ -109,6 +132,9 @@ public:
 protected:
   MathList& mlist();
   void commitCurrentAtom();
+
+  MatrixBuilder& currentMatrix();
+  void popMatrix();
 
   void enter(State s);
   void leave(State s);
@@ -141,6 +167,7 @@ private:
   std::vector<MathList*> m_lists;
   MathList m_mlist;
   std::vector<AtomBuilder> m_builders;
+  std::vector<MatrixBuilder> m_matrices;
 };
 
 } // namespace parsing

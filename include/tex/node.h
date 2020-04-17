@@ -48,6 +48,7 @@ public:
   virtual bool isVBox() const;
   bool isListBox() const;
   virtual bool isMathSymbol() const;
+  virtual bool isMatrix() const;
 };
 
 template<typename T, typename U = Node>

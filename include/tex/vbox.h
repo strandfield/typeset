@@ -15,6 +15,7 @@ class LIBTYPESET_API VBox final : public ListBox
 public:
   explicit VBox(List && list);
   VBox(List && list, float desiredHeight);
+  explicit VBox(const BoxMetrics& metrics);
   ~VBox() = default;
 
   void getBoxingInfo(float *width, float *height, float *depth, GlueShrink *shrink, GlueStretch *stretch) const;

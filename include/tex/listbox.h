@@ -41,6 +41,7 @@ protected:
   friend class ListBoxEditor;
 
   ListBox(List && list);
+  ListBox(const BoxMetrics& metrics);
 
   inline List & mutableList() { return mList; }
 

@@ -97,6 +97,7 @@ void MainWindow::fillSuggestionBar()
   {
     m_suggestionbar->addSuggestion("polynomial", "ax^2+bx+c");
     m_suggestionbar->addSuggestion("roots", "\\sqrt{2} + \\sqrt{\\frac{1}{2}}");
+    m_suggestionbar->addSuggestion("matrix", "A + \\left( \\matrix{a & b \\cr c & d} \\right)");
   }
   else
   {
@@ -253,6 +254,9 @@ void MainWindow::processText()
         break;
       case tex::parsing::CharCategory::Subscript:
         parser.beginSubscript();
+        break;
+      case tex::parsing::CharCategory::AlignmentTab:
+        parser.alignmentTab();
         break;
       case tex::parsing::CharCategory::Letter:
       case tex::parsing::CharCategory::Other:

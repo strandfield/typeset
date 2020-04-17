@@ -61,4 +61,9 @@ bool Node::isMathSymbol() const
   return false;
 }
 
+bool Node::isMatrix() const
+{
+  return false;
+}
+
 } // namespace tex

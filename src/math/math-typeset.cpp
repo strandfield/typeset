@@ -14,6 +14,7 @@
 #include "tex/math/boundary.h"
 #include "tex/math/fontchange.h"
 #include "tex/math/fraction.h"
+#include "tex/math/matrix.h"
 #include "tex/math/root.h"
 #include "tex/math/style.h"
 #include "tex/math/stylechange.h"
@@ -23,6 +24,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <set>
+#include <vector>
 
 namespace tex
 {
@@ -101,7 +103,8 @@ MathTypesetter::MathTypesetter(std::shared_ptr<TypesetEngine> engine)
   : m_engine(std::move(engine)),
     m_fonts{}
 {
-
+  m_baselineskip = 0.f;
+  m_lineskip = 0.f;
 }
 
 TypesetEngine& MathTypesetter::engine() const
@@ -117,6 +120,11 @@ std::shared_ptr<TypesetEngine> MathTypesetter::sharedEngine() const
 void MathTypesetter::setFonts(const std::array<MathFont, 16>& fonts)
 {
   m_fonts = fonts;
+
+  auto strut = mathstrut();
+
+  m_baselineskip = 1.2f * strut->totalHeight();
+  m_lineskip = 0.1f * strut->totalHeight();
 }
 
 int MathTypesetter::relpenalty() const
@@ -319,6 +327,20 @@ std::shared_ptr<HBox> MathTypesetter::hboxit(std::shared_ptr<Node> node)
   return cast<HBox>(box);
 }
 
+std::shared_ptr<Box> MathTypesetter::mathstrut()
+{
+  static const auto leftpar = std::make_shared<tex::MathSymbol>('(', math::Atom::Open, 3);
+
+  BoxMetrics metrics = getMetrics(XiFamily, math::Style::D).metrics(leftpar);
+  metrics.width = 0.f;
+
+  return std::make_shared<VBox>(metrics);
+}
+
+std::shared_ptr<Kern> MathTypesetter::quad()
+{
+  return std::make_shared<Kern>(getMetrics(0, math::Style::D).quad());
+}
 
 void MathTypesetter::preprocess(MathList& mlist)
 {
@@ -419,6 +441,12 @@ void MathTypesetter::preprocess(MathList& mlist)
     else if (elem->is<math::Root>())
     {
       processRoot(mlist, it);
+      m_most_recent_atom = cast<math::Atom>(*it);
+      ++it;
+    }
+    else if (elem->isMatrix())
+    {
+      processMatrix(mlist, it);
       m_most_recent_atom = cast<math::Atom>(*it);
       ++it;
     }
@@ -918,6 +946,101 @@ void MathTypesetter::processRoot(MathList& mlist, MathList::iterator& current)
   auto atom = math::Atom::create<math::Atom::Rad>(tex::hbox({ index, kern(-radicalSignBoxWidth), y, vbox }));
   *current = atom;
   rule16_changeToOrd(mlist, current);
+}
+
+void MathTypesetter::processMatrix(MathList& mlist, MathList::iterator& current)
+{
+  // The TeXbook defines the matrix macro as follow:
+  // \def\matrix#1{\null\,\vcenter{\normalbaselines\m@th
+  //   \ialign{ \hfil$##$\hfil && \quad\hfil$##$\hfil\crcr
+  //   \mathstrut\crcr\noalign{\kern-\baselineskip}
+  //   #1\crcr\mathstrut\crcr\noalign{\kern-\baselineskip} }
+  //   }\,}
+
+  auto matrix = std::static_pointer_cast<math::Matrix>(*current);
+
+  auto hfil = tex::glue(0.f, tex::Stretch{1.f, GlueOrder::Fil});
+  auto quad_kern = quad();
+  std::shared_ptr<Kern> negbaselineskip = tex::kern(-m_baselineskip);
+
+  std::shared_ptr<tex::Box> strut = mathstrut();
+
+  std::vector<std::shared_ptr<tex::HBox>> boxes;
+
+  for (const auto& nested_mlist : matrix->elements())
+  {
+    boxes.push_back(boxit(nested_mlist));
+  }
+
+  std::vector<float> col_sizes = std::vector<float>(matrix->cols(), 0.f);
+
+  for (size_t i(0); i < boxes.size(); ++i)
+  {
+    const size_t col = i % matrix->cols();
+    col_sizes[col] = std::max({ col_sizes[col], boxes.at(i)->width() });
+  }
+
+  std::vector<std::shared_ptr<HBox>> rows;
+
+  for (size_t i(0); i < matrix->rows(); ++i)
+  {
+    List row_content;
+
+    for (size_t j(0); j < matrix->cols(); ++j)
+    {
+      std::shared_ptr<HBox> curr_elem = boxes.at(i * matrix->cols() + j);
+
+      HBoxEditor editor{ *curr_elem };
+
+      if (j != 0)
+        editor.list().push_front(quad_kern);
+
+      editor.list().push_front(hfil);
+      editor.list().push_back(hfil);
+
+      editor.rebox(col_sizes[j]);
+
+      row_content.push_back(curr_elem);
+    }
+
+    auto row_box = tex::hbox(std::move(row_content));
+    rows.push_back(row_box);
+  }
+
+  List vlist;
+  vlist.push_back(strut);
+  vlist.push_back(negbaselineskip);
+
+  float prevdepth = strut->depth();
+
+  for (size_t i(0); i < rows.size(); ++i)
+  {
+    auto row = rows.at(i);
+
+    const float g = m_baselineskip - prevdepth - row->height();
+
+    if (g >= 0.f)
+      vlist.push_back(tex::glue(g));
+    else
+      vlist.push_back(tex::glue(m_lineskip));
+
+    vlist.push_back(row);
+
+    prevdepth = row->depth();
+  }
+
+  if (m_baselineskip - prevdepth - strut->height() >= 0.f)
+    vlist.push_back(tex::glue(m_baselineskip - prevdepth - strut->height()));
+  else
+    vlist.push_back(tex::glue(m_lineskip));
+
+  vlist.push_back(strut);
+  vlist.push_back(negbaselineskip);
+
+  auto vbox = tex::vbox(std::move(vlist));
+
+  *current = math::Atom::create<math::Atom::Vcent>(vbox);
+  rule8_vcent(mlist, current);
 }
 
 void MathTypesetter::processBoundary(MathList& mlist)

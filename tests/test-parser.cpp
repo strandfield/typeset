@@ -5,6 +5,7 @@
 #include "test.h"
 
 #include "tex/math/fraction.h"
+#include "tex/math/matrix.h"
 #include "tex/math/root.h"
 
 #include "tex/parsing/mathparserfrontend.h"
@@ -144,4 +145,30 @@ TEST_CASE(test_parser_frac)
     ASSERT(parser.output().front()->is<math::Fraction>());
   }
 
+}
+
+TEST_CASE(test_parser_matrix)
+{
+  using namespace tex;
+  using namespace parsing;
+
+  {
+    // \matrix{ a & b \cr c & d }
+
+    parsing::MathParserFrontend parser;
+    parser.writeControlSequence("matrix");
+    parser.beginMathList();
+    parser.writeChar('a');
+    parser.alignmentTab();
+    parser.writeChar('b');
+    parser.writeControlSequence("cr");
+    parser.writeChar('c');
+    parser.alignmentTab();
+    parser.writeChar('d');
+    parser.endMathList();
+    parser.finish();
+
+    ASSERT(parser.output().size() == 1);
+    ASSERT(parser.output().front()->is<math::Matrix>());
+  }
 }

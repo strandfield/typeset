@@ -17,6 +17,14 @@ ListBox::ListBox(List && list)
 
 }
 
+ListBox::ListBox(const BoxMetrics& metrics)
+  : Box(metrics), 
+    mShiftAmount(0), 
+    mGlueSettings{ 0.f, GlueOrder::Normal }
+{
+
+}
+
 void ListBox::setGlue(float ratio, GlueOrder order)
 {
   mGlueSettings.ratio = ratio;

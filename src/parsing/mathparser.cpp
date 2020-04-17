@@ -1,4 +1,4 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
@@ -9,6 +9,7 @@
 #include "tex/math/fraction.h"
 #include "tex/math/math-typeset.h"
 #include "tex/math/mathlist.h"
+#include "tex/math/matrix.h"
 #include "tex/math/root.h"
 #include "tex/math/stylechange.h"
 
@@ -57,6 +58,47 @@ std::shared_ptr<math::Atom> AtomBuilder::build() const
   return std::make_shared<math::Atom>(type, nucleus(), subscript(), superscript(), nullptr, math::Atom::NoLimits);
 }
 
+MathList& MatrixBuilder::Row::newCell()
+{
+  auto node = std::make_shared<MathListNode>();
+  cells.push_back(node);
+  return node->list();
+}
+
+MatrixBuilder::Row& MatrixBuilder::newRow()
+{
+  rows.emplace_back();
+  return lastRow();
+}
+
+MatrixBuilder::Row& MatrixBuilder::lastRow()
+{
+  return rows.back();
+}
+
+std::shared_ptr<Node> MatrixBuilder::build() const
+{
+  size_t nb_cols = 0;
+
+  for (const Row& r : rows)
+  {
+    nb_cols = std::max({ r.cells.size(), nb_cols });
+  }
+
+  std::vector<MathList> elements;
+
+  for (const Row& r : rows)
+  {
+    for (auto node : r.cells)
+      elements.push_back(node->list());
+
+    for (size_t i(0); i < (nb_cols - r.cells.size()); ++i)
+      elements.emplace_back();
+  }
+
+  return std::make_shared<math::Matrix>(std::move(elements), nb_cols);
+}
+
 MathParser::MathParser()
 {
   enter(State::ParsingMList);
@@ -65,6 +107,16 @@ MathParser::MathParser()
 MathList& MathParser::mlist()
 {
   return m_lists.empty() ? m_mlist : *m_lists.back();
+}
+
+MatrixBuilder& MathParser::currentMatrix()
+{
+  return m_matrices.back();
+}
+
+void MathParser::popMatrix()
+{
+  m_matrices.pop_back();
 }
 
 void MathParser::writeSymbol(std::shared_ptr<MathSymbol> mathsym)
@@ -105,6 +157,10 @@ void MathParser::writeSymbol(std::shared_ptr<MathSymbol> mathsym)
   case State::ParsingFracDenomMList:
     return parse_mlist(mathsym);
   case State::ParsingFracNumerMList:
+    return parse_mlist(mathsym);
+  case State::ParsingMatrix:
+    throw std::runtime_error{ "Expected '{' after \\matrix" };
+  case State::ParsingMatrixCell:
     return parse_mlist(mathsym);
   default:
     throw std::runtime_error{ "Bad call to writeSymbol()" };
@@ -185,6 +241,14 @@ void MathParser::beginMathList()
     pushList(frac->denom());
     return;
   }
+  else if (state() == State::ParsingMatrix)
+  {
+    enter(State::ParsingMatrixCell);
+    MatrixBuilder builder;
+    pushList(builder.newRow().newCell());
+    m_matrices.push_back(std::move(builder));
+    return;
+  }
 
   if (state() == State::AwaitingSubscript)
   {
@@ -255,6 +319,16 @@ void MathParser::endMathList()
     leave(State::ParsingSqrtRadicandMList);
     leave(State::ParsingSqrtRadicand);
     leave(State::ParsingSqrt);
+    break;
+  }
+  case State::ParsingMatrixCell:
+  {
+    leaveState();
+    leave(State::ParsingMatrix);
+    popList();
+    auto node = currentMatrix().build();
+    popMatrix();
+    mlist().push_back(node);
     break;
   }
   default:
@@ -513,6 +587,36 @@ void MathParser::sqrt()
     commitCurrentAtom();
 
   enter(State::ParsingSqrt);
+}
+
+void MathParser::matrix()
+{
+  if (state() == State::ParsingAtom)
+    commitCurrentAtom();
+
+  enter(State::ParsingMatrix);
+}
+
+void MathParser::alignmentTab()
+{
+  commitCurrentAtom();
+
+  if (state() != State::ParsingMatrixCell)
+    throw std::runtime_error{ "MathParser::alignmentTab() can only be called when parsing a matrix" };
+
+  popList();
+  pushList(currentMatrix().lastRow().newCell());
+}
+
+void MathParser::cr()
+{
+  commitCurrentAtom();
+
+  if (state() != State::ParsingMatrixCell)
+    throw std::runtime_error{ "MathParser::cr() can only be called when parsing a matrix" };
+
+  popList();
+  pushList(currentMatrix().newRow().newCell());
 }
 
 void MathParser::textstyle()

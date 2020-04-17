@@ -339,13 +339,22 @@ std::shared_ptr<tex::Box> TypesetEngine::typesetRadicalSign(float minTotalHeight
 
 std::shared_ptr<tex::Box> TypesetEngine::typesetDelimiter(const std::shared_ptr<tex::Symbol> & symbol, float minTotalHeight)
 {
-  tex::Font font = tex::Font(mRadicalSign->family() * 3);
-  auto metrics = mMetrics->metrics(mRadicalSign, font);
+  auto mathsymbol = std::static_pointer_cast<tex::MathSymbol>(symbol);
+
+  tex::Font font = tex::Font(mathsymbol->family() * 3);
+  auto metrics = mMetrics->metrics(mathsymbol, font);
+  auto ret = std::make_shared<CharBox>(mathsymbol->character(), font, metrics, m_fonts[font.id()].font);
   const float ratio = minTotalHeight / (metrics.height + metrics.depth);
-  metrics.height *= ratio;
-  metrics.depth *= ratio;
-  auto mathsym = std::static_pointer_cast<tex::MathSymbol>(symbol);
-  return std::make_shared<CharBox>(mathsym->character(), font, metrics, m_fonts[font.id()].font);
+
+  if (ratio > 1.f)
+  {
+    metrics.height *= ratio;
+    metrics.depth *= ratio;
+    ret->deform(metrics);
+    ret->rawfont = m_fonts[mathsymbol->family() * 3].rawfont;
+  }
+
+  return ret;
 }
 
 std::shared_ptr<tex::Box> TypesetEngine::typesetLargeOp(const std::shared_ptr<tex::Symbol> & symbol)

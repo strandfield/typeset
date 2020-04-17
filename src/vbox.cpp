@@ -23,6 +23,12 @@ VBox::VBox(List && list, float desiredHeight)
   rebox_vbox(desiredHeight);
 }
 
+VBox::VBox(const BoxMetrics& metrics)
+  : ListBox(metrics)
+{
+
+}
+
 void VBox::getBoxingInfo(float *width, float *height, float *depth, GlueShrink *shrink, GlueStretch *stretch) const
 {
   float h = 0;
