@@ -12,7 +12,6 @@
 #include "tex/vbox.h"
 #include "tex/math/atom.h"
 #include "tex/math/boundary.h"
-#include "tex/math/fontchange.h"
 #include "tex/math/fraction.h"
 #include "tex/math/matrix.h"
 #include "tex/math/root.h"

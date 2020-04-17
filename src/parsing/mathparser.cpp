@@ -5,7 +5,6 @@
 #include "tex/parsing/mathparser.h"
 
 #include "tex/math/boundary.h"
-#include "tex/math/fontchange.h"
 #include "tex/math/fraction.h"
 #include "tex/math/math-typeset.h"
 #include "tex/math/mathlist.h"

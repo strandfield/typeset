@@ -4,7 +4,6 @@
 
 #include "tex/parsing/mathparserfrontend.h"
 
-#include "tex/math/fontchange.h"
 #include "tex/math/stylechange.h"
 
 #include "tex/mathchars.h"

@@ -8,7 +8,6 @@
 #include "tex/parsing/horizontalmode.h"
 #include "tex/parsing/verticalmode.h"
 
-#include "tex/math/fontchange.h"
 #include "tex/math/fraction.h"
 #include "tex/math/math-typeset.h"
 #include "tex/math/mathlist.h"
