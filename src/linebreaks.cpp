@@ -134,6 +134,9 @@ void Paragraph::prepare(List & hlist)
 
 List Paragraph::create(const List & hlist)
 {
+  if (hlist.empty())
+    return hlist;
+
   std::vector<Breakpoint> breakpoints = computeBreakpoints(hlist);
 
   List::const_iterator it = hlist.begin();

@@ -36,6 +36,11 @@ TestFontMetricsProvider::TestFontMetricsProvider()
   m_fontdimen.big_op_spacing5 = 1.f;
 }
 
+tex::BoxMetrics TestFontMetricsProvider::metrics(tex::Character c, tex::Font font)
+{
+  return tex::BoxMetrics{ 2.f, 1.f, 2.f };
+}
+
 tex::BoxMetrics TestFontMetricsProvider::metrics(const std::shared_ptr<tex::Symbol>& symbol, tex::Font font)
 {
   return tex::BoxMetrics{ 2.f, 1.f, 2.f };
@@ -59,6 +64,11 @@ TestTypesetEngine::TestTypesetEngine()
 std::shared_ptr<tex::FontMetricsProvider> TestTypesetEngine::metrics() const
 {
   return m_metrics;
+}
+
+std::shared_ptr<tex::Box> TestTypesetEngine::typeset(tex::Character c, tex::Font font)
+{
+  return std::make_shared<TestBox>(std::string(tex::Utf8Char{ c }.data()), metrics()->metrics(nullptr, font));
 }
 
 std::shared_ptr<tex::Box> TestTypesetEngine::typeset(const std::string& text, tex::Font font)

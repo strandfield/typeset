@@ -10,7 +10,7 @@ if(NOT DEFINED TYPESET_DOWNLOADED_CATCH2 OR NOT TYPESET_DOWNLOADED_CATCH2)
 
 endif()
 
-add_executable(tests catch.hpp main.cpp test-typeset.h test-typeset.cpp test-atom.cpp test-lexer.cpp test-preprocessor.cpp test-format.cpp test-parser.cpp test-machine.cpp)
+add_executable(tests catch.hpp main.cpp test-typeset.h test-typeset.cpp test-atom.cpp test-lexer.cpp test-preprocessor.cpp test-format.cpp test-parser.cpp)
 add_dependencies(tests texnetium)
 target_include_directories(tests PUBLIC "../include")
 target_link_libraries(tests texnetium)

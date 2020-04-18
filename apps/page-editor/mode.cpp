@@ -1,16 +1,10 @@
-// Copyright (C) 2019 Vincent Chambrin
+// Copyright (C) 2019-2020 Vincent Chambrin
 // This file is part of the 'typeset' project
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include "tex/parsing/mode.h"
+#include "mode.h"
 
-#include "tex/parsing/typesetting-machine.h"
-
-namespace tex
-{
-
-namespace parsing
-{
+#include "typesetting-machine.h"
 
 Mode::Mode(TypesettingMachine& m)
   : m_machine(m)
@@ -18,11 +12,7 @@ Mode::Mode(TypesettingMachine& m)
   m_parent = m.modes().empty() ? nullptr : m.modes().back().get();
 }
 
-Mode* Mode::parent() const
+Mode& Mode::parent() const
 {
-  return m_parent;
+  return *m_parent;
 }
-
-} // namespace parsing
-
-} // namespace tex

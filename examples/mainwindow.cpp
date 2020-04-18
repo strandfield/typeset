@@ -8,7 +8,6 @@
 #include "example-tex.h"
 #include "example-single-line.h"
 #include "example-paragraph.h"
-#include "example-page.h"
 
 #include <QHBoxLayout>
 #include <QMenuBar>
@@ -30,7 +29,6 @@ MainWindow::MainWindow()
 
   addExample(new SingleLineTextWidget());
   addExample(new ParagraphTextWidget());
-  addExample(new PageTextWidget());
 }
 
 void MainWindow::addExample(Example *ex)

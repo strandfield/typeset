@@ -41,6 +41,7 @@ public:
   QtFontMetricsProdiver(FontTable& fonts);
   ~QtFontMetricsProdiver() = default;
 
+  tex::BoxMetrics metrics(tex::Character c, tex::Font font) override;
   tex::BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) override;
   float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) override;
 
@@ -88,6 +89,7 @@ protected:
 
   std::shared_ptr<tex::FontMetricsProvider> metrics() const override;
 
+  std::shared_ptr<tex::Box> typeset(tex::Character c, tex::Font font) override;
   std::shared_ptr<tex::Box> typeset(const std::string& text, tex::Font font) override;
   std::shared_ptr<tex::Box> typeset(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) override;
   std::shared_ptr<tex::Box> typesetRadicalSign(float minTotalHeight) override;

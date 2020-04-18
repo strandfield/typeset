@@ -18,36 +18,50 @@ typedef int Character;
 
 inline bool read_utf8_char(std::string::const_iterator begin, std::string::const_iterator end, std::string::const_iterator& output)
 {
-  if (!(*begin >> 7))
+  auto shifted = [](std::string::const_iterator it, int n) -> int
+  {
+    return static_cast<unsigned char>(*it) >> n;
+  };
+
+  if (!shifted(begin, 7))
   {
     output = begin + 1;
     return true;
   }
-  else if ((*begin >> 5) == 0x6)
+  else if (shifted(begin, 5) == 0x6)
   {
+    if (std::distance(begin, end) < 2)
+      return false;
+
     ++begin;
 
-    if ((*begin >> 6) == 0x2)
+    if (shifted(begin, 6) == 0x2)
     {
       output = begin + 1;
       return true;
     }
   }
-  else if ((*begin >> 4) == 0xE)
+  else if (shifted(begin, 4) == 0xE)
   {
+    if (std::distance(begin, end) < 3)
+      return false;
+
     ++begin;
 
-    if ((*begin >> 6) == 0x2 && (*(begin + 1) >> 6) == 0x2)
+    if (shifted(begin, 6) == 0x2 && shifted(begin+1, 6) == 0x2)
     {
       output = begin + 2;
       return true;
     }
   }
-  else if ((*begin >> 3) == 0x1E)
+  else if (shifted(begin, 3) == 0x1E)
   {
+    if (std::distance(begin, end) < 4)
+      return false;
+
     ++begin;
 
-    if ((*begin >> 6) == 0x2 && (*(begin + 1) >> 6) == 0x2 && (*(begin + 2) >> 6) == 0x2)
+    if (shifted(begin, 6) == 0x2 && shifted(begin+1, 6) == 0x2 && shifted(begin+2, 6) == 0x2)
     {
       output = begin + 3;
       return true;
@@ -59,27 +73,32 @@ inline bool read_utf8_char(std::string::const_iterator begin, std::string::const
 
 inline Character read_utf8_char(std::string::const_iterator& begin)
 {
-  if (!(*begin >> 7))
+  auto shifted = [](std::string::const_iterator it, int n) -> int
+  {
+    return static_cast<unsigned char>(*it) >> n;
+  };
+
+  if (!shifted(begin, 7))
   {
     return *(begin++);
   }
-  else if ((*begin >> 5) == 0x6)
+  else if (shifted(begin, 5) == 0x6)
   {
     Character ret = *(begin++) & 0x1F;
-    assert((*begin >> 6) == 0x2);
+    assert(shifted(begin, 6) == 0x2);
     ret = (ret << 6) | (*(begin++) & 0x3F);
     return ret;
   }
-  else if ((*begin >> 4) == 0xE)
+  else if (shifted(begin, 4) == 0xE)
   {
     Character ret = *(begin++) & 0xF;
-    assert((*begin >> 6) == 0x2);
+    assert(shifted(begin, 6) == 0x2);
     ret = (ret << 6) | (*(begin++) & 0x3F);
-    assert((*begin >> 6) == 0x2);
+    assert(shifted(begin, 6) == 0x2);
     ret = (ret << 6) | (*(begin++) & 0x3F);
     return ret;
   }
-  else if ((*begin >> 3) == 0x1E)
+  else if (shifted(begin, 3) == 0x1E)
   {
     Character ret = *(begin++) & 0x7;
     assert((*begin >> 6) == 0x2);

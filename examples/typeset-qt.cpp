@@ -27,6 +27,11 @@ QtFontMetricsProdiver::QtFontMetricsProdiver(const FontTable & fonts)
  
 }
 
+tex::BoxMetrics QtFontMetricsProdiver::metrics(tex::Character c, tex::Font font)
+{
+  throw std::runtime_error{ "Not implemented" };
+}
+
 tex::BoxMetrics QtFontMetricsProdiver::metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font)
 {
   const QFontMetricsF & m = info(font);
@@ -88,6 +93,11 @@ QtTypesetEngine::QtTypesetEngine()
 const FontTable& QtTypesetEngine::fonts() const
 {
   return m_fonts;
+}
+
+std::shared_ptr<tex::Box> QtTypesetEngine::typeset(tex::Character c, tex::Font font)
+{
+  throw std::runtime_error{ "Not implemented" };
 }
 
 std::shared_ptr<tex::Box> QtTypesetEngine::typeset(const std::string& text, tex::Font font)

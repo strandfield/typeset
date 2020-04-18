@@ -155,6 +155,11 @@ FontMetrics::FontMetrics(Font font, std::shared_ptr<FontMetricsProvider> mp)
 
 }
 
+BoxMetrics FontMetrics::metrics(tex::Character c) const
+{
+  return metricsProvider()->metrics(c, font());
+}
+
 BoxMetrics FontMetrics::metrics(const std::shared_ptr<tex::Symbol> & symbol) const
 {
   return metricsProvider()->metrics(symbol, font());

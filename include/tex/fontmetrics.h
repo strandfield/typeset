@@ -21,6 +21,7 @@ public:
   FontMetricsProvider() = default;
   virtual ~FontMetricsProvider() = default;
 
+  virtual BoxMetrics metrics(tex::Character c, tex::Font font) = 0;
   virtual BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) = 0;
   virtual float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) = 0;
 
@@ -71,6 +72,7 @@ public:
   inline Font font() const { return mFont; }
   inline const std::shared_ptr<FontMetricsProvider> & metricsProvider() const { return mMetricsProvider; }
 
+  BoxMetrics metrics(tex::Character c) const;
   BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol) const;
   float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol) const;
 

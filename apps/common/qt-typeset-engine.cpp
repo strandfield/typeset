@@ -22,6 +22,20 @@ QtFontMetricsProdiver::QtFontMetricsProdiver(FontTable & fonts)
  
 }
 
+tex::BoxMetrics QtFontMetricsProdiver::metrics(tex::Character c, tex::Font font)
+{
+  const QFontMetricsF& m = info(font);
+  QChar qc = c;
+  QRectF rect = m.boundingRect(qc);
+
+  tex::BoxMetrics ret;
+  //ret.width = rect.width();
+  ret.width = m.width(qc);
+  ret.height = -rect.top();
+  ret.depth = rect.bottom();
+  return ret;
+}
+
 tex::BoxMetrics QtFontMetricsProdiver::metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font)
 {
   if (symbol->isMathSymbol())
@@ -113,12 +127,18 @@ std::array<tex::MathFont, 16> TypesetEngine::mathfonts() const
 
   for (size_t i(0); i < 16; ++i)
   {
-    result[i].textfont = tex::Font(3 * i + 1);
-    result[i].scriptfont = tex::Font(3 * i + 2);
-    result[i].scriptscriptfont = tex::Font(3 * i + 3);
+    result[i].textfont = tex::Font(3 * i);
+    result[i].scriptfont = tex::Font(3 * i + 1);
+    result[i].scriptscriptfont = tex::Font(3 * i + 2);
   }
 
   return result;
+}
+
+std::shared_ptr<tex::Box> TypesetEngine::typeset(tex::Character c, tex::Font font)
+{
+  tex::BoxMetrics box = metrics()->metrics(c, font);
+  return std::make_shared<CharBox>(c, font, box, this->font(font));
 }
 
 std::shared_ptr<tex::Box> TypesetEngine::typeset(const std::string& text, tex::Font font)
