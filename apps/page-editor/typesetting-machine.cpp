@@ -30,6 +30,11 @@ TypesettingMachine::TypesettingMachine(std::shared_ptr<tex::TypesetEngine> te, t
   memory().pagewidth = 800.f;
   memory().parshape = { 800.f };
 
+  tex::BoxMetrics metrics = te->metrics()->metrics('(', tex::Font(0));
+
+  memory().baselineskip = tex::glue(1.2f * (metrics.height + metrics.depth));
+  memory().lineskip = tex::glue(0.1f * (metrics.height + metrics.depth));
+
   enter<VerticalMode>();
 }
 
@@ -41,7 +46,7 @@ std::shared_ptr<tex::VBox> TypesettingMachine::typeset(std::string text)
   resume();
 
   VerticalMode& vm = dynamic_cast<VerticalMode&>(currentMode());
-  tex::List vlist = vm.vlist();
+  tex::List vlist = vm.vlist().result;
   return tex::vbox(std::move(vlist));
 }
 

@@ -102,8 +102,7 @@ MathTypesetter::MathTypesetter(std::shared_ptr<TypesetEngine> engine)
   : m_engine(std::move(engine)),
     m_fonts{}
 {
-  m_baselineskip = 0.f;
-  m_lineskip = 0.f;
+
 }
 
 TypesetEngine& MathTypesetter::engine() const
@@ -122,8 +121,8 @@ void MathTypesetter::setFonts(const std::array<MathFont, 16>& fonts)
 
   auto strut = mathstrut();
 
-  m_baselineskip = 1.2f * strut->totalHeight();
-  m_lineskip = 0.1f * strut->totalHeight();
+  m_baselineskip = tex::glue(1.2f * strut->totalHeight());
+  m_lineskip = tex::glue(0.1f * strut->totalHeight());
 }
 
 int MathTypesetter::relpenalty() const
@@ -960,7 +959,7 @@ void MathTypesetter::processMatrix(MathList& mlist, MathList::iterator& current)
 
   auto hfil = tex::glue(0.f, tex::Stretch{1.f, GlueOrder::Fil});
   auto quad_kern = quad();
-  std::shared_ptr<Kern> negbaselineskip = tex::kern(-m_baselineskip);
+  std::shared_ptr<Kern> negbaselineskip = tex::kern(-m_baselineskip->space());
 
   std::shared_ptr<tex::Box> strut = mathstrut();
 
@@ -1006,37 +1005,21 @@ void MathTypesetter::processMatrix(MathList& mlist, MathList::iterator& current)
     rows.push_back(row_box);
   }
 
-  List vlist;
-  vlist.push_back(strut);
-  vlist.push_back(negbaselineskip);
 
-  float prevdepth = strut->depth();
+  VListBuilder vlist{m_baselineskip, m_lineskip};
+  vlist.push_back(strut);
+  vlist.result.push_back(negbaselineskip);
 
   for (size_t i(0); i < rows.size(); ++i)
   {
     auto row = rows.at(i);
-
-    const float g = m_baselineskip - prevdepth - row->height();
-
-    if (g >= 0.f)
-      vlist.push_back(tex::glue(g));
-    else
-      vlist.push_back(tex::glue(m_lineskip));
-
     vlist.push_back(row);
-
-    prevdepth = row->depth();
   }
 
-  if (m_baselineskip - prevdepth - strut->height() >= 0.f)
-    vlist.push_back(tex::glue(m_baselineskip - prevdepth - strut->height()));
-  else
-    vlist.push_back(tex::glue(m_lineskip));
-
   vlist.push_back(strut);
-  vlist.push_back(negbaselineskip);
+  vlist.result.push_back(negbaselineskip);
 
-  auto vbox = tex::vbox(std::move(vlist));
+  auto vbox = tex::vbox(std::move(vlist.result));
 
   *current = math::Atom::create<math::Atom::Vcent>(vbox);
   rule8_vcent(mlist, current);

@@ -10,6 +10,24 @@
 namespace tex
 {
 
+class LIBTYPESET_API VListBuilder
+{
+public:
+  List result;
+  std::shared_ptr<Glue> baselineskip;
+  std::shared_ptr<Glue> lineskip;
+  float lineskiplimit = 0.f;
+  float prevdepth = -10000.f;
+
+  VListBuilder(std::shared_ptr<Glue> baselineskip_, std::shared_ptr<Glue> lineskip_);
+  
+  void push_back(const std::shared_ptr<Box>& box);
+
+  static void push_back(List& vlist, const std::shared_ptr<Box>& box, float& prevdepth, const std::shared_ptr<Glue>& baselineskip, const std::shared_ptr<Glue>& lineskip, float lineskiplimit = 0.f);
+
+  void push_back_node(const std::shared_ptr<Node>& node);
+};
+
 class LIBTYPESET_API VBox final : public ListBox
 {
 public:

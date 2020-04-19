@@ -6,6 +6,7 @@
 
 #include "tex/glue.h"
 #include "tex/penalty.h"
+#include "tex/vbox.h"
 
 #include <algorithm>
 #include <cmath>
@@ -48,20 +49,20 @@ Paragraph::Breakpoint::Breakpoint(const List::const_iterator & pos, Demerits d, 
 
 Paragraph::Paragraph()
 {
-  parshape_ = std::vector<float>{ 1000.f };
-  leftskip_ = std::make_shared<Glue>(0.f, 0.f, 0.f);
-  rightskip_ = leftskip_;
-  baselineskip_ = std::make_shared<Glue>(12.f, 0.f, 2.f);
-  lineskip_ = std::make_shared<Glue>(3.f, -1.f, 0.f);
-  lineskiplimit_ = 2.f;
-  parfillskip_ = std::make_shared<Glue>(0.f, 0.f, 1.f, GlueOrder::Normal, GlueOrder::Fil);
+  parshape = std::vector<float>{ 1000.f };
+  leftskip = std::make_shared<Glue>(0.f, 0.f, 0.f);
+  rightskip = leftskip;
+  baselineskip = std::make_shared<Glue>(12.f, 0.f, 2.f);
+  lineskip = std::make_shared<Glue>(3.f, -1.f, 0.f);
+  lineskiplimit = 2.f;
+  parfillskip = std::make_shared<Glue>(0.f, 0.f, 1.f, GlueOrder::Normal, GlueOrder::Fil);
 }
 
 float Paragraph::linelength(size_t n) const
 {
-  if (n >= parshape_.size())
-    return parshape_.back();
-  return parshape_.at(n);
+  if (n >= parshape.size())
+    return parshape.back();
+  return parshape.at(n);
 }
 
 std::vector<Paragraph::Breakpoint> Paragraph::computeBreakpoints(const List & hlist)
@@ -128,7 +129,7 @@ void Paragraph::prepare(List & hlist)
     hlist.pop_back();
 
   hlist.push_back(infinitePenalty());
-  hlist.push_back(parfillskip());
+  hlist.push_back(parfillskip);
   hlist.push_back(penalty(-Penalty::Infinity));
 }
 
@@ -143,7 +144,6 @@ List Paragraph::create(const List & hlist)
   List::const_iterator next = std::next(it);
 
   auto bp = std::next(breakpoints.begin());
-  std::shared_ptr<Box> prevline = nullptr;
 
   List result;
 
@@ -151,21 +151,8 @@ List Paragraph::create(const List & hlist)
   {
     auto line = createLine(bp->line, it, bp->position);
 
-    if (prevline != nullptr)
-    {
-      const float space = baselineskip_->space() - prevline->depth() - line->height();
-      if (space <= lineskiplimit())
-      {
-        result.push_back(lineskip());
-      }
-      else
-      {
-        result.push_back(std::make_shared<Glue>(space, baselineskip()->shrink(), baselineskip()->stretch()));
-      }
-    }
+    VListBuilder::push_back(result, line, prevdepth, baselineskip, lineskip, lineskiplimit);
 
-    result.push_back(line);
-    prevline = line;
     it = bp->position;
     ++bp;
 
@@ -310,7 +297,7 @@ void Paragraph::tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoi
 {
   auto active = activeBreakpoints.begin();
   size_t current_line = 0;
-  const float maxratio = std::pow(tolerance_ / 100.f, 1.f / 3.f);
+  const float maxratio = std::pow(tolerance / 100.f, 1.f / 3.f);
 
   const std::shared_ptr<Node> node = *it;
 
@@ -339,12 +326,12 @@ void Paragraph::tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoi
       {
         Badness badness = computeBadness(ratio);
 
-        Demerits d = computeDemerits(linepenalty(), badness, node->isPenalty() ? node->as<Penalty>().value() : 0);
+        Demerits d = computeDemerits(linepenalty, badness, node->isPenalty() ? node->as<Penalty>().value() : 0);
 
         FitnessClass fc = getFitnessClass(ratio);
 
         if (!checkCompatibility(fc, active_bp->fitness))
-          d += adjdemerits();
+          d += adjdemerits;
 
         d += active_bp->demerits;
 
@@ -382,9 +369,9 @@ void Paragraph::tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoi
 std::shared_ptr<HBox> Paragraph::createLine(size_t linenum, List::const_iterator begin, List::const_iterator end)
 {
   List hlist;
-  hlist.push_back(leftskip());
+  hlist.push_back(leftskip);
   hlist.insert(hlist.end(), begin, end);
-  hlist.push_back(rightskip());
+  hlist.push_back(rightskip);
 
   return hbox(std::move(hlist), linelength(linenum));
 }

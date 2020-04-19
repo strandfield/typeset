@@ -161,11 +161,16 @@ void HorizontalMode::writeOutput()
   VerticalMode* vm = static_cast<VerticalMode*>(&parent());
 
   tex::Paragraph p;
-  p.parshape() = machine().memory().parshape;
+  p.prevdepth = vm->vlist().prevdepth;
+  p.baselineskip = machine().memory().baselineskip;
+  p.lineskip = machine().memory().lineskip;
+  p.lineskiplimit = machine().memory().lineskiplimit;
+  p.parshape = machine().memory().parshape;
   p.prepare(hlist());
   tex::List l = p.create(hlist());
 
-  vm->vlist().insert(vm->vlist().end(), l.begin(), l.end());
+  vm->vlist().result.insert(vm->vlist().result.end(), l.cbegin(), l.cend());
+  vm->vlist().prevdepth = p.prevdepth;
 
   machine().leaveCurrentMode();
 }

@@ -25,6 +25,9 @@ struct TypesettingMachineMemory
   tex::parsing::Lexer::CatCodeTable catcodes;
   tex::Font font;
   float prevdepth = -10000.f;
+  std::shared_ptr<tex::Glue> baselineskip;
+  std::shared_ptr<tex::Glue> lineskip;
+  float lineskiplimit = 0.f;
   float pagewidth;
   std::vector<float> parshape;
 };

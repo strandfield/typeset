@@ -21,17 +21,18 @@ enum class FitnessClass {
 
 class LIBTYPESET_API Paragraph final
 {
-private:
-  int tolerance_ = /* 200 */ 800;
-  int adjdemerits_ = 10'000;
-  int linepenalty_ = 10;
-  std::vector<float> parshape_;
-  std::shared_ptr<Glue> leftskip_;
-  std::shared_ptr<Glue> rightskip_;
-  std::shared_ptr<Glue> parfillskip_;
-  std::shared_ptr<Glue> baselineskip_;
-  std::shared_ptr<Glue> lineskip_;
-  float lineskiplimit_;
+public:
+  int tolerance = /* 200 */ 800;
+  int adjdemerits = 10'000;
+  int linepenalty = 10;
+  std::vector<float> parshape;
+  std::shared_ptr<Glue> leftskip;
+  std::shared_ptr<Glue> rightskip;
+  std::shared_ptr<Glue> parfillskip;
+  std::shared_ptr<Glue> baselineskip;
+  std::shared_ptr<Glue> lineskip;
+  float lineskiplimit;
+  float prevdepth = -10000.f;
 
 public:
   Paragraph();
@@ -39,23 +40,7 @@ public:
   using Badness = int;
   using Demerits = int;
 
-  inline int tolerance() const { return tolerance_; }
-  inline int adjdemerits() const { return adjdemerits_; }
-  inline int linepenalty() const { return linepenalty_; }
-  inline const std::vector<float> & parshape() const { return parshape_; }
-  inline std::vector<float> & parshape() { return parshape_; }
   float linelength(size_t n) const;
-
-  inline const std::shared_ptr<Glue> & parfillskip() const { return parfillskip_;  }
-
-  inline float lineskiplimit() const { return lineskiplimit_; }
-  inline const std::shared_ptr<Glue> & baselineskip() const { return baselineskip_; }
-  inline const std::shared_ptr<Glue> & lineskip() const { return lineskip_; }
-
-  inline const std::shared_ptr<Glue> & leftskip() const { return leftskip_; }
-  inline std::shared_ptr<Glue> & leftskip() { return leftskip_; }
-  inline const std::shared_ptr<Glue> & rightskip() const { return rightskip_; }
-  inline std::shared_ptr<Glue> & rightskip() { return rightskip_; }
 
   struct Totals
   {

@@ -37,8 +37,8 @@ private:
   int m_relpenalty = 500;
   int m_binoppenalty = 700;
   bool m_insert_penalties = true;
-  float m_baselineskip;
-  float m_lineskip;
+  std::shared_ptr<Glue> m_baselineskip;
+  std::shared_ptr<Glue> m_lineskip;
   math::Style m_current_style = math::Style::D;
   std::shared_ptr<math::Atom> m_most_recent_atom;
 

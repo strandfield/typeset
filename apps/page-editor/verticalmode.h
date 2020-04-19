@@ -40,7 +40,7 @@ public:
   void write(tex::parsing::Token& t) override;
   void finish() override;
 
-  tex::List& vlist();
+  tex::VListBuilder& vlist();
 
 protected:
   void main_callback(tex::parsing::Token&);
@@ -48,7 +48,7 @@ protected:
 
 private:
   State m_state = State::Main;
-  tex::List m_vlist;
+  tex::VListBuilder m_vlist;
 };
 
 #endif // TYPESET_PAGEEDITOR_VERTICALMODE_H

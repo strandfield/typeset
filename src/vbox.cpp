@@ -11,6 +11,47 @@
 namespace tex
 {
 
+VListBuilder::VListBuilder(std::shared_ptr<Glue> baselineskip_, std::shared_ptr<Glue> lineskip_)
+  : baselineskip(baselineskip_),
+    lineskip(lineskip_)
+{
+
+}
+
+void VListBuilder::push_back(const std::shared_ptr<Box>& box)
+{
+  push_back(result, box, prevdepth, baselineskip, lineskip, lineskiplimit);
+}
+
+void VListBuilder::push_back(List& vlist, const std::shared_ptr<Box>& box, float& prevdepth, const std::shared_ptr<Glue>& baselineskip, const std::shared_ptr<Glue>& lineskip, float lineskiplimit)
+{
+  if (prevdepth <= -10000.f)
+  {
+    vlist.push_back(box);
+  }
+  else
+  {
+    const float g = baselineskip->space() - prevdepth - box->height();
+
+    if (g >= 0.f)
+      vlist.push_back(tex::glue(g, baselineskip->shrinkSpec(), baselineskip->stretchSpec()));
+    else
+      vlist.push_back(lineskip);
+
+    vlist.push_back(box);
+  }
+
+  prevdepth = box->depth();
+}
+
+void VListBuilder::push_back_node(const std::shared_ptr<Node>& node)
+{
+  if (node->isBox())
+    push_back(std::static_pointer_cast<tex::Box>(node));
+  else
+    result.push_back(node);
+}
+
 VBox::VBox(List && list)
   : ListBox(std::move(list))
 {

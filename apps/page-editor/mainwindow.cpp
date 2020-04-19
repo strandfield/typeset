@@ -38,7 +38,7 @@ static QWidget* vbox(std::vector<QWidget*> widgets, int spacing = 0)
 
 MainWindow::MainWindow()
 {
-  setWindowTitle("Equation Editor");
+  setWindowTitle("Page Editor");
 
   m_engine = std::make_shared<TypesetEngine>();
 

@@ -9,8 +9,10 @@
 #include "mathmode.h"
 
 VerticalMode::VerticalMode(TypesettingMachine& m)
-  : Mode(m)
+  : Mode(m),
+    m_vlist{ m.memory().baselineskip, m.memory().lineskip }
 {
+  m_vlist.lineskiplimit = m.memory().lineskiplimit;
 }
 
 Mode::Kind VerticalMode::kind() const
@@ -55,7 +57,7 @@ void VerticalMode::finish()
 
 }
 
-tex::List& VerticalMode::vlist()
+tex::VListBuilder& VerticalMode::vlist()
 {
   return m_vlist;
 }

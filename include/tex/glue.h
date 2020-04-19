@@ -69,31 +69,6 @@ struct GlueSettings
   GlueOrder order;
 };
 
-class LIBTYPESET_API Glue final : public Node
-{
-public:
-  Glue(float spc, float shrnk, float strtch, GlueOrder shrnkOrder = GlueOrder::Normal, GlueOrder strtchOrder = GlueOrder::Normal);
-  ~Glue() = default;
-
-  float space() const { return m_spec.space; }
-  float shrink() const { return m_spec.shrink; }
-  float stretch() const { return m_spec.stretch; }
-  GlueOrder shrinkOrder() const { return m_spec.shrinkOrder; }
-  GlueOrder stretchOrder() const { return m_spec.stretchOrder; }
-
-  GlueOrigin origin() const { return m_origin; }
-  void setOrigin(GlueOrigin ori);
-
-  void accumulate(GlueShrink & shrink, GlueStretch & stretch) const;
-
-  GlueSpec& spec() { return m_spec; }
-  const GlueSpec& spec() const { return m_spec; }
-
-private:
-  GlueOrigin m_origin;
-  GlueSpec m_spec;
-};
-
 struct LIBTYPESET_API Shrink
 {
   float amount;
@@ -118,6 +93,34 @@ struct LIBTYPESET_API Stretch
   {
 
   }
+};
+
+class LIBTYPESET_API Glue final : public Node
+{
+public:
+  Glue(float spc, float shrnk, float strtch, GlueOrder shrnkOrder = GlueOrder::Normal, GlueOrder strtchOrder = GlueOrder::Normal);
+  ~Glue() = default;
+
+  float space() const { return m_spec.space; }
+  float shrink() const { return m_spec.shrink; }
+  float stretch() const { return m_spec.stretch; }
+  GlueOrder shrinkOrder() const { return m_spec.shrinkOrder; }
+  GlueOrder stretchOrder() const { return m_spec.stretchOrder; }
+
+  Shrink shrinkSpec() const { return Shrink{ m_spec.shrink, m_spec.shrinkOrder }; }
+  Stretch stretchSpec() const { return Stretch{ m_spec.stretch, m_spec.stretchOrder }; }
+
+  GlueOrigin origin() const { return m_origin; }
+  void setOrigin(GlueOrigin ori);
+
+  void accumulate(GlueShrink & shrink, GlueStretch & stretch) const;
+
+  GlueSpec& spec() { return m_spec; }
+  const GlueSpec& spec() const { return m_spec; }
+
+private:
+  GlueOrigin m_origin;
+  GlueSpec m_spec;
 };
 
 LIBTYPESET_API std::shared_ptr<Glue> glue(float space);
