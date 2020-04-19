@@ -27,8 +27,7 @@ TypesettingMachine::TypesettingMachine(std::shared_ptr<tex::TypesetEngine> te, t
   m_memory.emplace_back();
   memory().font = f;
   memory().catcodes = m_lexer.catcodes();
-  memory().pagewidth = 800.f;
-  memory().parshape = { 800.f };
+  memory().hsize = 800.f;
 
   tex::BoxMetrics metrics = te->metrics()->metrics('(', tex::Font(0));
 

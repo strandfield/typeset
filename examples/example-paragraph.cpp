@@ -52,7 +52,7 @@ void ParagraphTextWidget::recomputeLayout(int pagewidth)
   tex::List l = tp.process(text_->toPlainText());
 
   tex::Paragraph paragraph;
-  paragraph.parshape = { float(pagewidth) };
+  paragraph.hsize = pagewidth;
   //paragraph.leftskip() = std::make_shared<tex::Glue>(0.f, 0.f, 1.f, tex::GlueOrder::Normal, tex::GlueOrder::Fill);
   //paragraph.rightskip() = paragraph.leftskip();
 

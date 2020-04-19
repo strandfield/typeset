@@ -25,6 +25,7 @@ public:
   int tolerance = /* 200 */ 800;
   int adjdemerits = 10'000;
   int linepenalty = 10;
+  float hsize = 800.f;
   std::vector<float> parshape;
   std::shared_ptr<Glue> leftskip;
   std::shared_ptr<Glue> rightskip;

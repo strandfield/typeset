@@ -165,6 +165,7 @@ void HorizontalMode::writeOutput()
   p.baselineskip = machine().memory().baselineskip;
   p.lineskip = machine().memory().lineskip;
   p.lineskiplimit = machine().memory().lineskiplimit;
+  p.hsize = machine().memory().hsize;
   p.parshape = machine().memory().parshape;
   p.prepare(hlist());
   tex::List l = p.create(hlist());

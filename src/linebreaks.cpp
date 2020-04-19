@@ -49,7 +49,6 @@ Paragraph::Breakpoint::Breakpoint(const List::const_iterator & pos, Demerits d, 
 
 Paragraph::Paragraph()
 {
-  parshape = std::vector<float>{ 1000.f };
   leftskip = std::make_shared<Glue>(0.f, 0.f, 0.f);
   rightskip = leftskip;
   baselineskip = std::make_shared<Glue>(12.f, 0.f, 2.f);
@@ -60,9 +59,15 @@ Paragraph::Paragraph()
 
 float Paragraph::linelength(size_t n) const
 {
-  if (n >= parshape.size())
-    return parshape.back();
-  return parshape.at(n);
+  if (!parshape.empty())
+  {
+    if(n >= parshape.size())
+      return parshape.back();
+    else
+      return parshape.at(n);
+  }
+
+  return hsize;
 }
 
 std::vector<Paragraph::Breakpoint> Paragraph::computeBreakpoints(const List & hlist)

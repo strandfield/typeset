@@ -28,7 +28,7 @@ struct TypesettingMachineMemory
   std::shared_ptr<tex::Glue> baselineskip;
   std::shared_ptr<tex::Glue> lineskip;
   float lineskiplimit = 0.f;
-  float pagewidth;
+  float hsize;
   std::vector<float> parshape;
 };
 
