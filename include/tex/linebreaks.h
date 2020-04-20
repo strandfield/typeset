@@ -65,10 +65,14 @@ public:
     Breakpoint(const List::const_iterator & pos, Demerits d, size_t l, FitnessClass fc, Totals t, std::shared_ptr<Breakpoint> prev);
   };
 
-  std::vector<Breakpoint> computeBreakpoints(const List & hlist);
+  std::list<std::shared_ptr<Breakpoint>> computeFeasibleBreakpoints(const List& hlist);
+  std::vector<Breakpoint> computeBreakpoints(const std::list<std::shared_ptr<Breakpoint>>& candidates);
+  std::vector<Breakpoint> computeBreakpoints(std::shared_ptr<Breakpoint> breakpoints);
+  std::vector<Breakpoint> computeBreakpoints(const List& hlist);
 
   void prepare(List & hlist);
   List create(const List & hlist);
+  List create(const List& hlist, const std::vector<Breakpoint>& breakpoints);
 
   static Badness computeBadness(float glueSetRatio);
   static FitnessClass getFitnessClass(float glueSetRatio);

@@ -63,7 +63,7 @@ void RenderWidget::visit(QPainter& painter, std::shared_ptr<tex::Box> box)
   LayoutVisitor visitor{ this, &painter };
 
   const float x = (width() - m_box->width()) * 0.5f;
-  const float y = (height() - m_box->totalHeight()) * 0.5f;
+  const float y = (height() - m_box->totalHeight()) * 0.5f + m_box->height();
 
   tex::read(visitor, m_box, { x, y });
 }

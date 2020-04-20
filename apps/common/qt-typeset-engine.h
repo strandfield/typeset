@@ -85,7 +85,7 @@ public:
 
   std::array<tex::MathFont, 16> mathfonts() const;
 
-protected:
+public:
 
   std::shared_ptr<tex::FontMetricsProvider> metrics() const override;
 
@@ -95,6 +95,8 @@ protected:
   std::shared_ptr<tex::Box> typesetRadicalSign(float minTotalHeight) override;
   std::shared_ptr<tex::Box> typesetDelimiter(const std::shared_ptr<tex::Symbol> & symbol, float minTotalHeight) override;
   std::shared_ptr<tex::Box> typesetLargeOp(const std::shared_ptr<tex::Symbol> & symbol) override;
+
+protected:
 
   QFont& font(tex::Font f);
   void initFont(int id, const QString& displayname, const QString & fontname, int size, bool italic, tex::TFM tfm);

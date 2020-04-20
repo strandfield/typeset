@@ -71,7 +71,7 @@ float Paragraph::linelength(size_t n) const
   return hsize;
 }
 
-std::vector<Paragraph::Breakpoint> Paragraph::computeBreakpoints(const List & hlist)
+std::list<std::shared_ptr<Paragraph::Breakpoint>> Paragraph::computeFeasibleBreakpoints(const List& hlist)
 {
   std::list<std::shared_ptr<Breakpoint>> activeNodes;
   Totals sum;
@@ -92,7 +92,7 @@ std::vector<Paragraph::Breakpoint> Paragraph::computeBreakpoints(const List & hl
       if (prevnode != hlist.end() && (*prevnode)->isBox())
         tryBreak(activeNodes, hlist, it, sum);
 
-      Glue & g = node->as<Glue>();
+      Glue& g = node->as<Glue>();
       sum.width += g.space();
       g.accumulate(sum.shrink, sum.stretch);
     }
@@ -108,26 +108,45 @@ std::vector<Paragraph::Breakpoint> Paragraph::computeBreakpoints(const List & hl
     prevnode = it;
   }
 
-  if (activeNodes.size() == 0) 
-    throw std::runtime_error{ "Failed" };
-  
-  auto best_breakpoint = *activeNodes.begin();
-  for (auto it = activeNodes.begin(); it != activeNodes.end(); ++it)
+  return activeNodes;
+}
+
+std::vector<Paragraph::Breakpoint> Paragraph::computeBreakpoints(const std::list<std::shared_ptr<Breakpoint>>& candidates)
+{
+  auto best_breakpoint = *candidates.begin();
+
+  for (auto it = candidates.begin(); it != candidates.end(); ++it)
   {
     if ((*it)->demerits < best_breakpoint->demerits)
       best_breakpoint = *it;
   }
 
+  return computeBreakpoints(best_breakpoint);
+}
+
+std::vector<Paragraph::Breakpoint> Paragraph::computeBreakpoints(std::shared_ptr<Breakpoint> breakpoints)
+{
   std::vector<Breakpoint> result;
+
   do
   {
-    result.push_back(*best_breakpoint);
-    best_breakpoint = best_breakpoint->previous;
-  } while (best_breakpoint != nullptr);
+    result.push_back(*breakpoints);
+    breakpoints = breakpoints->previous;
+  } while (breakpoints != nullptr);
 
   std::reverse(result.begin(), result.end());
 
   return result;
+}
+
+std::vector<Paragraph::Breakpoint> Paragraph::computeBreakpoints(const List & hlist)
+{
+  std::list<std::shared_ptr<Breakpoint>> activeNodes = computeFeasibleBreakpoints(hlist);
+
+  if (activeNodes.size() == 0) 
+    throw std::runtime_error{ "Failed" };
+  
+  return computeBreakpoints(activeNodes);
 }
 
 void Paragraph::prepare(List & hlist)
@@ -150,6 +169,14 @@ List Paragraph::create(const List & hlist)
 
   std::vector<Breakpoint> breakpoints = computeBreakpoints(hlist);
 
+  return create(hlist, breakpoints);
+}
+
+List Paragraph::create(const List& hlist, const std::vector<Breakpoint>& breakpoints)
+{
+  if (hlist.empty())
+    return hlist;
+
   List::const_iterator it = hlist.begin();
   List::const_iterator next = std::next(it);
 
@@ -166,7 +193,7 @@ List Paragraph::create(const List & hlist)
     it = bp->position;
     ++bp;
 
-    if(bp != breakpoints.end())
+    if (bp != breakpoints.end())
       consumeDiscardable(it);
   }
 
