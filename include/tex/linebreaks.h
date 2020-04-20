@@ -7,7 +7,7 @@
 
 #include "tex/hbox.h"
 
-#include <vector>
+#include "tex/parshape.h"
 
 namespace tex
 {
@@ -26,7 +26,7 @@ public:
   int adjdemerits = 10'000;
   int linepenalty = 10;
   float hsize = 800.f;
-  std::vector<float> parshape;
+  Parshape parshape;
   std::shared_ptr<Glue> leftskip;
   std::shared_ptr<Glue> rightskip;
   std::shared_ptr<Glue> parfillskip;
@@ -81,8 +81,8 @@ public:
 protected:
   /// Linebreaking
   float computeGlueRatio(const Totals & sum, Breakpoint & active, size_t current_line);
-  Totals computeTotals(const List & hlist, const Totals & sum, List::const_iterator breakpointpos);
-  void tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoints, const List &hlist, List::const_iterator it, const Totals & sum);
+  Totals squeezeDiscardables(Totals sum, List::const_iterator breakpointpos, List::const_iterator end);
+  void tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoints, const List &hlist, List::const_iterator it, Totals sum);
 
   /// Paragraph creation
   std::shared_ptr<HBox> createLine(size_t linenum, List::const_iterator begin, List::const_iterator end);

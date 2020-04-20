@@ -14,6 +14,7 @@
 #include "tex/parsing/registers.h"
 #include "tex/lexer.h"
 
+#include "tex/parshape.h"
 #include "tex/typeset.h"
 #include "tex/vbox.h"
 
@@ -29,7 +30,7 @@ struct TypesettingMachineMemory
   std::shared_ptr<tex::Glue> lineskip;
   float lineskiplimit = 0.f;
   float hsize;
-  std::vector<float> parshape;
+  tex::Parshape parshape;
 };
 
 class TypesettingException : public std::runtime_error

@@ -5,6 +5,7 @@
 #include "tex/linebreaks.h"
 
 #include "tex/glue.h"
+#include "tex/kern.h"
 #include "tex/penalty.h"
 #include "tex/vbox.h"
 
@@ -62,9 +63,9 @@ float Paragraph::linelength(size_t n) const
   if (!parshape.empty())
   {
     if(n >= parshape.size())
-      return parshape.back();
+      return parshape.back().length;
     else
-      return parshape.at(n);
+      return parshape.at(n).length;
   }
 
   return hsize;
@@ -94,6 +95,10 @@ std::vector<Paragraph::Breakpoint> Paragraph::computeBreakpoints(const List & hl
       Glue & g = node->as<Glue>();
       sum.width += g.space();
       g.accumulate(sum.shrink, sum.stretch);
+    }
+    else if (node->isKern())
+    {
+      sum.width += node->as<Kern>().space();
     }
     else if (node->isPenalty() && !isForbiddenLinebreak(*node))
     {
@@ -248,20 +253,22 @@ float Paragraph::computeGlueRatio(const Totals & sum, Breakpoint & active, size_
   return 0.f;
 }
 
-Paragraph::Totals Paragraph::computeTotals(const List & hlist, const Totals & sum, List::const_iterator breakpointpos)
+Paragraph::Totals Paragraph::squeezeDiscardables(Totals sum, List::const_iterator breakpointpos, List::const_iterator end)
 {
   /// Computes totals from breakpoint up to next box or forced linebreak
-
-  Totals result = sum;
-
-  for (auto it = breakpointpos; it != hlist.end(); ++it)
+  for (auto it = breakpointpos; it != end; ++it)
   {
     std::shared_ptr<Node> node = *it;
+
     if (node->is<Glue>())
     {
       Glue & g = node->as<Glue>();
-      result.width += g.space();
-      g.accumulate(result.shrink, result.stretch);
+      sum.width += g.space();
+      g.accumulate(sum.shrink, sum.stretch);
+    }
+    else if (node->isKern())
+    {
+      sum.width += node->as<Kern>().space();
     }
     else if (node->isBox() || (it != breakpointpos && isForcedLinebreak(*node)))
     {
@@ -269,7 +276,7 @@ Paragraph::Totals Paragraph::computeTotals(const List & hlist, const Totals & su
     }
   }
 
-  return result;
+  return sum;
 }
 
 struct Candidate
@@ -298,7 +305,7 @@ struct Candidate
  * final breakpoints of a paragraph.
  *
  */
-void Paragraph::tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoints, const List &hlist, List::const_iterator it, const Totals & sum)
+void Paragraph::tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoints, const List &hlist, List::const_iterator it, Totals sum)
 {
   auto active = activeBreakpoints.begin();
   size_t current_line = 0;
@@ -352,7 +359,7 @@ void Paragraph::tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoi
     }
 
     // Adds the discarded nodes to the current breakpoint
-    Totals tmp_sum = computeTotals(hlist, sum, it);
+    Totals local_sum = squeezeDiscardables(sum, it, hlist.cend());
 
     for (size_t i = 0; i < 4; ++i) 
     {
@@ -361,7 +368,7 @@ void Paragraph::tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoi
 
       if (c.demerits < std::numeric_limits<int>::max()) 
       {
-        auto bp = std::make_shared<Breakpoint>(it, c.demerits, c.active->line + 1, current_fc, tmp_sum, c.active);
+        auto bp = std::make_shared<Breakpoint>(it, c.demerits, c.active->line + 1, current_fc, local_sum, c.active);
         if (active != activeBreakpoints.end())
           activeBreakpoints.insert(active, bp);
         else
