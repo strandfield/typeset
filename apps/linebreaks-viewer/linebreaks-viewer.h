@@ -12,11 +12,13 @@
 
 #include "tex/listbox.h"
 #include "tex/linebreaks.h"
+#include "tex/parshape.h"
 
 class QComboBox;
 class QCheckBox;
 class QGroupBox;
 class QLabel;
+class QLineEdit;
 class QPlainTextEdit;
 class QSpinBox;
 
@@ -36,16 +38,21 @@ protected:
 protected Q_SLOTS:
   void onTextChanged();
   void onDrawRatioChanged();
+  void onParshapeChanged();
   void onSelectedBreakpointChanged();
 
 protected:
+  tex::Parshape parseParshape() const;
   void processText();
+  void setup(tex::Paragraph& linebreaker);
 
 private:
   std::shared_ptr<TypesetEngine> m_engine;
   tex::List m_list;
+  tex::Parshape m_parshape;
   std::vector<std::shared_ptr<tex::Paragraph::Breakpoint>> m_breakpoints;
   QCheckBox* m_draw_ratios;
+  QLineEdit* m_parshape_lineedit;
   LinebreaksViewerRenderWidget* m_renderwidget;
   QPlainTextEdit* m_textedit;
   QGroupBox* m_report_groupbox;

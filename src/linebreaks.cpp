@@ -71,6 +71,19 @@ float Paragraph::linelength(size_t n) const
   return hsize;
 }
 
+float Paragraph::lineindent(size_t n) const
+{
+  if (!parshape.empty())
+  {
+    if (n >= parshape.size())
+      return parshape.back().indent;
+    else
+      return parshape.at(n).indent;
+  }
+
+  return 0.f;
+}
+
 std::list<std::shared_ptr<Paragraph::Breakpoint>> Paragraph::computeFeasibleBreakpoints(const List& hlist)
 {
   std::list<std::shared_ptr<Breakpoint>> activeNodes;
@@ -186,7 +199,7 @@ List Paragraph::create(const List& hlist, const std::vector<Breakpoint>& breakpo
 
   while (bp != breakpoints.end())
   {
-    auto line = createLine(bp->line, it, bp->position);
+    auto line = createLine(bp->line - 1, it, bp->position);
 
     VListBuilder::push_back(result, line, prevdepth, baselineskip, lineskip, lineskiplimit);
 
@@ -246,15 +259,36 @@ Paragraph::Demerits Paragraph::computeDemerits(int l, Badness b, int p)
     return Demerits(std::pow(l + b, 2));
 }
 
+ShrinkTotals Paragraph::shrinkTotals(const Glue& lskip, const Glue& rskip)
+{
+  ShrinkTotals totals;
+  StretchTotals dummy;
+  lskip.accumulate(totals, dummy);
+  rskip.accumulate(totals, dummy);
+  return totals;
+}
+
+ StretchTotals Paragraph::stretchTotals(const Glue& lskip, const Glue& rskip)
+ {
+   ShrinkTotals dummy;
+   StretchTotals totals;
+   lskip.accumulate(dummy, totals);
+   rskip.accumulate(dummy, totals);
+   return totals;
+ }
+
 float Paragraph::computeGlueRatio(const Totals & sum, Breakpoint & active, size_t current_line)
 {
-  float width = sum.width - active.totals.width;
+  float width = sum.width - active.totals.width - lineindent(current_line);
 
-  float line_length = linelength(current_line - 1);
+  width -= leftskip->space();
+  width -= rightskip->space();
+
+  float line_length = linelength(current_line);
 
   if (width < line_length)
   {
-    auto diff = sum.stretch - active.totals.stretch;
+    auto diff = sum.stretch + stretchTotals(*leftskip, *rightskip) - active.totals.stretch;
     if (diff.order() != GlueOrder::Normal)
       return 0.f;
 
@@ -266,7 +300,7 @@ float Paragraph::computeGlueRatio(const Totals & sum, Breakpoint & active, size_
   }
   else if (width > line_length)
   {
-    auto diff = sum.shrink - active.totals.shrink;
+    auto diff = sum.shrink + shrinkTotals(*leftskip, *rightskip) - active.totals.shrink;
     if (diff.order() != GlueOrder::Normal)
       return 0;
 
@@ -409,6 +443,15 @@ std::shared_ptr<HBox> Paragraph::createLine(size_t linenum, List::const_iterator
 {
   List hlist;
   hlist.push_back(leftskip);
+
+  if (!parshape.empty())
+  {
+    if (linenum >= parshape.size())
+      hlist.push_back(tex::kern(parshape.back().indent));
+    else
+      hlist.push_back(tex::kern(parshape.at(linenum).indent));
+  }
+
   hlist.insert(hlist.end(), begin, end);
   hlist.push_back(rightskip);
 

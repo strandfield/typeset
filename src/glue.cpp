@@ -27,6 +27,16 @@ GlueOrder GlueShrinkStretch::order() const
   return GlueOrder::Normal;
 }
 
+GlueShrinkStretch operator+(const GlueShrinkStretch& lhs, const GlueShrinkStretch& rhs)
+{
+  return GlueShrinkStretch{
+  lhs.normal + rhs.normal,
+  lhs.fil + rhs.fil,
+  lhs.fill + rhs.fill,
+  lhs.filll + rhs.filll
+  };
+}
+
 GlueShrinkStretch operator-(const GlueShrinkStretch & lhs, const GlueShrinkStretch & rhs)
 {
   return GlueShrinkStretch{

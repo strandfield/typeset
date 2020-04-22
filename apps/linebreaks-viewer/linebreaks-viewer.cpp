@@ -14,7 +14,9 @@
 #include <QAction>
 #include <QCheckBox>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMenuBar>
+#include <QPalette>
 #include <QPlainTextEdit>
 #include <QSpinBox>
 
@@ -108,6 +110,10 @@ QWidget* LinebreaksViewerWindow::createSettingsWidget()
     m_draw_ratios->setChecked(false);
     gbl->addWidget(m_draw_ratios);
 
+    m_parshape_lineedit = new QLineEdit;
+    m_parshape_lineedit->setPlaceholderText("enter parshape specifications");
+    gbl->addWidget(m_parshape_lineedit);
+
     layout->addWidget(gb);
   }
 
@@ -134,6 +140,7 @@ QWidget* LinebreaksViewerWindow::createSettingsWidget()
   layout->addStretch();
 
   connect(m_draw_ratios, &QCheckBox::toggled, this, &LinebreaksViewerWindow::onDrawRatioChanged);
+  connect(m_parshape_lineedit, &QLineEdit::textChanged, this, &LinebreaksViewerWindow::onParshapeChanged);
   connect(m_linebreaks_spinbox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onSelectedBreakpointChanged);
   
   return w;
@@ -157,11 +164,33 @@ void LinebreaksViewerWindow::onDrawRatioChanged()
   update();
 }
 
+void LinebreaksViewerWindow::onParshapeChanged()
+{
+  m_parshape = parseParshape();
+
+  if (m_parshape.empty() && !m_parshape_lineedit->text().isEmpty())
+  {
+    QPalette pal;
+    pal.setColor(QPalette::Text, Qt::red);
+    m_parshape_lineedit->setPalette(pal);
+  }
+  else
+  {
+    m_parshape_lineedit->setPalette(QPalette());
+  }
+
+  onTextChanged();
+}
+
 void LinebreaksViewerWindow::onSelectedBreakpointChanged()
 {
+  if (m_breakpoints.empty())
+    return;
+
   auto br = m_breakpoints.at(m_linebreaks_spinbox->value());
 
   tex::Paragraph paragraph;
+  setup(paragraph);
 
   tex::FontMetrics metrics{ tex::Font(0), m_engine->metrics() };
   tex::BoxMetrics parmetrics = metrics.metrics('(');
@@ -181,6 +210,30 @@ void LinebreaksViewerWindow::onSelectedBreakpointChanged()
 static double duration_msec(std::chrono::duration<double> diff)
 {
   return diff.count() * 1000;
+}
+
+void LinebreaksViewerWindow::setup(tex::Paragraph& linebreaker)
+{
+  linebreaker.parshape = m_parshape;
+}
+
+tex::Parshape LinebreaksViewerWindow::parseParshape() const
+{
+  QStringList numbers = m_parshape_lineedit->text().split(' ', QString::SkipEmptyParts);
+
+  if (numbers.isEmpty() || numbers.size() % 2 != 0)
+    return {};
+
+  tex::Parshape result;
+
+  for (int i(0); i < numbers.size(); i +=2)
+  {
+    result.emplace_back();
+    result.back().indent = numbers.at(i).toFloat();
+    result.back().length = std::max({ 10.f, numbers.at(i + 1).toFloat() });
+  }
+
+  return result;
 }
 
 void LinebreaksViewerWindow::processText()
@@ -211,6 +264,7 @@ void LinebreaksViewerWindow::processText()
   }
 
   tex::Paragraph paragraph;
+  setup(paragraph);
 
   paragraph.prepare(m_list);
 

@@ -42,6 +42,7 @@ public:
   using Demerits = int;
 
   float linelength(size_t n) const;
+  float lineindent(size_t n) const;
 
   struct Totals
   {
@@ -84,6 +85,8 @@ public:
 
 protected:
   /// Linebreaking
+  static ShrinkTotals shrinkTotals(const Glue& lskip, const Glue& rskip);
+  static StretchTotals stretchTotals(const Glue& lskip, const Glue& rskip);
   float computeGlueRatio(const Totals & sum, Breakpoint & active, size_t current_line);
   Totals squeezeDiscardables(Totals sum, List::const_iterator breakpointpos, List::const_iterator end);
   void tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoints, const List &hlist, List::const_iterator it, Totals sum);

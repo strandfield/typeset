@@ -48,7 +48,8 @@ struct LIBTYPESET_API GlueShrinkStretch
   GlueOrder order() const;
 };
 
-LIBTYPESET_API GlueShrinkStretch operator-(const GlueShrinkStretch & lhs, const GlueShrinkStretch & rhs);
+LIBTYPESET_API GlueShrinkStretch operator+(const GlueShrinkStretch & lhs, const GlueShrinkStretch & rhs);
+LIBTYPESET_API GlueShrinkStretch operator-(const GlueShrinkStretch& lhs, const GlueShrinkStretch& rhs);
 
 struct GlueShrink : GlueShrinkStretch
 {
