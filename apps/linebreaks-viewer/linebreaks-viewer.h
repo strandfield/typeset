@@ -20,6 +20,7 @@ class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QPlainTextEdit;
+class QPushButton;
 class QSpinBox;
 
 class LinebreaksViewerRenderWidget;
@@ -39,6 +40,8 @@ protected Q_SLOTS:
   void onTextChanged();
   void onDrawRatioChanged();
   void onParshapeChanged();
+  void onParameterChanged();
+  void resetParameters();
   void onSelectedBreakpointChanged();
 
 protected:
@@ -52,7 +55,11 @@ private:
   tex::Parshape m_parshape;
   std::vector<std::shared_ptr<tex::Paragraph::Breakpoint>> m_breakpoints;
   QCheckBox* m_draw_ratios;
+  QSpinBox* m_tolerance_spinbox;
+  QSpinBox* m_adjdemerits_spinbox;
+  QSpinBox* m_linepenalty_spinbox;
   QLineEdit* m_parshape_lineedit;
+  QPushButton* m_reset_button;
   LinebreaksViewerRenderWidget* m_renderwidget;
   QPlainTextEdit* m_textedit;
   QGroupBox* m_report_groupbox;

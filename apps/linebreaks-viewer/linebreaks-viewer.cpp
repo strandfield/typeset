@@ -18,6 +18,7 @@
 #include <QMenuBar>
 #include <QPalette>
 #include <QPlainTextEdit>
+#include <QPushButton>
 #include <QSpinBox>
 
 #include <QFormLayout>
@@ -110,9 +111,33 @@ QWidget* LinebreaksViewerWindow::createSettingsWidget()
     m_draw_ratios->setChecked(false);
     gbl->addWidget(m_draw_ratios);
 
-    m_parshape_lineedit = new QLineEdit;
-    m_parshape_lineedit->setPlaceholderText("enter parshape specifications");
-    gbl->addWidget(m_parshape_lineedit);
+    QFormLayout* form = new QFormLayout;
+
+    {
+      m_tolerance_spinbox = new QSpinBox;
+      m_tolerance_spinbox->setRange(200, 20000);
+      m_tolerance_spinbox->setValue(800);
+      form->addRow("tolerance", m_tolerance_spinbox); 
+
+      m_adjdemerits_spinbox = new QSpinBox;
+      m_adjdemerits_spinbox->setRange(1000, 100000);
+      m_adjdemerits_spinbox->setValue(10000);
+      form->addRow("adjdemerits", m_adjdemerits_spinbox);
+
+      m_linepenalty_spinbox = new QSpinBox;
+      m_linepenalty_spinbox->setRange(0, 1000);
+      m_linepenalty_spinbox->setValue(10);
+      form->addRow("linepenalty", m_linepenalty_spinbox);
+
+      m_parshape_lineedit = new QLineEdit;
+      m_parshape_lineedit->setPlaceholderText("enter parshape specifications");
+      form->addRow("parshape", m_parshape_lineedit);
+    }
+    
+    gbl->addLayout(form);
+
+    m_reset_button = new QPushButton("Reset");
+    gbl->addWidget(m_reset_button);
 
     layout->addWidget(gb);
   }
@@ -140,9 +165,13 @@ QWidget* LinebreaksViewerWindow::createSettingsWidget()
   layout->addStretch();
 
   connect(m_draw_ratios, &QCheckBox::toggled, this, &LinebreaksViewerWindow::onDrawRatioChanged);
+  connect(m_tolerance_spinbox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onParameterChanged);
+  connect(m_adjdemerits_spinbox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onParameterChanged);
+  connect(m_linepenalty_spinbox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onParameterChanged);
   connect(m_parshape_lineedit, &QLineEdit::textChanged, this, &LinebreaksViewerWindow::onParshapeChanged);
+  connect(m_reset_button, &QPushButton::clicked, this, &LinebreaksViewerWindow::resetParameters);
   connect(m_linebreaks_spinbox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onSelectedBreakpointChanged);
-  
+
   return w;
 }
 
@@ -179,7 +208,20 @@ void LinebreaksViewerWindow::onParshapeChanged()
     m_parshape_lineedit->setPalette(QPalette());
   }
 
+  onParameterChanged();
+}
+
+void LinebreaksViewerWindow::onParameterChanged()
+{
   onTextChanged();
+}
+
+void LinebreaksViewerWindow::resetParameters()
+{
+  m_tolerance_spinbox->setValue(800);
+  m_adjdemerits_spinbox->setValue(10000);
+  m_linepenalty_spinbox->setValue(10);
+  m_parshape_lineedit->clear();
 }
 
 void LinebreaksViewerWindow::onSelectedBreakpointChanged()
@@ -215,6 +257,9 @@ static double duration_msec(std::chrono::duration<double> diff)
 void LinebreaksViewerWindow::setup(tex::Paragraph& linebreaker)
 {
   linebreaker.parshape = m_parshape;
+  linebreaker.tolerance = m_tolerance_spinbox->value();
+  linebreaker.adjdemerits = m_adjdemerits_spinbox->value();
+  linebreaker.linepenalty = m_linepenalty_spinbox->value();
 }
 
 tex::Parshape LinebreaksViewerWindow::parseParshape() const
