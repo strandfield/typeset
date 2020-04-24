@@ -15,6 +15,8 @@
 #include <stdexcept>
 #include <utility>
 
+#include <cassert>
+
 namespace tex
 {
 
@@ -383,10 +385,11 @@ void Paragraph::tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoi
       Candidate{ nullptr, std::numeric_limits<int>::max() },
     };
 
-    while (active != activeBreakpoints.end())
+    current_line = (*active)->line;
+
+    while (active != activeBreakpoints.end() && (*active)->line == current_line)
     {
       auto next = std::next(active);
-      current_line = (*active)->line;
       float ratio = computeGlueRatio(sum, **active, current_line);
       std::shared_ptr<Breakpoint> active_bp = *active;
 
@@ -413,11 +416,9 @@ void Paragraph::tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoi
       }
 
       active = next;
-
-      // With this condition, active breakpoints will be sorted by line number.
-      if (active != activeBreakpoints.end() && (*active)->line >= current_line)
-        break;
     }
+
+    assert(active == activeBreakpoints.end() || (*active)->line > current_line);
 
     // Adds the discarded nodes to the current breakpoint
     Totals local_sum = squeezeDiscardables(sum, it, hlist.cend());
@@ -430,10 +431,7 @@ void Paragraph::tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoi
       if (c.demerits < std::numeric_limits<int>::max()) 
       {
         auto bp = std::make_shared<Breakpoint>(it, c.demerits, c.active->line + 1, current_fc, local_sum, c.active);
-        if (active != activeBreakpoints.end())
-          activeBreakpoints.insert(active, bp);
-        else
-          activeBreakpoints.push_back(bp);
+        activeBreakpoints.insert(active, bp);
       }
     }
   }
