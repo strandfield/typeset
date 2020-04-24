@@ -281,7 +281,7 @@ ShrinkTotals Paragraph::shrinkTotals(const Glue& lskip, const Glue& rskip)
 
 float Paragraph::computeGlueRatio(const Totals & sum, Breakpoint & active, size_t current_line)
 {
-  float width = sum.width - active.totals.width - lineindent(current_line);
+  float width = sum.width - active.totals.width;
 
   width -= leftskip->space();
   width -= rightskip->space();
@@ -442,18 +442,25 @@ std::shared_ptr<HBox> Paragraph::createLine(size_t linenum, List::const_iterator
   List hlist;
   hlist.push_back(leftskip);
 
+  float parshape_indent = 0.f;
+
   if (!parshape.empty())
   {
     if (linenum >= parshape.size())
-      hlist.push_back(tex::kern(parshape.back().indent));
+      parshape_indent = parshape.back().indent;
     else
-      hlist.push_back(tex::kern(parshape.at(linenum).indent));
+      parshape_indent = parshape.at(linenum).indent;
+  }
+
+  if (parshape_indent != 0.f)
+  {
+    hlist.push_back(tex::kern(parshape_indent));
   }
 
   hlist.insert(hlist.end(), begin, end);
   hlist.push_back(rightskip);
 
-  return hbox(std::move(hlist), linelength(linenum));
+  return hbox(std::move(hlist), linelength(linenum) + parshape_indent);
 }
 
 bool Paragraph::isDiscardable(const Node & node)
