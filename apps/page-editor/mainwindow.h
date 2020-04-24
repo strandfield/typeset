@@ -5,7 +5,7 @@
 #ifndef LIBTYPESET_PAGEEDITOR_MAINWINDOW_H
 #define LIBTYPESET_PAGEEDITOR_MAINWINDOW_H
 
-#include <QWidget>
+#include <QMainWindow>
 
 class QLabel;
 class QPlainTextEdit;
@@ -13,7 +13,7 @@ class QPlainTextEdit;
 class RenderWidget;
 class TypesetEngine;
 
-class MainWindow : public QWidget
+class MainWindow : public QMainWindow
 {
   Q_OBJECT
 public:

@@ -5,7 +5,6 @@
 #include "mainwindow.h"
 
 #include "example.h"
-#include "example-tex.h"
 #include "example-single-line.h"
 
 #include <QHBoxLayout>
@@ -22,7 +21,6 @@ MainWindow::MainWindow()
   mSettings = new QSettings("settings.ini", QSettings::IniFormat, this);
 
   mTabWidget = new QTabWidget();
-  mTabWidget->addTab(new TeXWidget(), "TeX");
 
   setCentralWidget(mTabWidget);
 

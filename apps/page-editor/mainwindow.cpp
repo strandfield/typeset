@@ -9,7 +9,9 @@
 
 #include "typesetting-machine.h"
 
+#include <QAction>
 #include <QLabel>
+#include <QMenuBar>
 #include <QPlainTextEdit>
 
 #include <QHBoxLayout>
@@ -42,7 +44,9 @@ MainWindow::MainWindow()
 
   m_engine = std::make_shared<TypesetEngine>();
 
-  QVBoxLayout* layout = new QVBoxLayout(this);
+  QWidget* content = new QWidget;
+
+  QVBoxLayout* layout = new QVBoxLayout(content);
   layout->setContentsMargins(0, 0, 0, 0);
   layout->setSpacing(0);
 
@@ -58,6 +62,12 @@ MainWindow::MainWindow()
 
   m_status_widget = new QLabel;
   layout->addWidget(m_status_widget);
+
+  setCentralWidget(content);
+
+  menuBar()->addAction("TeX", [this]() {
+    m_textedit->setPlainText("T\\kern-.1667em\\lower.5ex\\hbox{E}\\kern-.125em X");
+    });
 
   connect(m_textedit, &QPlainTextEdit::textChanged, this, &MainWindow::onTextChanged);
 }
