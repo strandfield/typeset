@@ -62,6 +62,7 @@ private:
   std::shared_ptr<tex::Glue> m_baselineskip;
   std::shared_ptr<tex::Glue> m_lineskip;
   float m_lineskiplimit = 0.f;
+  float m_hangindent = 0.f;
   tex::Parshape m_parshape;
   std::vector<std::shared_ptr<tex::Paragraph::Breakpoint>> m_breakpoints;
   QCheckBox* m_draw_ratios;
@@ -73,6 +74,8 @@ private:
   QLineEdit* m_baselineskip_lineedit;
   QLineEdit* m_lineskip_lineedit;
   QLineEdit* m_lineskiplimit_lineedit;
+  QLineEdit* m_hangindent_input;
+  QSpinBox* m_hangafter_input;
   QLineEdit* m_parshape_lineedit;
   QPushButton* m_reset_button;
   LinebreaksViewerRenderWidget* m_renderwidget;

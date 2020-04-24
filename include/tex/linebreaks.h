@@ -26,6 +26,8 @@ public:
   int adjdemerits = 10'000;
   int linepenalty = 10;
   float hsize = 800.f;
+  float hangindent = 0.f;
+  int hangafter = 1;
   Parshape parshape;
   std::shared_ptr<Glue> leftskip;
   std::shared_ptr<Glue> rightskip;
@@ -41,8 +43,8 @@ public:
   using Badness = int;
   using Demerits = int;
 
+  bool hangindentAppliesToLine(size_t n) const;
   float linelength(size_t n) const;
-  float lineindent(size_t n) const;
 
   struct Totals
   {

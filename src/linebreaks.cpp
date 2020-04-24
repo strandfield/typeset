@@ -60,6 +60,11 @@ Paragraph::Paragraph()
   parfillskip = std::make_shared<Glue>(0.f, 0.f, 1.f, GlueOrder::Normal, GlueOrder::Fil);
 }
 
+bool Paragraph::hangindentAppliesToLine(size_t n) const
+{
+  return (hangafter < 0 && static_cast<int>(n) < -hangafter) || (hangafter >= 0 && hangafter <= static_cast<int>(n));
+}
+
 float Paragraph::linelength(size_t n) const
 {
   if (!parshape.empty())
@@ -70,20 +75,10 @@ float Paragraph::linelength(size_t n) const
       return parshape.at(n).length;
   }
 
+  if (hangindent != 0.f && hangindentAppliesToLine(n))
+    return hsize - std::abs(hangindent);
+
   return hsize;
-}
-
-float Paragraph::lineindent(size_t n) const
-{
-  if (!parshape.empty())
-  {
-    if (n >= parshape.size())
-      return parshape.back().indent;
-    else
-      return parshape.at(n).indent;
-  }
-
-  return 0.f;
 }
 
 std::list<std::shared_ptr<Paragraph::Breakpoint>> Paragraph::computeFeasibleBreakpoints(const List& hlist)
@@ -439,28 +434,47 @@ void Paragraph::tryBreak(std::list<std::shared_ptr<Breakpoint>> & activeBreakpoi
 
 std::shared_ptr<HBox> Paragraph::createLine(size_t linenum, List::const_iterator begin, List::const_iterator end)
 {
-  List hlist;
-  hlist.push_back(leftskip);
-
   float parshape_indent = 0.f;
 
   if (!parshape.empty())
   {
+    List hlist;
+
     if (linenum >= parshape.size())
-      parshape_indent = parshape.back().indent;
+      hlist.push_back(tex::kern(parshape.back().indent));
     else
-      parshape_indent = parshape.at(linenum).indent;
-  }
+      hlist.push_back(tex::kern(parshape.at(linenum).indent));
 
-  if (parshape_indent != 0.f)
+
+    hlist.push_back(leftskip);
+    hlist.insert(hlist.end(), begin, end);
+    hlist.push_back(rightskip);
+    return hbox(std::move(hlist), linelength(linenum) + parshape_indent);
+  }
+  else if (hangindent != 0.f && hangindentAppliesToLine(linenum))
   {
-    hlist.push_back(tex::kern(parshape_indent));
+    List hlist;
+    
+    if(hangindent > 0.f)
+      hlist.push_back(tex::kern(hangindent));
+
+    hlist.push_back(leftskip);
+    hlist.insert(hlist.end(), begin, end);
+    hlist.push_back(rightskip);
+
+    if (hangindent < 0.f)
+      hlist.push_back(tex::kern(std::abs(hangindent)));
+
+    return hbox(std::move(hlist), linelength(linenum) + std::abs(hangindent));
   }
-
-  hlist.insert(hlist.end(), begin, end);
-  hlist.push_back(rightskip);
-
-  return hbox(std::move(hlist), linelength(linenum) + parshape_indent);
+  else
+  {
+    List hlist;
+    hlist.push_back(leftskip);
+    hlist.insert(hlist.end(), begin, end);
+    hlist.push_back(rightskip);
+    return hbox(std::move(hlist), linelength(linenum));
+  }
 }
 
 bool Paragraph::isDiscardable(const Node & node)

@@ -157,6 +157,14 @@ QWidget* LinebreaksViewerWindow::createSettingsWidget()
       m_lineskiplimit_lineedit = new QLineEdit("0pt");
       form->addRow("lineskiplimit", m_lineskiplimit_lineedit);
 
+      m_hangindent_input = new QLineEdit("0pt");
+      form->addRow("hangindent", m_hangindent_input);
+
+      m_hangafter_input = new QSpinBox();
+      m_hangafter_input->setRange(-100, 100);
+      m_hangafter_input->setValue(1);
+      form->addRow("hangafter", m_hangafter_input);
+
       m_parshape_lineedit = new QLineEdit;
       m_parshape_lineedit->setPlaceholderText("enter parshape specifications");
       form->addRow("parshape", m_parshape_lineedit);
@@ -201,6 +209,8 @@ QWidget* LinebreaksViewerWindow::createSettingsWidget()
   connect(m_baselineskip_lineedit, &QLineEdit::textChanged, this, &LinebreaksViewerWindow::onParameterChanged);
   connect(m_lineskip_lineedit, &QLineEdit::textChanged, this, &LinebreaksViewerWindow::onParameterChanged);
   connect(m_lineskiplimit_lineedit, &QLineEdit::textChanged, this, &LinebreaksViewerWindow::onParameterChanged);
+  connect(m_hangindent_input, &QLineEdit::textChanged, this, &LinebreaksViewerWindow::onParameterChanged);
+  connect(m_hangafter_input, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onParameterChanged);
   connect(m_parshape_lineedit, &QLineEdit::textChanged, this, &LinebreaksViewerWindow::onParshapeChanged);
   connect(m_reset_button, &QPushButton::clicked, this, &LinebreaksViewerWindow::resetParameters);
   connect(m_linebreaks_spinbox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onSelectedBreakpointChanged);
@@ -252,6 +262,7 @@ void LinebreaksViewerWindow::onParameterChanged()
   write(m_lineskip, m_lineskip_lineedit);
 
   write(m_lineskiplimit, m_lineskiplimit_lineedit);
+  write(m_hangindent, m_hangindent_input);
 
   onTextChanged();
 }
@@ -268,6 +279,8 @@ void LinebreaksViewerWindow::resetParameters()
   m_baselineskip_lineedit->setText("12pt");
   m_lineskip_lineedit->setText("1pt");
   m_lineskiplimit_lineedit->setText("0pt");
+  m_hangindent_input->setText("0pt");
+  m_hangafter_input->setValue(1);
 }
 
 void LinebreaksViewerWindow::onSelectedBreakpointChanged()
@@ -308,6 +321,8 @@ void LinebreaksViewerWindow::setup(tex::Paragraph& linebreaker)
   linebreaker.baselineskip = m_baselineskip;
   linebreaker.lineskip = m_lineskip;
   linebreaker.lineskiplimit = m_lineskiplimit;
+  linebreaker.hangindent = m_hangindent;
+  linebreaker.hangafter = m_hangafter_input->value();
 }
 
 void LinebreaksViewerWindow::write(std::shared_ptr<tex::Glue>& g, QLineEdit* lineedit)
