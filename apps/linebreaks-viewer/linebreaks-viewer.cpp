@@ -6,9 +6,10 @@
 
 #include "linebreaks-viewer-render-widget.h"
 
+#include "tex/hlist.h"
 #include "tex/lexer.h"
-#include "tex/mathchars.h"
 #include "tex/linebreaks.h"
+#include "tex/mathchars.h"
 #include "tex/vbox.h"
 
 #include "tex/parsing/glueparser.h"
@@ -127,6 +128,10 @@ QWidget* LinebreaksViewerWindow::createSettingsWidget()
     QFormLayout* form = new QFormLayout;
 
     {
+      m_frenchspacing_input = new QCheckBox;
+      m_frenchspacing_input->setChecked(false);
+      form->addRow("frenchspacing", m_frenchspacing_input);
+
       m_tolerance_spinbox = new QSpinBox;
       m_tolerance_spinbox->setRange(200, 20000);
       m_tolerance_spinbox->setValue(800);
@@ -201,6 +206,7 @@ QWidget* LinebreaksViewerWindow::createSettingsWidget()
   layout->addStretch();
 
   connect(m_draw_ratios, &QCheckBox::toggled, this, &LinebreaksViewerWindow::onDrawRatioChanged);
+  connect(m_frenchspacing_input, &QCheckBox::toggled, this, &LinebreaksViewerWindow::onParameterChanged);
   connect(m_tolerance_spinbox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onParameterChanged);
   connect(m_adjdemerits_spinbox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onParameterChanged);
   connect(m_linepenalty_spinbox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onParameterChanged);
@@ -413,8 +419,8 @@ void LinebreaksViewerWindow::processText()
   if (text.empty())
     return;
 
-  tex::FontMetrics metrics{tex::Font(0), m_engine->metrics()};
-  const auto space = tex::glue(metrics.interwordSpace(), tex::Stretch{ metrics.interwordStretch() }, tex::Shrink{ metrics.interwordShrink() });
+  tex::HListBuilder builder{ m_engine };
+  static_cast<QtFontMetricsProdiver*>(m_engine->metrics().get())->frenchspacing = m_frenchspacing_input->isChecked();
 
   m_list.clear();
 
@@ -422,16 +428,17 @@ void LinebreaksViewerWindow::processText()
   {
     tex::Character c = tex::read_utf8_char(it);
 
-    if (c == ' ')
+    if (c == ' ' || c == '\n')
     {
-      m_list.push_back(space);
+      builder.push_back_interword_glue();
     }
     else
     {
-      auto node = m_engine->typeset(c, tex::Font(0));
-      m_list.push_back(node);
+      builder.push_back(c);
     }
   }
+
+  m_list = std::move(builder.result);
 
   tex::Paragraph paragraph;
   setup(paragraph);

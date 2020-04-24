@@ -60,8 +60,7 @@ add_subdirectory(tfm)
 add_subdirectory(apps)
 
 ##################################################################
-####### Examples & Tests
+####### Tests
 ##################################################################
 
-add_subdirectory(examples)
 add_subdirectory(tests)

@@ -24,6 +24,7 @@ public:
   virtual BoxMetrics metrics(tex::Character c, tex::Font font) = 0;
   virtual BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) = 0;
   virtual float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) = 0;
+  virtual int sfcode(tex::Character c);
 
   virtual const FontDimen& fontdimen(Font font) = 0;
 

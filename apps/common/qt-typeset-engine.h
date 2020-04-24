@@ -38,12 +38,16 @@ using FontTable = std::array<Font, 12>;
 class QtFontMetricsProdiver : public tex::FontMetricsProvider
 {
 public:
+  bool frenchspacing = false;
+
+public:
   QtFontMetricsProdiver(FontTable& fonts);
   ~QtFontMetricsProdiver() = default;
 
   tex::BoxMetrics metrics(tex::Character c, tex::Font font) override;
   tex::BoxMetrics metrics(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) override;
   float italicCorrection(const std::shared_ptr<tex::Symbol> & symbol, tex::Font font) override;
+  int sfcode(tex::Character c) override;
 
   const tex::FontDimen& fontdimen(tex::Font f) override;
 

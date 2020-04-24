@@ -52,7 +52,6 @@ protected:
   void processText();
   void setup(tex::Paragraph& linebreaker);
 
-
 private:
   std::shared_ptr<TypesetEngine> m_engine;
   tex::UnitSystem m_unitsystem;
@@ -66,6 +65,7 @@ private:
   tex::Parshape m_parshape;
   std::vector<std::shared_ptr<tex::Paragraph::Breakpoint>> m_breakpoints;
   QCheckBox* m_draw_ratios;
+  QCheckBox* m_frenchspacing_input;
   QSpinBox* m_tolerance_spinbox;
   QSpinBox* m_adjdemerits_spinbox;
   QSpinBox* m_linepenalty_spinbox;

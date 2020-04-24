@@ -13,6 +13,7 @@
 
 #include "tex/fontmetrics.h"
 #include "tex/hbox.h"
+#include "tex/hlist.h"
 #include "tex/typeset.h"
 
 #include "tex/parsing/kernparser.h"
@@ -51,7 +52,7 @@ public:
 
   tex::Font currentFont() const;
 
-  tex::List& hlist();
+  tex::HListBuilder& hlist();
 
   void writeOutput();
 
@@ -76,7 +77,7 @@ private:
   std::unique_ptr<tex::parsing::KernParser> m_kern_parser;
   std::unique_ptr<tex::parsing::DimenParser> m_dimen_parser;
   float m_lower = 0.f;
-  tex::List m_hlist;
+  tex::HListBuilder m_hlist;
 };
 
 #endif // TYPESET_PAGEEDITOR_HORIZONTALMODE_H

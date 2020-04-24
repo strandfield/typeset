@@ -13,7 +13,8 @@
 #include <cassert>
 
 HorizontalMode::HorizontalMode(TypesettingMachine& m)
-  : Mode(m)
+  : Mode(m),
+    m_hlist(m.typesetEngine(), m.memory().font)
 {
   m_is_restricted = parent().kind() == Mode::Kind::Horizontal;
 }
@@ -61,8 +62,7 @@ void HorizontalMode::write_main(tex::parsing::Token& t)
       if (m_buffer.ready())
       {
         tex::Character c = m_buffer.read();
-        auto box = machine().typesetEngine()->typeset(c, currentFont());
-        m_hlist.push_back(box);
+        m_hlist.push_back(c);
       }
     }
     else
@@ -247,7 +247,7 @@ tex::Font HorizontalMode::currentFont() const
   return machine().memory().font;
 }
 
-tex::List& HorizontalMode::hlist()
+tex::HListBuilder& HorizontalMode::hlist()
 {
   return m_hlist;
 }
@@ -266,8 +266,8 @@ void HorizontalMode::writeOutput()
     p.lineskiplimit = machine().memory().lineskiplimit;
     p.hsize = machine().memory().hsize;
     p.parshape = machine().memory().parshape;
-    p.prepare(hlist());
-    tex::List l = p.create(hlist());
+    p.prepare(hlist().result);
+    tex::List l = p.create(hlist().result);
 
     vm->vlist().result.insert(vm->vlist().result.end(), l.cbegin(), l.cend());
     vm->vlist().prevdepth = p.prevdepth;
@@ -276,7 +276,7 @@ void HorizontalMode::writeOutput()
   {
     HorizontalMode* hm = static_cast<HorizontalMode*>(&parent());
 
-    auto b = tex::hbox(std::move(hlist()));
+    auto b = tex::hbox(std::move(hlist().result));
     hm->write(b);
   }
 

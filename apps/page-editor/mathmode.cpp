@@ -105,7 +105,8 @@ void MathMode::writeOutput()
 
     tex::List hlist = mt.mlist2hlist(mlist(), tex::math::Style::T);
 
-    hm.hlist().insert(hm.hlist().end(), hlist.begin(), hlist.end());
+    hm.hlist().result.insert(hm.hlist().result.end(), hlist.begin(), hlist.end());
+    hm.hlist().spacefactor = 1000;
   }
 
   machine().leaveCurrentMode();

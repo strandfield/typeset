@@ -7,6 +7,11 @@
 namespace tex
 {
 
+int FontMetricsProvider::sfcode(tex::Character c)
+{
+  return 1000;
+}
+
 float FontMetricsProvider::slantPerPt(Font font)
 {
   return fontdimen(font).slant_per_pt;

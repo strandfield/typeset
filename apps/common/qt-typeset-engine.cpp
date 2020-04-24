@@ -62,6 +62,23 @@ float QtFontMetricsProdiver::italicCorrection(const std::shared_ptr<tex::Symbol>
   return 0;
 }
 
+int QtFontMetricsProdiver::sfcode(tex::Character c)
+{
+  if (frenchspacing)
+    return 1000;
+
+  if (c == '.' || c == '?' || c == '!')
+    return 3000;
+  else if (c == ':')
+    return 2000;
+  else if (c == ';')
+    return 1500;
+  else if (c == ',')
+    return 1250;
+
+  return 1000;
+}
+
 const tex::FontDimen& QtFontMetricsProdiver::fontdimen(tex::Font f)
 {
   return m_fonts[f.id()].fontdimen;
