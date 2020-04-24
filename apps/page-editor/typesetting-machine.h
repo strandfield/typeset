@@ -16,6 +16,7 @@
 
 #include "tex/parshape.h"
 #include "tex/typeset.h"
+#include "tex/units.h"
 #include "tex/vbox.h"
 
 #include <memory>
@@ -67,10 +68,13 @@ public:
 
   typedef TypesettingMachineMemory Memory;
   Memory& memory();
+  const Memory& memory() const;
 
   InputStream& inputStream();
   tex::parsing::Lexer& lexer();
   tex::parsing::Preprocessor& preprocessor();
+
+  tex::UnitSystem unitSystem() const;
 
   void resume();
 
@@ -117,6 +121,11 @@ inline const std::shared_ptr<tex::TypesetEngine>& TypesettingMachine::typesetEng
 }
 
 inline TypesettingMachine::Memory& TypesettingMachine::memory()
+{
+  return m_memory.back();
+}
+
+inline const TypesettingMachine::Memory& TypesettingMachine::memory() const
 {
   return m_memory.back();
 }

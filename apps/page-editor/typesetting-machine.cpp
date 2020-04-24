@@ -49,6 +49,16 @@ std::shared_ptr<tex::VBox> TypesettingMachine::typeset(std::string text)
   return tex::vbox(std::move(vlist));
 }
 
+tex::UnitSystem TypesettingMachine::unitSystem() const
+{
+  tex::UnitSystem us;
+  us.em = typesetEngine()->metrics()->quad(memory().font);
+  us.ex = typesetEngine()->metrics()->xHeight(memory().font);
+  tex::BoxMetrics bm = typesetEngine()->metrics()->metrics('(', memory().font);
+  us.pt = (bm.depth + bm.height) / 10.f;
+  return us;
+}
+
 void TypesettingMachine::beginGroup()
 {
   m_preprocessor.beginGroup();

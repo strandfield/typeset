@@ -33,6 +33,8 @@ void HorizontalMode::write_main(tex::parsing::Token& t)
     {
     case CS::PAR:
       return par_callback(t);
+    case CS::KERN:
+      return kern_callback(t);
     default:
       assert(false);
       break;
@@ -98,9 +100,36 @@ void HorizontalMode::write_mathshift(tex::parsing::Token& t)
   }
 }
 
+void HorizontalMode::write_kern(tex::parsing::Token& t)
+{
+  if (t.isControlSequence())
+  {
+    m_hlist.push_back(m_kern_parser->finish());
+    m_kern_parser.reset();
+    m_state = State::Main;
+    return;
+  }
+
+  m_kern_parser->write(t.characterToken().value);
+
+  if (m_kern_parser->state() == tex::parsing::KernParser::State::Finished)
+  {
+    m_hlist.push_back(m_kern_parser->finish());
+    m_kern_parser.reset();
+    m_state = State::Main;
+  }
+}
+
 void HorizontalMode::par_callback(tex::parsing::Token& t)
 {
   writeOutput();
+}
+
+void HorizontalMode::kern_callback(tex::parsing::Token&)
+{
+  tex::UnitSystem us = machine().unitSystem();
+  m_kern_parser.reset(new tex::parsing::KernParser(us));
+  m_state = State::Kern;
 }
 
 Mode::Kind HorizontalMode::kind() const
@@ -112,6 +141,7 @@ const std::map<std::string, HorizontalMode::CS>& HorizontalMode::csmap()
 {
   static const std::map<std::string, HorizontalMode::CS> map = {
     {"par", CS::PAR},
+    {"kern", CS::KERN},
   };
 
   return map;
@@ -135,6 +165,8 @@ void HorizontalMode::write(tex::parsing::Token& t)
     return write_main(t);
   case State::MathShift:
     return write_mathshift(t);
+  case State::Kern:
+    return write_kern(t);
   default:
     break;
   }

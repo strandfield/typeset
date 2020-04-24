@@ -15,18 +15,19 @@
 #include "tex/hbox.h"
 #include "tex/typeset.h"
 
+#include "tex/parsing/kernparser.h"
+
 class HorizontalMode : public Mode
 {
 public:
   HorizontalMode(TypesettingMachine& m);
   ~HorizontalMode() = default;
 
-  typedef void(*Callback)(HorizontalMode&, tex::parsing::Token&&);
-
   enum class State
   {
     Main,
     MathShift,
+    Kern,
   };
 
   tex::FontMetrics metrics() const;
@@ -34,6 +35,7 @@ public:
   enum class CS
   {
     PAR,
+    KERN,
   };
 
   static const std::map<std::string, CS>& csmap();
@@ -52,11 +54,15 @@ public:
 protected:
   void write_main(tex::parsing::Token&);
   void write_mathshift(tex::parsing::Token&);
+  void write_kern(tex::parsing::Token&);
+
   void par_callback(tex::parsing::Token&);
+  void kern_callback(tex::parsing::Token&);
 
 private:
   State m_state = State::Main;
   CharBuffer m_buffer;
+  std::unique_ptr<tex::parsing::KernParser> m_kern_parser;
   tex::List m_hlist;
 };
 
