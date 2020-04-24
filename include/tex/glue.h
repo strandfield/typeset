@@ -100,6 +100,7 @@ class LIBTYPESET_API Glue final : public Node
 {
 public:
   Glue(float spc, float shrnk, float strtch, GlueOrder shrnkOrder = GlueOrder::Normal, GlueOrder strtchOrder = GlueOrder::Normal);
+  Glue(GlueSpec spec, GlueOrigin orig);
   ~Glue() = default;
 
   float space() const { return m_spec.space; }
@@ -129,6 +130,7 @@ LIBTYPESET_API std::shared_ptr<Glue> glue(float space, const Shrink & shrink);
 LIBTYPESET_API std::shared_ptr<Glue> glue(float space, const Stretch & stretch);
 LIBTYPESET_API std::shared_ptr<Glue> glue(float space, const Stretch & stretch, const Shrink & shrink);
 LIBTYPESET_API std::shared_ptr<Glue> glue(float space, const Shrink & shrink, const Stretch & stretch);
+LIBTYPESET_API std::shared_ptr<Glue> glue(GlueSpec spec, GlueOrigin origin = GlueOrigin::normal);
 
 } // namespace tex
 

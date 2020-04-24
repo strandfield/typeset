@@ -54,6 +54,13 @@ Glue::Glue(float spc, float shrnk, float strtch, GlueOrder shrnkOrder, GlueOrder
 
 }
 
+Glue::Glue(GlueSpec spec, GlueOrigin orig)
+  : m_origin(orig),
+    m_spec(spec)
+{
+
+}
+
 void Glue::setOrigin(GlueOrigin ori)
 {
   m_origin = ori;
@@ -115,6 +122,11 @@ std::shared_ptr<Glue> glue(float space, const Stretch & stretch, const Shrink & 
 std::shared_ptr<Glue> glue(float space, const Shrink & shrink, const Stretch & stretch)
 {
   return std::make_shared<Glue>(space, shrink.amount, stretch.amount, shrink.order, stretch.order);
+}
+
+std::shared_ptr<Glue> glue(GlueSpec spec, GlueOrigin origin)
+{
+  return std::make_shared<Glue>(spec, origin);
 }
 
 } // namespace tex
