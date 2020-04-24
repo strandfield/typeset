@@ -47,6 +47,13 @@ void DimenParser::write(char c)
         write(c);
         return;
       }
+      else if (c == '.' || c == ',')
+      {
+        m_factor.push_back('0');
+        m_factor.push_back('.');
+        m_factor_is_decimal = true;
+        m_state = State::ParsingFactor;
+      }
       else
       {
         throw std::runtime_error{ "DimenParser::write()" };

@@ -149,3 +149,20 @@ TEST_CASE("The parser can process a kern", "[glue-parsing]")
 
   REQUIRE(k->space() == 12.f);
 }
+
+TEST_CASE("The parser can process a decimal kern", "[glue-parsing]")
+{
+  using namespace tex;
+
+  UnitSystem us;
+  us.em = 2.f;
+  us.ex = 0.5f;
+  us.pt = 1.f;
+
+  parsing::KernParser parser{ us };
+  write_chars(parser, "-.125pt ");
+
+  std::shared_ptr<Kern> k = parser.finish();
+
+  REQUIRE(k->space() == -0.125f);
+}
