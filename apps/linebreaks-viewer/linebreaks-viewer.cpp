@@ -11,6 +11,8 @@
 #include "tex/linebreaks.h"
 #include "tex/vbox.h"
 
+#include "tex/parsing/glueparser.h"
+
 #include <QAction>
 #include <QCheckBox>
 #include <QLabel>
@@ -20,6 +22,7 @@
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QStatusBar>
 
 #include <QFormLayout>
 #include <QHBoxLayout>
@@ -48,11 +51,19 @@ static QWidget* vbox(std::vector<QWidget*> widgets, int spacing = 0)
   return result;
 }
 
+static float total_height(const tex::BoxMetrics& bm)
+{
+  return bm.height + bm.depth;
+}
+
 LinebreaksViewerWindow::LinebreaksViewerWindow()
 {
   setWindowTitle("Linebreaks Viewer");
 
   m_engine = std::make_shared<TypesetEngine>();
+  m_unitsystem.em = m_engine->metrics()->quad(tex::Font(0));
+  m_unitsystem.ex = m_engine->metrics()->xHeight(tex::Font(0));
+  m_unitsystem.pt = total_height(m_engine->metrics()->metrics('(', tex::Font(0))) / 10.f;
 
   QWidget* content = new QWidget;
 
@@ -89,6 +100,8 @@ LinebreaksViewerWindow::LinebreaksViewerWindow()
     });
 
   connect(m_textedit, &QPlainTextEdit::textChanged, this, &LinebreaksViewerWindow::onTextChanged);
+
+  onParameterChanged();
 }
 
 LinebreaksViewerWindow::~LinebreaksViewerWindow()
@@ -129,6 +142,21 @@ QWidget* LinebreaksViewerWindow::createSettingsWidget()
       m_linepenalty_spinbox->setValue(10);
       form->addRow("linepenalty", m_linepenalty_spinbox);
 
+      m_leftskip_lineedit = new QLineEdit("0pt");
+      form->addRow("leftskip", m_leftskip_lineedit);
+
+      m_rightskip_lineedit = new QLineEdit("0pt");
+      form->addRow("rightskip", m_rightskip_lineedit);
+
+      m_baselineskip_lineedit = new QLineEdit("12pt");
+      form->addRow("baselineskip", m_baselineskip_lineedit);
+
+      m_lineskip_lineedit = new QLineEdit("1pt");
+      form->addRow("lineskip", m_lineskip_lineedit);
+
+      m_lineskiplimit_lineedit = new QLineEdit("0pt");
+      form->addRow("lineskiplimit", m_lineskiplimit_lineedit);
+
       m_parshape_lineedit = new QLineEdit;
       m_parshape_lineedit->setPlaceholderText("enter parshape specifications");
       form->addRow("parshape", m_parshape_lineedit);
@@ -168,6 +196,11 @@ QWidget* LinebreaksViewerWindow::createSettingsWidget()
   connect(m_tolerance_spinbox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onParameterChanged);
   connect(m_adjdemerits_spinbox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onParameterChanged);
   connect(m_linepenalty_spinbox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onParameterChanged);
+  connect(m_leftskip_lineedit, &QLineEdit::textChanged, this, &LinebreaksViewerWindow::onParameterChanged);
+  connect(m_rightskip_lineedit, &QLineEdit::textChanged, this, &LinebreaksViewerWindow::onParameterChanged);
+  connect(m_baselineskip_lineedit, &QLineEdit::textChanged, this, &LinebreaksViewerWindow::onParameterChanged);
+  connect(m_lineskip_lineedit, &QLineEdit::textChanged, this, &LinebreaksViewerWindow::onParameterChanged);
+  connect(m_lineskiplimit_lineedit, &QLineEdit::textChanged, this, &LinebreaksViewerWindow::onParameterChanged);
   connect(m_parshape_lineedit, &QLineEdit::textChanged, this, &LinebreaksViewerWindow::onParshapeChanged);
   connect(m_reset_button, &QPushButton::clicked, this, &LinebreaksViewerWindow::resetParameters);
   connect(m_linebreaks_spinbox, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &LinebreaksViewerWindow::onSelectedBreakpointChanged);
@@ -213,6 +246,13 @@ void LinebreaksViewerWindow::onParshapeChanged()
 
 void LinebreaksViewerWindow::onParameterChanged()
 {
+  write(m_leftskip, m_leftskip_lineedit);
+  write(m_rightskip, m_rightskip_lineedit);
+  write(m_baselineskip, m_baselineskip_lineedit);
+  write(m_lineskip, m_lineskip_lineedit);
+
+  write(m_lineskiplimit, m_lineskiplimit_lineedit);
+
   onTextChanged();
 }
 
@@ -222,6 +262,12 @@ void LinebreaksViewerWindow::resetParameters()
   m_adjdemerits_spinbox->setValue(10000);
   m_linepenalty_spinbox->setValue(10);
   m_parshape_lineedit->clear();
+
+  m_leftskip_lineedit->setText("0pt");
+  m_rightskip_lineedit->setText("0pt");
+  m_baselineskip_lineedit->setText("12pt");
+  m_lineskip_lineedit->setText("1pt");
+  m_lineskiplimit_lineedit->setText("0pt");
 }
 
 void LinebreaksViewerWindow::onSelectedBreakpointChanged()
@@ -235,10 +281,6 @@ void LinebreaksViewerWindow::onSelectedBreakpointChanged()
   setup(paragraph);
 
   tex::FontMetrics metrics{ tex::Font(0), m_engine->metrics() };
-  tex::BoxMetrics parmetrics = metrics.metrics('(');
-
-  paragraph.baselineskip = tex::glue(1.2f * (parmetrics.height + parmetrics.depth));
-  paragraph.lineskip = tex::glue(0.1f * (parmetrics.height + parmetrics.depth));
 
   auto list = paragraph.create(m_list, paragraph.computeBreakpoints(br));
 
@@ -260,6 +302,74 @@ void LinebreaksViewerWindow::setup(tex::Paragraph& linebreaker)
   linebreaker.tolerance = m_tolerance_spinbox->value();
   linebreaker.adjdemerits = m_adjdemerits_spinbox->value();
   linebreaker.linepenalty = m_linepenalty_spinbox->value();
+
+  linebreaker.leftskip = m_leftskip;
+  linebreaker.rightskip = m_rightskip;
+  linebreaker.baselineskip = m_baselineskip;
+  linebreaker.lineskip = m_lineskip;
+  linebreaker.lineskiplimit = m_lineskiplimit;
+}
+
+void LinebreaksViewerWindow::write(std::shared_ptr<tex::Glue>& g, QLineEdit* lineedit)
+{
+  try
+  {
+    tex::parsing::GlueParser parser{ m_unitsystem };
+
+    const std::string str = lineedit->text().toStdString();
+
+    for (size_t i(0); i < str.size(); ++i)
+    {
+      char c = str.at(i);
+      parser.write(c);
+    }
+
+    g = parser.finish();
+
+    lineedit->setPalette(QPalette());
+
+    statusBar()->clearMessage();
+  }
+  catch (const std::runtime_error & ex)
+  {
+    statusBar()->showMessage(ex.what());
+
+    QPalette pal;
+    pal.setColor(QPalette::Text, Qt::red);
+    lineedit->setPalette(pal);
+  }
+}
+
+void LinebreaksViewerWindow::write(float& space, QLineEdit* lineedit)
+{
+  try
+  {
+    tex::parsing::DimenParser parser{ };
+
+    const std::string str = lineedit->text().toStdString();
+
+    for (size_t i(0); i < str.size(); ++i)
+    {
+      char c = str.at(i);
+      parser.write(c);
+    }
+
+    tex::Dimen d = parser.finish();
+
+    if (!d.isFinite())
+      throw std::runtime_error{ "expected finite dimen" };
+
+    space = d(m_unitsystem);
+    lineedit->setPalette(QPalette());
+  }
+  catch (const std::runtime_error & ex)
+  {
+    statusBar()->showMessage(ex.what());
+
+    QPalette pal;
+    pal.setColor(QPalette::Text, Qt::red);
+    lineedit->setPalette(pal);
+  }
 }
 
 tex::Parshape LinebreaksViewerWindow::parseParshape() const
