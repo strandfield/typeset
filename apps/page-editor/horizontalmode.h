@@ -36,6 +36,7 @@ public:
   {
     PAR,
     KERN,
+    HBOX,
   };
 
   static const std::map<std::string, CS>& csmap();
@@ -43,6 +44,7 @@ public:
 
   Kind kind() const override;
   void write(tex::parsing::Token& t) override;
+  void write(std::shared_ptr<tex::ListBox> box);
   void finish() override;
 
   tex::Font currentFont() const;
@@ -56,10 +58,15 @@ protected:
   void write_mathshift(tex::parsing::Token&);
   void write_kern(tex::parsing::Token&);
 
-  void par_callback(tex::parsing::Token&);
-  void kern_callback(tex::parsing::Token&);
+  void beginGroup();
+  void endGroup();
+
+  void par_callback();
+  void kern_callback();
+  void hbox_callback();
 
 private:
+  bool m_is_restricted = false;
   State m_state = State::Main;
   CharBuffer m_buffer;
   std::unique_ptr<tex::parsing::KernParser> m_kern_parser;

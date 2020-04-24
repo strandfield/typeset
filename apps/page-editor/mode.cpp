@@ -16,3 +16,13 @@ Mode& Mode::parent() const
 {
   return *m_parent;
 }
+
+void Mode::beginGroup()
+{
+  m_group_depth++;
+}
+
+size_t Mode::endGroup()
+{
+  return --m_group_depth;
+}

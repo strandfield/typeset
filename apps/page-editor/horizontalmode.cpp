@@ -15,7 +15,7 @@
 HorizontalMode::HorizontalMode(TypesettingMachine& m)
   : Mode(m)
 {
-
+  m_is_restricted = parent().kind() == Mode::Kind::Horizontal;
 }
 
 tex::FontMetrics HorizontalMode::metrics() const
@@ -32,9 +32,11 @@ void HorizontalMode::write_main(tex::parsing::Token& t)
     switch (cs)
     {
     case CS::PAR:
-      return par_callback(t);
+      return par_callback();
     case CS::KERN:
-      return kern_callback(t);
+      return kern_callback();
+    case CS::HBOX:
+      return hbox_callback();
     default:
       assert(false);
       break;
@@ -71,11 +73,11 @@ void HorizontalMode::write_main(tex::parsing::Token& t)
       }
       else if (ctok.category == tex::parsing::CharCategory::GroupBegin)
       {
-        machine().beginGroup();
+        beginGroup();
       }
       else if (ctok.category == tex::parsing::CharCategory::GroupEnd)
       {
-        machine().endGroup();
+        endGroup();
       }
     }
 
@@ -107,6 +109,7 @@ void HorizontalMode::write_kern(tex::parsing::Token& t)
     m_hlist.push_back(m_kern_parser->finish());
     m_kern_parser.reset();
     m_state = State::Main;
+    write(t);
     return;
   }
 
@@ -120,16 +123,36 @@ void HorizontalMode::write_kern(tex::parsing::Token& t)
   }
 }
 
-void HorizontalMode::par_callback(tex::parsing::Token& t)
+void HorizontalMode::beginGroup()
+{
+  Mode::beginGroup();
+  machine().beginGroup();
+}
+
+void HorizontalMode::endGroup()
+{
+  size_t depth = Mode::endGroup();
+  machine().endGroup();
+
+  if (m_is_restricted && depth == 0)
+    writeOutput();
+}
+
+void HorizontalMode::par_callback()
 {
   writeOutput();
 }
 
-void HorizontalMode::kern_callback(tex::parsing::Token&)
+void HorizontalMode::kern_callback()
 {
   tex::UnitSystem us = machine().unitSystem();
   m_kern_parser.reset(new tex::parsing::KernParser(us));
   m_state = State::Kern;
+}
+
+void HorizontalMode::hbox_callback()
+{
+  machine().enter<HorizontalMode>();
 }
 
 Mode::Kind HorizontalMode::kind() const
@@ -142,6 +165,7 @@ const std::map<std::string, HorizontalMode::CS>& HorizontalMode::csmap()
   static const std::map<std::string, HorizontalMode::CS> map = {
     {"par", CS::PAR},
     {"kern", CS::KERN},
+    {"hbox", CS::HBOX},
   };
 
   return map;
@@ -172,6 +196,11 @@ void HorizontalMode::write(tex::parsing::Token& t)
   }
 }
 
+void HorizontalMode::write(std::shared_ptr<tex::ListBox> box)
+{
+  hlist().push_back(box);
+}
+
 void HorizontalMode::finish()
 {
   writeOutput();
@@ -190,20 +219,30 @@ tex::List& HorizontalMode::hlist()
 
 void HorizontalMode::writeOutput()
 {
-  VerticalMode* vm = static_cast<VerticalMode*>(&parent());
+  if (parent().kind() == Mode::Kind::Vertical)
+  {
+    VerticalMode* vm = static_cast<VerticalMode*>(&parent());
 
-  tex::Paragraph p;
-  p.prevdepth = vm->vlist().prevdepth;
-  p.baselineskip = machine().memory().baselineskip;
-  p.lineskip = machine().memory().lineskip;
-  p.lineskiplimit = machine().memory().lineskiplimit;
-  p.hsize = machine().memory().hsize;
-  p.parshape = machine().memory().parshape;
-  p.prepare(hlist());
-  tex::List l = p.create(hlist());
+    tex::Paragraph p;
+    p.prevdepth = vm->vlist().prevdepth;
+    p.baselineskip = machine().memory().baselineskip;
+    p.lineskip = machine().memory().lineskip;
+    p.lineskiplimit = machine().memory().lineskiplimit;
+    p.hsize = machine().memory().hsize;
+    p.parshape = machine().memory().parshape;
+    p.prepare(hlist());
+    tex::List l = p.create(hlist());
 
-  vm->vlist().result.insert(vm->vlist().result.end(), l.cbegin(), l.cend());
-  vm->vlist().prevdepth = p.prevdepth;
+    vm->vlist().result.insert(vm->vlist().result.end(), l.cbegin(), l.cend());
+    vm->vlist().prevdepth = p.prevdepth;
+  }
+  else
+  {
+    HorizontalMode* hm = static_cast<HorizontalMode*>(&parent());
+
+    auto b = tex::hbox(std::move(hlist()));
+    hm->write(b);
+  }
 
   machine().leaveCurrentMode();
 }

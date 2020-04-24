@@ -38,9 +38,14 @@ public:
     return static_cast<T&>(*this);
   }
 
+protected:
+  void beginGroup();
+  size_t endGroup();
+
 private:
   TypesettingMachine& m_machine;
   Mode* m_parent;
+  size_t m_group_depth = 0;
 };
 
 inline TypesettingMachine& Mode::machine() const
