@@ -5,6 +5,7 @@
 #include "catch.hpp"
 
 #include "tex/parsing/glueparser.h"
+#include "tex/parsing/kernparser.h"
 
 template<typename T>
 static void write_chars(T& parser, const std::string& str)
@@ -130,4 +131,21 @@ TEST_CASE("The parser can process a glue with a trailing space", "[glue-parsing]
   std::shared_ptr<Glue> g = parser.finish();
 
   REQUIRE(g->space() == 12.f);
+}
+
+TEST_CASE("The parser can process a kern", "[glue-parsing]")
+{
+  using namespace tex;
+
+  UnitSystem us;
+  us.em = 2.f;
+  us.ex = 0.5f;
+  us.pt = 1.f;
+
+  parsing::KernParser parser{ us };
+  write_chars(parser, "1pc ");
+
+  std::shared_ptr<Kern> k = parser.finish();
+
+  REQUIRE(k->space() == 12.f);
 }
