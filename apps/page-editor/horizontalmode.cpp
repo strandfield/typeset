@@ -37,6 +37,8 @@ void HorizontalMode::write_main(tex::parsing::Token& t)
       return kern_callback();
     case CS::HBOX:
       return hbox_callback();
+    case CS::LOWER:
+      return lower_callback();
     default:
       assert(false);
       break;
@@ -123,6 +125,24 @@ void HorizontalMode::write_kern(tex::parsing::Token& t)
   }
 }
 
+void HorizontalMode::write_lower(tex::parsing::Token& t)
+{
+  if(t.isCharacterToken())
+    m_dimen_parser->write(t.characterToken().value);
+
+  if (t.isControlSequence() || m_dimen_parser->state() == tex::parsing::DimenParser::State::Finished)
+  {
+    tex::Dimen d = m_dimen_parser->finish();
+    tex::UnitSystem us = machine().unitSystem();
+    m_lower = d(us);
+    m_dimen_parser.reset();
+    m_state = State::Main;
+
+    if (t.isControlSequence())
+      write(t);
+  }
+}
+
 void HorizontalMode::beginGroup()
 {
   Mode::beginGroup();
@@ -155,6 +175,12 @@ void HorizontalMode::hbox_callback()
   machine().enter<HorizontalMode>();
 }
 
+void HorizontalMode::lower_callback()
+{
+  m_dimen_parser.reset(new tex::parsing::DimenParser());
+  m_state = State::Lower;
+}
+
 Mode::Kind HorizontalMode::kind() const
 {
   return Mode::Kind::Horizontal;
@@ -166,6 +192,7 @@ const std::map<std::string, HorizontalMode::CS>& HorizontalMode::csmap()
     {"par", CS::PAR},
     {"kern", CS::KERN},
     {"hbox", CS::HBOX},
+    {"lower", CS::LOWER},
   };
 
   return map;
@@ -191,13 +218,22 @@ void HorizontalMode::write(tex::parsing::Token& t)
     return write_mathshift(t);
   case State::Kern:
     return write_kern(t);
+  case State::Lower:
+    return write_lower(t);
   default:
+    assert(false);
     break;
   }
 }
 
 void HorizontalMode::write(std::shared_ptr<tex::ListBox> box)
 {
+  if (m_lower != 0.f)
+  {
+    box->setShiftAmount(box->shiftAmount() + m_lower);
+    m_lower = 0.f;
+  }
+
   hlist().push_back(box);
 }
 
