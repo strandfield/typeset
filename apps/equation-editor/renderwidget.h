@@ -11,6 +11,7 @@ class EquationEditorRenderWidget : public RenderWidget
 {
   Q_OBJECT
 public:
+  EquationEditorRenderWidget();
 
   void setDrawChars(bool on = true);
   void setDrawCharBoxes(bool on);

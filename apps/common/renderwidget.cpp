@@ -37,6 +37,37 @@ public:
   }
 };
 
+RenderWidget::RenderWidget(QWidget* parent)
+  : QWidget(parent)
+{
+  m_margins = QMargins(10, 10, 10, 10);
+}
+
+void RenderWidget::center(bool on)
+{
+  if (m_center != on)
+  {
+    m_center = on;
+    update();
+  }
+}
+
+bool RenderWidget::centered() const
+{
+  return m_center;
+}
+
+void RenderWidget::setMargins(QMargins margins)
+{
+  m_margins = margins;
+  update();
+}
+
+const QMargins& RenderWidget::margins() const
+{
+  return m_margins;
+}
+
 void RenderWidget::setBox(std::shared_ptr<tex::Box> box)
 {
   m_box = box;
@@ -62,8 +93,18 @@ void RenderWidget::visit(QPainter& painter, std::shared_ptr<tex::Box> box)
 {
   LayoutVisitor visitor{ this, &painter };
 
-  const float x = (width() - m_box->width()) * 0.5f;
-  const float y = (height() - m_box->totalHeight()) * 0.5f + m_box->height();
+  float x = margins().left();
+  float y = margins().top();
+
+  if (centered())
+  {
+    x += (width() - margins().left() - margins().right() - m_box->width()) * 0.5f;
+    y += (height() - margins().top() - margins().bottom() - m_box->totalHeight()) * 0.5f + m_box->height();
+  }
+  else
+  {
+    y += m_box->height();
+  }
 
   tex::read(visitor, m_box, { x, y });
 }

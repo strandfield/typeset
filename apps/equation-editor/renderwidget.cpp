@@ -13,6 +13,11 @@
 #include <QBrush>
 #include <QPainter>
 
+EquationEditorRenderWidget::EquationEditorRenderWidget()
+{
+  center(true);
+}
+
 void EquationEditorRenderWidget::setDrawChars(bool on)
 {
   if (m_draw_chars != on)

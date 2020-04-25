@@ -7,6 +7,8 @@
 
 #include <QWidget>
 
+#include <QMargins>
+
 #include "tex/box.h"
 
 namespace tex
@@ -20,6 +22,13 @@ class RenderWidget : public QWidget
 {
   Q_OBJECT
 public:
+  explicit RenderWidget(QWidget* parent = nullptr);
+
+  void center(bool on);
+  bool centered() const;
+
+  void setMargins(QMargins margins);
+  const QMargins& margins() const;
 
   void setBox(std::shared_ptr<tex::Box> box);
 
@@ -37,6 +46,8 @@ protected:
   virtual void paint(QPainter& painter, const std::shared_ptr<tex::Rule>& rule, const QPointF& pos);
 
 private:
+  bool m_center = false;
+  QMargins m_margins;
   std::shared_ptr<tex::Box> m_box;
 };
 
