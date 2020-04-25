@@ -42,7 +42,7 @@ MainWindow::MainWindow()
 {
   setWindowTitle("Page Editor");
 
-  m_engine = std::make_shared<TypesetEngine>();
+  m_engine = std::make_shared<TypesetEngine>(1.2f);
 
   QWidget* content = new QWidget;
 

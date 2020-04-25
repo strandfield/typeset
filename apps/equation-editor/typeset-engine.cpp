@@ -186,6 +186,7 @@ float RecordingFontMetricsProvider::bigOpSpacing5(tex::Font font)
 }
 
 RecordingTypesetEngine::RecordingTypesetEngine()
+  : TypesetEngine(2.f)
 {
   setFontMetricsProvider<RecordingFontMetricsProvider>();
 }

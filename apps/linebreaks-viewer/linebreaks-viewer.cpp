@@ -61,7 +61,7 @@ LinebreaksViewerWindow::LinebreaksViewerWindow()
 {
   setWindowTitle("Linebreaks Viewer");
 
-  m_engine = std::make_shared<TypesetEngine>();
+  m_engine = std::make_shared<TypesetEngine>(1.2f);
   m_unitsystem.em = m_engine->metrics()->quad(tex::Font(0));
   m_unitsystem.ex = m_engine->metrics()->xHeight(tex::Font(0));
   m_unitsystem.pt = total_height(m_engine->metrics()->metrics('(', tex::Font(0))) / 10.f;

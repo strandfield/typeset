@@ -108,8 +108,16 @@ std::shared_ptr<tex::FontMetricsProvider> TypesetEngine::metrics() const
   return mMetrics;
 }
 
-TypesetEngine::TypesetEngine()
+TypesetEngine::TypesetEngine(float mag)
+  : m_mag(mag)
 {
+  reset(mag);
+}
+
+void TypesetEngine::reset(float mag)
+{
+  m_mag = mag;
+
   initFont(0, "textfont0", "Times New Roman", 10, false, tex::tfm::cmr10());
   initFont(1, "scriptfont0", "Times New Roman", 7, false, tex::tfm::cmr7());
   initFont(2, "scriptscriptfont0", "Times New Roman", 5, false, tex::tfm::cmr5());
@@ -231,7 +239,7 @@ void TypesetEngine::initFont(int id, const QString& displayname, const QString &
 {
   QFont qfont{ fontname };
   qfont.setItalic(italic);
-  qfont.setPointSize(size * 1.2f);
+  qfont.setPointSize(size * m_mag);
   m_fonts[id].name = displayname;
   m_fonts[id].font = qfont;
   m_fonts[id].rawfont = QRawFont::fromFont(qfont);

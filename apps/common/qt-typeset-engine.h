@@ -76,8 +76,10 @@ public:
 class TypesetEngine : public tex::TypesetEngine
 {
 public:
-  TypesetEngine();
+  explicit TypesetEngine(float mag = 1.f);
   ~TypesetEngine() = default;
+
+  void reset(float mag = 1.f);
 
   template<typename T>
   void setFontMetricsProvider()
@@ -106,6 +108,7 @@ protected:
   void initFont(int id, const QString& displayname, const QString & fontname, int size, bool italic, tex::TFM tfm);
 
 private:
+  float m_mag;
   FontTable m_fonts;
   std::shared_ptr<QtFontMetricsProdiver> mMetrics;
   std::shared_ptr<tex::MathSymbol> mRadicalSign;
