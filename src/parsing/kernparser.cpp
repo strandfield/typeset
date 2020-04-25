@@ -43,6 +43,11 @@ void KernParser::write(char c)
   }
 }
 
+bool KernParser::isFinished()
+{
+  return m_state == State::Finished;
+}
+
 std::shared_ptr<Kern> KernParser::finish()
 {
   Dimen d = m_dimen_parser.finish();

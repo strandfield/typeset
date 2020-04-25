@@ -231,7 +231,7 @@ void TypesetEngine::initFont(int id, const QString& displayname, const QString &
 {
   QFont qfont{ fontname };
   qfont.setItalic(italic);
-  qfont.setPointSize(size * 2);
+  qfont.setPointSize(size * 1.2f);
   m_fonts[id].name = displayname;
   m_fonts[id].font = qfont;
   m_fonts[id].rawfont = QRawFont::fromFont(qfont);

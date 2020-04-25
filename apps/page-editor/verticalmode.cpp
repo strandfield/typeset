@@ -23,7 +23,8 @@ Mode::Kind VerticalMode::kind() const
 const std::map<std::string, VerticalMode::CS>& VerticalMode::csmap()
 {
   static const std::map<std::string, VerticalMode::CS> map = {
-    {"par", CS::PAR}
+    {"par", CS::PAR},
+    {"kern", CS::KERN}
   };
 
   return map;
@@ -44,9 +45,11 @@ void VerticalMode::write(tex::parsing::Token& t)
   switch (m_state)
   {
   case State::Main:
-    return main_callback(t);
+    return write_main(t);
   case State::MathShift:
-    return mathshift_callback(t);
+    return write_mathshift(t);
+  case State::Kern:
+    return write_kern(t);
   default:
     break;
   }
@@ -62,7 +65,7 @@ tex::VListBuilder& VerticalMode::vlist()
   return m_vlist;
 }
 
-void VerticalMode::main_callback(tex::parsing::Token& t)
+void VerticalMode::write_main(tex::parsing::Token& t)
 {
   if (t.isControlSequence())
   {
@@ -71,6 +74,9 @@ void VerticalMode::main_callback(tex::parsing::Token& t)
     switch (cs)
     {
     case CS::PAR:
+      break;
+    case CS::KERN:
+      kern_callback();
       break;
     default:
       assert(false);
@@ -91,7 +97,28 @@ void VerticalMode::main_callback(tex::parsing::Token& t)
   }
 }
 
-void VerticalMode::mathshift_callback(tex::parsing::Token& t)
+void VerticalMode::write_kern(tex::parsing::Token& t)
+{
+  if (t.isControlSequence())
+  {
+    m_vlist.result.push_back(m_kern_parser->finish());
+    m_kern_parser.reset();
+    m_state = State::Main;
+    write(t);
+    return;
+  }
+
+  m_kern_parser->write(t.characterToken().value);
+
+  if (m_kern_parser->isFinished())
+  {
+    m_vlist.result.push_back(m_kern_parser->finish());
+    m_kern_parser.reset();
+    m_state = State::Main;
+  }
+}
+
+void VerticalMode::write_mathshift(tex::parsing::Token& t)
 {
   m_state = State::Main;
 
@@ -111,3 +138,11 @@ void VerticalMode::mathshift_callback(tex::parsing::Token& t)
     machine().insert(tex::parsing::Token{ ctok });
   }
 }
+
+void VerticalMode::kern_callback()
+{
+  tex::UnitSystem us = machine().unitSystem();
+  m_kern_parser.reset(new tex::parsing::KernParser(us));
+  m_state = State::Kern;
+}
+

@@ -41,6 +41,7 @@ public:
 
   void write(char c);
 
+  bool isFinished();
   std::shared_ptr<Kern> finish();
 
 protected:

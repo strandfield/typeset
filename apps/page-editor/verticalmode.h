@@ -10,6 +10,8 @@
 #include "tex/vbox.h"
 #include "tex/typeset.h"
 
+#include "tex/parsing/kernparser.h"
+
 #include <map>
 #include <vector>
 
@@ -25,6 +27,7 @@ public:
   {
     Main,
     MathShift,
+    Kern,
   };
 
   Kind kind() const override;
@@ -32,6 +35,7 @@ public:
   enum class CS
   {
     PAR,
+    KERN,
   };
 
   static const std::map<std::string, CS>& csmap();
@@ -43,11 +47,15 @@ public:
   tex::VListBuilder& vlist();
 
 protected:
-  void main_callback(tex::parsing::Token&);
-  void mathshift_callback(tex::parsing::Token&);
+  void write_main(tex::parsing::Token&);
+  void write_kern(tex::parsing::Token& t);
+  void write_mathshift(tex::parsing::Token&);
+
+  void kern_callback();
 
 private:
   State m_state = State::Main;
+  std::unique_ptr<tex::parsing::KernParser> m_kern_parser;
   tex::VListBuilder m_vlist;
 };
 

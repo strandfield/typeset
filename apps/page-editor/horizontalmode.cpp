@@ -117,7 +117,7 @@ void HorizontalMode::write_kern(tex::parsing::Token& t)
 
   m_kern_parser->write(t.characterToken().value);
 
-  if (m_kern_parser->state() == tex::parsing::KernParser::State::Finished)
+  if (m_kern_parser->isFinished())
   {
     m_hlist.push_back(m_kern_parser->finish());
     m_kern_parser.reset();
