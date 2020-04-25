@@ -13,7 +13,6 @@
 #include <QGlyphRun>
 #include <QPainter>
 
-// borrowed from the examples
 class LayoutVisitor : tex::LayoutReader
 {
 public:

@@ -4,7 +4,7 @@
 
 #include "mainwindow.h"
 
-#include "common/renderwidget.h"
+#include "common/pagewidget.h"
 #include "common/qt-typeset-engine.h"
 
 #include "typesetting-machine.h"
@@ -55,8 +55,8 @@ MainWindow::MainWindow()
   m_textedit = new QPlainTextEdit;
   horizontal_splitter->addWidget(m_textedit);
 
-  m_renderwidget = new RenderWidget;
-  horizontal_splitter->addWidget(m_renderwidget);
+  m_pagewidget = new PageWidget;
+  horizontal_splitter->addWidget(m_pagewidget);
 
   layout->addWidget(horizontal_splitter, 1);
 
@@ -108,11 +108,12 @@ void MainWindow::processText()
     return;
 
   TypesettingMachine machine{ m_engine, tex::Font(0) };
+  machine.memory().hsize = m_pagewidget->hsize();
   auto box = machine.typeset(text);
 
   auto end = std::chrono::high_resolution_clock::now();
 
-  m_renderwidget->setBox(box);
+  m_pagewidget->setBox(box);
 
   QString report = "Total: " + QString::number(duration_msec(end - start));
   m_status_widget->setText(report);

@@ -10,7 +10,7 @@
 class QLabel;
 class QPlainTextEdit;
 
-class RenderWidget;
+class PageWidget;
 class TypesetEngine;
 
 class MainWindow : public QMainWindow
@@ -28,7 +28,7 @@ protected:
 
 private:
   std::shared_ptr<TypesetEngine> m_engine;
-  RenderWidget* m_renderwidget;
+  PageWidget* m_pagewidget;
   QPlainTextEdit* m_textedit;
   QLabel* m_status_widget;
 };
