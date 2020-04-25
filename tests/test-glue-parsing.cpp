@@ -6,6 +6,7 @@
 
 #include "tex/parsing/glueparser.h"
 #include "tex/parsing/kernparser.h"
+#include "tex/parsing/parshapeparser.h"
 
 template<typename T>
 static void write_chars(T& parser, const std::string& str)
@@ -165,4 +166,40 @@ TEST_CASE("The parser can process a decimal kern", "[glue-parsing]")
   std::shared_ptr<Kern> k = parser.finish();
 
   REQUIRE(k->space() == -0.125f);
+}
+
+TEST_CASE("The parser can process a parshape", "[parshape-parsing]")
+{
+  using namespace tex;
+
+  UnitSystem us;
+  us.em = 2.f;
+  us.ex = 0.5f;
+  us.pt = 1.f;
+
+  parsing::ParshapeParser parser{ us };
+  write_chars(parser, "=1 1pt 10em");
+
+  Parshape ps = parser.finish();
+
+  REQUIRE(ps.size() == 1);
+  REQUIRE(ps.front().indent == 1.f);
+  REQUIRE(ps.front().length == 20.f);
+}
+
+TEST_CASE("The parser can process an empty parshape", "[parshape-parsing]")
+{
+  using namespace tex;
+
+  UnitSystem us;
+  us.em = 2.f;
+  us.ex = 0.5f;
+  us.pt = 1.f;
+
+  parsing::ParshapeParser parser{ us };
+  write_chars(parser, "=0");
+
+  Parshape ps = parser.finish();
+
+  REQUIRE(ps.empty());
 }

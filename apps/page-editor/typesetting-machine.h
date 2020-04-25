@@ -5,6 +5,7 @@
 #ifndef TYPESET_PAGEEDITOR_TYPESETTINGMACHINE_H
 #define TYPESET_PAGEEDITOR_TYPESETTINGMACHINE_H
 
+#include "assignment-processor.h"
 #include "inputstream.h"
 #include "mode.h"
 
@@ -58,6 +59,7 @@ public:
     ReadToken,
     Preprocess,
     SendToken,
+    DigestToken,
   };
 
   State state() const;
@@ -96,7 +98,8 @@ public:
 
 protected:
   void advance();
-  bool sendTokens();
+  void sendToken();
+  bool digestToken();
 
 private:
   tex::parsing::Registers m_registers;
@@ -104,6 +107,8 @@ private:
   InputStream m_inputstream;
   tex::parsing::Lexer m_lexer;
   tex::parsing::Preprocessor m_preprocessor;
+  AssignmentProcessor m_assignment_processor;
+  std::vector<tex::parsing::Token> m_tokens;
   std::vector<std::unique_ptr<Mode>> m_modes;
   bool m_leave_current_mode = false;
   std::shared_ptr<tex::TypesetEngine> m_typeset_engine;

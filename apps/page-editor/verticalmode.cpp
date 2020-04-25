@@ -23,7 +23,7 @@ Mode::Kind VerticalMode::kind() const
 const std::map<std::string, VerticalMode::CS>& VerticalMode::csmap()
 {
   static const std::map<std::string, VerticalMode::CS> map = {
-
+    {"par", CS::PAR}
   };
 
   return map;
@@ -70,6 +70,8 @@ void VerticalMode::main_callback(tex::parsing::Token& t)
     
     switch (cs)
     {
+    case CS::PAR:
+      break;
     default:
       assert(false);
       break;

@@ -31,7 +31,7 @@ public:
 
   enum class CS
   {
-
+    PAR,
   };
 
   static const std::map<std::string, CS>& csmap();

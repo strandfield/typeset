@@ -10,6 +10,30 @@
 
 #include <cassert>
 
+template<typename C>
+void send_token(tex::parsing::Token&& tok, std::vector<tex::parsing::Token>& output, C& c)
+{
+  c.write(std::move(tok));
+  
+  if (!c.output().empty())
+  {
+    output.insert(output.end(), c.output().begin(), c.output().end());
+    c.output().clear();
+  }
+}
+
+template<typename C, typename...Components, typename = std::enable_if_t<sizeof...(Components) != 0, void>>
+void send_token(tex::parsing::Token&& tok, std::vector<tex::parsing::Token>& output, C& c, Components& ... rest)
+{
+  c.write(std::move(tok));
+
+  if (!c.output().empty())
+  {
+    send_token(tex::parsing::read(c.output()), output, rest...);
+  }
+}
+
+
 TypesettingException::TypesettingException(size_t l, size_t c, const char* mssg)
   : std::runtime_error(mssg),
     line(l),
@@ -22,6 +46,7 @@ TypesettingMachine::TypesettingMachine(std::shared_ptr<tex::TypesetEngine> te, t
   : m_memory{},
   m_inputstream{},
   m_preprocessor{ m_registers },
+  m_assignment_processor{*this},
   m_typeset_engine(te)
 {
   m_memory.emplace_back();
@@ -74,8 +99,7 @@ void TypesettingMachine::endGroup()
 
 void TypesettingMachine::insert(tex::parsing::Token&& tok)
 {
-  std::vector<tex::parsing::Token>& preproc_output = preprocessor().output();
-  preproc_output.insert(preproc_output.begin(), std::move(tok));
+  m_tokens.insert(m_tokens.begin(), std::move(tok));
 }
 
 void TypesettingMachine::enter(std::unique_ptr<Mode>&& m)
@@ -88,12 +112,22 @@ void TypesettingMachine::leaveCurrentMode()
   m_leave_current_mode = true;
 }
 
-bool TypesettingMachine::sendTokens()
+void TypesettingMachine::sendToken()
 {
   if (m_preprocessor.output().empty())
-    return false;
+    return;
 
   tex::parsing::Token t = tex::parsing::read(m_preprocessor.output());
+
+  send_token(std::move(t), m_tokens, m_assignment_processor);
+}
+
+bool TypesettingMachine::digestToken()
+{ 
+  if (m_tokens.empty())
+    return false;
+
+  tex::parsing::Token t = tex::parsing::read(m_tokens);
 
   currentMode().write(t);
 
@@ -103,7 +137,7 @@ bool TypesettingMachine::sendTokens()
     m_modes.pop_back();
   }
 
-  return !m_preprocessor.output().empty();
+  return !m_tokens.empty();
 }
 
 void TypesettingMachine::resume()
@@ -168,7 +202,13 @@ void TypesettingMachine::advance()
     break;
     case State::SendToken:
     {
-      while (sendTokens());
+      sendToken();
+      m_state = State::DigestToken;
+    }
+    break;
+    case State::DigestToken:
+    {
+      while (digestToken());
 
       if (!m_preprocessor.input().empty())
         m_state = State::Preprocess;

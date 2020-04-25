@@ -44,6 +44,8 @@ public:
   void write(char c);
 
   bool hasResult() const;
+  bool isFinished() const;
+
   Dimen finish();
 
 protected:

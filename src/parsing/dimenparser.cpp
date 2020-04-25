@@ -118,6 +118,11 @@ bool DimenParser::hasResult() const
   return state() == State::ParsingUnit && (str2phyunit(m_unit.data(), pu) || str2unit(m_unit.data(), u));
 }
 
+bool DimenParser::isFinished() const
+{
+  return m_state == State::Finished;
+}
+
 Dimen DimenParser::finish()
 {
   float value = std::stof(m_factor) * (m_sign == '-' ? -1 : 1); 
