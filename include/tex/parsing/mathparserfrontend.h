@@ -35,6 +35,13 @@ public:
     TEXTSTYLE,
     SCRIPTSTYLE,
     SCRIPTSCRIPTSTYLE,
+    /* Greek letters*/
+    ALPHA,
+    BETA,
+    GAMMA,
+    DELTA,
+    EPSILON,
+    VAREPSILON,
     /* Symbols */
     BULLET,
     CAP,
@@ -56,6 +63,7 @@ public:
 
   // @TODO: maybe not that good, should be protected maybe 
   void writeSymbol(Character c);
+  void writeMathChar(Character c, MathCode mc);
 
   void writeSymbol(std::shared_ptr<MathSymbol> mathsym);
 

@@ -12,6 +12,14 @@ namespace tex
 
 struct mathchars
 {
+  /* Greek letters */
+  static constexpr Character ALPHA = 0x03B1;
+  static constexpr Character BETA = 0x03B2;
+  static constexpr Character GAMMA = 0x03B3;
+  static constexpr Character DELTA = 0x03B4;
+  static constexpr Character EPSILON = 0x03F5;
+  static constexpr Character VAREPSILON = 0x03B5;
+  /* Symbols */
   static constexpr Character BULLET = 0x2B24;
   static constexpr Character CAP = 0x2229;
   static constexpr Character CDOT = 0x22C5;

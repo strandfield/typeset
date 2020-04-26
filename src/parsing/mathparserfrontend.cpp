@@ -45,6 +45,13 @@ const std::map<std::string, MathParserFrontend::CS>& MathParserFrontend::csmap()
     {"textstyle", CS::TEXTSTYLE},
     {"scriptstyle", CS::SCRIPTSTYLE},
     {"scriptscriptstyle", CS::SCRIPTSCRIPTSTYLE},
+    /* Greek letters */
+    {"alpha", CS::ALPHA},
+    {"beta", CS::BETA},
+    {"gamma", CS::GAMMA},
+    {"delta", CS::DELTA},
+    {"epsilon", CS::EPSILON},
+    {"varepsilon", CS::VAREPSILON},
     /* Symbols */
     {"bullet", CS::BULLET},
     {"cap", CS::CAP},
@@ -94,6 +101,18 @@ void MathParserFrontend::writeControlSequence(CS cs)
   case CS::SCRIPTSCRIPTSTYLE:
     return parser().scriptscriptstyle();
     /* Symbols */
+  case CS::ALPHA:
+    return writeMathChar(mathchars::ALPHA, MathCode(0x010B));
+  case CS::BETA:
+    return writeMathChar(mathchars::BETA, MathCode(0x010C));
+  case CS::GAMMA:
+    return writeMathChar(mathchars::GAMMA, MathCode(0x010D));
+  case CS::DELTA:
+    return writeMathChar(mathchars::DELTA, MathCode(0x010E));
+  case CS::EPSILON:
+    return writeMathChar(mathchars::EPSILON, MathCode(0x010F));
+  case CS::VAREPSILON:
+    return writeMathChar(mathchars::VAREPSILON, MathCode(0x0122));
   case CS::BULLET:
     return writeSymbol(mathchars::BULLET, math::Atom::Bin, 2);
   case CS::CAP:
@@ -122,18 +141,7 @@ void MathParserFrontend::writeControlSequence(const std::string& csname)
 void MathParserFrontend::writeChar(char c)
 {
   MathCode mc = m_mathcode_table[static_cast<uint8_t>(c)];
-
-  int class_num = mc.c();
-  int f = mc.f();
-
-  if (class_num == 7)
-  {
-    class_num = 0;
-    f = fam() != -1 ? fam() : f;
-  }
-
-  auto mathsym = std::make_shared<MathSymbol>(Character(c), class_num, f);
-  parser().writeSymbol(mathsym);
+  writeMathChar(Character(c), mc);
 }
 
 void MathParserFrontend::writeSymbol(Character c)
@@ -151,6 +159,21 @@ void MathParserFrontend::writeSymbol(Character c)
 void MathParserFrontend::writeSymbol(Character c, int class_num, int fam)
 {
   auto mathsym = std::make_shared<MathSymbol>(Character(c), class_num, fam);
+  parser().writeSymbol(mathsym);
+}
+
+void MathParserFrontend::writeMathChar(Character c, MathCode mc)
+{
+  int class_num = mc.c();
+  int f = mc.f();
+
+  if (class_num == 7)
+  {
+    class_num = 0;
+    f = fam() != -1 ? fam() : f;
+  }
+
+  auto mathsym = std::make_shared<MathSymbol>(c, class_num, f);
   parser().writeSymbol(mathsym);
 }
 
