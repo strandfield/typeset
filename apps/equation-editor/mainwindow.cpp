@@ -101,8 +101,8 @@ void MainWindow::fillSuggestionBar()
   }
   else
   {
-    m_suggestionbar->addSuggestion(QChar(tex::mathchars::TIMES), "\\times ");
-    m_suggestionbar->addSuggestion(QChar(tex::mathchars::CAP), "\\cap ");
+    m_suggestionbar->addSuggestion(QChar(tex::mathchars::MULTIPLICATION_SIGN), "\\times ");
+    m_suggestionbar->addSuggestion(QChar(tex::mathchars::INTERSECTION), "\\cap ");
   }
 
   m_suggestionbar->setProperty("empty_suggestions", text_empty);

@@ -35,26 +35,12 @@ public:
     TEXTSTYLE,
     SCRIPTSTYLE,
     SCRIPTSCRIPTSTYLE,
-    /* Greek letters*/
-    ALPHA,
-    BETA,
-    GAMMA,
-    DELTA,
-    EPSILON,
-    VAREPSILON,
-    /* Symbols */
-    BULLET,
-    CAP,
-    CDOT,
-    CIRC,
-    CUP,
-    SQCAP,
-    SQCUP,
-    TIMES,
   };
 
   static const std::map<std::string, CS>& csmap();
   static CS cs(const std::string& name);
+
+  static const std::map<std::string, std::pair<int, MathCode>>& symbolsmap();
 
   void writeControlSequence(CS cs);
   void writeControlSequence(const std::string& csname);
