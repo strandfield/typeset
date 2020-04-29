@@ -30,6 +30,8 @@ public:
 
   }
 
+  bool isFraction() const override;
+
   inline const MathList & numer() const { return mNumer; }
   inline const MathList & denom() const { return mDenom; }
   inline bool hasBar() const { return mBar; }

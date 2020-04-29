@@ -61,6 +61,31 @@ bool Node::isMathSymbol() const
   return false;
 }
 
+bool Node::isAtom() const
+{
+  return false;
+}
+
+bool Node::isBoundary() const
+{
+  return false;
+}
+
+bool Node::isMathList() const
+{
+  return false;
+}
+
+bool Node::isFraction() const
+{
+  return false;
+}
+
+bool Node::isRoot() const
+{
+  return false;
+}
+
 bool Node::isMatrix() const
 {
   return false;

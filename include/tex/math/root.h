@@ -25,6 +25,8 @@ public:
 
   }
 
+  bool isRoot() const override { return true; }
+
   inline const MathList & degree() const { return mDegree; }
   inline const MathList & radicand() const { return mRadicand; }
 

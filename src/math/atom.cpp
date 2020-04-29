@@ -21,6 +21,11 @@ Atom::Atom(Type t, std::shared_ptr<Node> nucleus, std::shared_ptr<Node> subscrip
 
 }
 
+bool Atom::isAtom() const
+{
+  return true;
+}
+
 void Atom::changeType(Type newtype)
 {
   /// TODO: check that the type change is allowed !

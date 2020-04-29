@@ -43,6 +43,8 @@ public:
     DisplayLimits,
   };
 
+  bool isAtom() const override;
+
   inline Type type() const { return mType; }
   void changeType(Type newtype);
 

@@ -21,6 +21,8 @@ public:
   explicit Boundary(const std::shared_ptr<Symbol> & symbol) : mSymbol(symbol) { }
   ~Boundary() = default;
 
+  bool isBoundary() const;
+
   inline const std::shared_ptr<Symbol> & symbol() const { return mSymbol; }
 
 private:

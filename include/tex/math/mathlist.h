@@ -22,6 +22,8 @@ public:
   MathListNode(MathList && list) : mList(std::move(list)) { }
   ~MathListNode() = default;
 
+  bool isMathList() const override { return true; }
+
   inline MathList & list() { return mList; }
   inline const MathList & list() const { return mList; }
 

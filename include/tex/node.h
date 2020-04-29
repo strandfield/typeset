@@ -48,6 +48,11 @@ public:
   virtual bool isVBox() const;
   bool isListBox() const;
   virtual bool isMathSymbol() const;
+  virtual bool isAtom() const;
+  virtual bool isBoundary() const;
+  virtual bool isMathList() const;
+  virtual bool isFraction() const;
+  virtual bool isRoot() const;
   virtual bool isMatrix() const;
 };
 

@@ -4,11 +4,15 @@
 
 #include "catch.hpp"
 
+#include "tex/showlists.h"
+
 #include "tex/math/fraction.h"
 #include "tex/math/matrix.h"
 #include "tex/math/root.h"
 
 #include "tex/parsing/mathparserfrontend.h"
+
+#include <iostream>
 
 TEST_CASE("The parser can process a simple atom", "[math-parsing]")
 {
@@ -74,6 +78,9 @@ TEST_CASE("The parser handles a superscript", "[math-parsing]")
   parser.writeChar('+');
   parser.writeChar('1');
   parser.finish();
+
+  std::cout << "Superscript:" << std::endl;
+  std::cout << tex::showlists(parser.output()) << std::endl;
 
   REQUIRE(parser.output().size() == 6);
   REQUIRE(parser.output().front()->is<math::Atom>());
@@ -167,6 +174,9 @@ TEST_CASE("The parser handles a \\matrix", "[math-parsing]")
     parser.writeChar('d');
     parser.endMathList();
     parser.finish();
+
+    std::cout << "Matrix:" << std::endl;
+    std::cout << tex::showlists(parser.output()) << std::endl;
 
     REQUIRE(parser.output().size() == 1);
     REQUIRE(parser.output().front()->is<math::Matrix>());
