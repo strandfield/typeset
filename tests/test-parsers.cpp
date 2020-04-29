@@ -6,6 +6,7 @@
 
 #include "tex/parsing/glueparser.h"
 #include "tex/parsing/kernparser.h"
+#include "tex/parsing/optionsparser.h"
 #include "tex/parsing/parshapeparser.h"
 
 template<typename T>
@@ -202,4 +203,43 @@ TEST_CASE("The parser can process an empty parshape", "[parshape-parsing]")
   Parshape ps = parser.finish();
 
   REQUIRE(ps.empty());
+}
+
+TEST_CASE("The parser can process a empty option list", "[options-parsing]")
+{
+  using namespace tex;
+
+  parsing::OptionsParser parser;
+  write_chars(parser, "[]");
+
+  REQUIRE(parser.isFinished());
+  REQUIRE(parser.result().empty());
+}
+
+TEST_CASE("The parser can process an option list with one element", "[options-parsing]")
+{
+  using namespace tex;
+
+  parsing::OptionsParser parser;
+  write_chars(parser, "[key=value]");
+
+  REQUIRE(parser.isFinished());
+  REQUIRE(parser.result().size() == 1);
+  REQUIRE(parser.result().front().first == "key");
+  REQUIRE(parser.result().front().second == "value");
+}
+
+TEST_CASE("The parser can process an option list with an empty key", "[options-parsing]")
+{
+  using namespace tex;
+
+  parsing::OptionsParser parser;
+  write_chars(parser, "[standalone key, a=b]");
+
+  REQUIRE(parser.isFinished());
+  REQUIRE(parser.result().size() == 2);
+  REQUIRE(parser.result().front().first == "standalone key");
+  REQUIRE(parser.result().front().second == "");
+  REQUIRE(parser.result().back().first == "a");
+  REQUIRE(parser.result().back().second == "b");
 }
