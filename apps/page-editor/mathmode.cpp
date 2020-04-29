@@ -92,7 +92,11 @@ void MathMode::writeOutput()
 
     tex::List hlist = mt.mlist2hlist(mlist(), tex::math::Style::D);
 
-    std::shared_ptr<tex::HBox> box = tex::hbox(std::move(hlist));
+    auto hfil = tex::glue(0.f, tex::Stretch(1.f, tex::GlueOrder::Fil));
+    hlist.insert(hlist.begin(), hfil);
+    hlist.insert(hlist.end(), hfil);
+
+    std::shared_ptr<tex::HBox> box = tex::hbox(std::move(hlist), machine().memory().hsize);
 
     vm.vlist().push_back(box);
   }
