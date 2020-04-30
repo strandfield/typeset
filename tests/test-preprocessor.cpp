@@ -60,7 +60,7 @@ void write(tex::parsing::Preprocessor& preproc, const std::string& str)
     preproc.write(t);
   }
 
-  while (!preproc.input().empty())
+  while (!preproc.input.empty())
   {
     preproc.advance();
   }
@@ -78,26 +78,26 @@ TEST_CASE("The preprocessor performs replacement correctly", "[preprocessor]")
     preproc.write(t);
   }
 
-  while (!preproc.input().empty())
+  while (!preproc.input.empty())
   {
     preproc.advance();
   }
 
-  REQUIRE(preproc.output() == tokenize("Expanded!"));
+  REQUIRE(preproc.output == tokenize("Expanded!"));
 
-  preproc.output().clear();
+  preproc.output.clear();
 
   for (const auto& t : tokenize("\\def\\proclaim #1. #2\\par{Statement: #2}\\proclaim Theorem 1. Macros are great\\par "))
   {
     preproc.write(t);
   }
 
-  while (!preproc.input().empty())
+  while (!preproc.input.empty())
   {
     preproc.advance();
   }
 
-  REQUIRE(preproc.output() == tokenize("Statement: Macros are great"));
+  REQUIRE(preproc.output == tokenize("Statement: Macros are great"));
 }
 
 TEST_CASE("The preprocessor supports \\if", "[preprocessor]")
@@ -109,17 +109,17 @@ TEST_CASE("The preprocessor supports \\if", "[preprocessor]")
   preproc.br = true;
 
   write(preproc, "\\ifbr T\\else F\\fi ");
-  REQUIRE(preproc.output() == tokenize("T"));
-  preproc.output().clear();
+  REQUIRE(preproc.output == tokenize("T"));
+  preproc.output.clear();
 
   preproc.br = false;
   write(preproc, "\\ifbr T\\else F\\fi ");
-  REQUIRE(preproc.output() == tokenize("F"));
-  preproc.output().clear();
+  REQUIRE(preproc.output == tokenize("F"));
+  preproc.output.clear();
 
   write(preproc, "\\ifbr \\ifbr A \\fi \\else F\\fi ");
-  REQUIRE(preproc.output() == tokenize("F"));
-  preproc.output().clear();
+  REQUIRE(preproc.output == tokenize("F"));
+  preproc.output.clear();
 }
 
 TEST_CASE("The preprocessor supports \\csname", "[preprocessor]")
@@ -133,8 +133,8 @@ TEST_CASE("The preprocessor supports \\csname", "[preprocessor]")
 
   write(preproc, "\\csname foo\\endcsname ");
 
-  REQUIRE(preproc.output() == tokenize("K"));
-  preproc.output().clear();
+  REQUIRE(preproc.output == tokenize("K"));
+  preproc.output.clear();
 }
 
 TEST_CASE("The preprocessor supports \\expandafter", "[preprocessor]")
@@ -148,21 +148,21 @@ TEST_CASE("The preprocessor supports \\expandafter", "[preprocessor]")
   REQUIRE(preproc.find("123") != nullptr);
 
   write(preproc, "\\csname 123\\endcsname ");
-  REQUIRE(preproc.output() == tokenize("H"));
-  preproc.output().clear();
+  REQUIRE(preproc.output == tokenize("H"));
+  preproc.output.clear();
 
   write(preproc, "\\def\\a[#1]{#1}");
   REQUIRE(preproc.find("a") != nullptr);
   write(preproc, "\\def\\args{[FOO]}");
   REQUIRE(preproc.find("args") != nullptr);
   write(preproc, "\\expandafter\\a\\args ");
-  REQUIRE(preproc.output() == tokenize("FOO"));
-  preproc.output().clear();
+  REQUIRE(preproc.output == tokenize("FOO"));
+  preproc.output.clear();
 
   write(preproc, "\\def\\foo{F}\\def\\bar{B}\\def\\qux{Q}");
   REQUIRE((preproc.find("foo") != nullptr && preproc.find("bar") != nullptr && preproc.find("qux") != nullptr));
 
   write(preproc, "\\expandafter\\foo\\expandafter\\bar\\qux ");
-  REQUIRE(preproc.output() == tokenize("FBQ"));
-  preproc.output().clear();
+  REQUIRE(preproc.output == tokenize("FBQ"));
+  preproc.output.clear();
 }

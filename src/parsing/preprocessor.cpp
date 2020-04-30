@@ -309,7 +309,7 @@ Preprocessor::Preprocessor()
 
 void Preprocessor::advance()
 {
-  if (m_input.empty())
+  if (input.empty())
   {
     return;
   }
@@ -328,11 +328,11 @@ void Preprocessor::advance()
     return expandafter();
   default:
   {
-    if (peek(m_input).isCharacterToken())
+    if (peek(input).isCharacterToken())
     {
-      parsing::write(read(m_input), m_output);
+      parsing::write(read(input), output);
     }
-    else if (peek(m_input).isControlSequence())
+    else if (peek(input).isControlSequence())
     {
       processControlSeq();
     }
@@ -357,7 +357,7 @@ void Preprocessor::leave()
   if (m_state.frames.back().type == State::ExpandingAfter
     && m_state.frames.back().subtype == State::EXPAFTER_InsertingCs)
   {
-    m_input.insert(m_input.begin(), m_state.frames.back().expandafter->cs);
+    input.insert(input.begin(), m_state.frames.back().expandafter->cs);
 
     leave();
   }
@@ -390,7 +390,7 @@ void Preprocessor::define(Macro m)
 
 void Preprocessor::processControlSeq()
 {
-  Token cs = read(m_input);
+  Token cs = read(input);
   processControlSeq(cs.controlSequence());
 }
 
@@ -419,13 +419,13 @@ void Preprocessor::processControlSeq(const std::string& cs)
 
     if (m == nullptr)
     {
-      parsing::write(Token{ cs }, m_output);
+      parsing::write(Token{ cs }, output);
     }
     else
     {
       if (m->parameterText().empty())
       {
-        m->expand({}, m_input, m_input.begin());
+        m->expand({}, input, input.begin());
       }
       else
       {
@@ -439,7 +439,7 @@ void Preprocessor::processControlSeq(const std::string& cs)
 
 void Preprocessor::readMacro()
 {
-  Token tok = parsing::read(m_input);
+  Token tok = parsing::read(input);
   State::Frame& frame = currentFrame();
   auto& macro_definition = *(frame.macro_definition);
 
@@ -544,7 +544,7 @@ void Preprocessor::updateExpandMacroState()
 
 void Preprocessor::expandMacro()
 {
-  Token tok = parsing::read(m_input);
+  Token tok = parsing::read(input);
   State::Frame& frame = currentFrame();
   auto& macro_expansion = *(frame.macro_expansion);
 
@@ -657,7 +657,7 @@ void Preprocessor::expandMacro()
   if (macro_expansion.pattern_index == macro_expansion.def->parameterText().size())
   {
     // Done!
-    macro_expansion.def->expand(macro_expansion.arguments, m_input, m_input.begin());
+    macro_expansion.def->expand(macro_expansion.arguments, input, input.begin());
     leave();
   }
 }
@@ -680,7 +680,7 @@ inline static bool is_fi(const Token& tok)
 
 void Preprocessor::branch()
 {
-  Token tok = parsing::read(m_input);
+  Token tok = parsing::read(input);
   State::Frame& frame = currentFrame();
   auto& branching = *(frame.branching);
 
@@ -700,7 +700,7 @@ void Preprocessor::branch()
   {
     if (branching.if_nesting == 0)
     {
-      m_input.insert(m_input.begin(), branching.successful_branch.begin(), branching.successful_branch.end());
+      input.insert(input.begin(), branching.successful_branch.begin(), branching.successful_branch.end());
       leave();
       return;
     }
@@ -718,7 +718,7 @@ void Preprocessor::branch()
 
 void Preprocessor::formCs()
 {
-  Token tok = parsing::read(m_input);
+  Token tok = parsing::read(input);
   State::Frame& frame = currentFrame();
   auto& csname = *(frame.csname);
 
@@ -727,7 +727,7 @@ void Preprocessor::formCs()
     if (tok.controlSequence() != "endcsname")
       throw std::runtime_error{ "Bad csname" };
 
-    m_input.insert(m_input.begin(), Token{std::move(csname.name)});
+    input.insert(input.begin(), Token{std::move(csname.name)});
     leave();
   }
   else
@@ -745,7 +745,7 @@ void Preprocessor::expandafter()
   {
   case State::EXPAFTER_ReadingCs:
   {
-    Token tok = parsing::read(m_input);
+    Token tok = parsing::read(input);
 
     if (!tok.isControlSequence())
       throw std::runtime_error{ "Expected cs name after expandafter" };
@@ -756,7 +756,7 @@ void Preprocessor::expandafter()
   break;
   case State::EXPAFTER_ExpandingCs:
   {
-    Token tok = parsing::read(m_input);
+    Token tok = parsing::read(input);
 
     if (!tok.isControlSequence())
       throw std::runtime_error{ "Expected cs name after expandafter" };

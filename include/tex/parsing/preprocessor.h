@@ -116,6 +116,8 @@ class LIBTYPESET_API Preprocessor
 {
 public:
   bool br = false;
+  std::vector<Token> input;
+  std::vector<Token> output;
 
 public:
   Preprocessor();
@@ -137,10 +139,6 @@ public:
   void write(Token&& t);
 
   void advance();
-
-  std::vector<Token>& input();
-  const std::vector<Token>& input() const;
-  std::vector<Token>& output();
 
   struct State
   {
@@ -228,8 +226,6 @@ protected:
 
 private:
   std::list<Definitions> m_defs;
-  std::vector<Token> m_input;
-  std::vector<Token> m_output;
   State m_state;
 };
 
@@ -290,25 +286,10 @@ inline void Preprocessor::write(const Token& t)
 
 inline void Preprocessor::write(Token&& t)
 {
-  m_input.emplace_back(std::move(t));
+  input.emplace_back(std::move(t));
 
-  if (m_input.size() == 1)
+  if (input.size() == 1)
     advance();
-}
-
-inline std::vector<Token>& Preprocessor::input()
-{
-  return m_input;
-}
-
-inline const std::vector<Token>& Preprocessor::input() const
-{
-  return m_input;
-}
-
-inline std::vector<Token>& Preprocessor::output()
-{
-  return m_output;
 }
 
 inline const Preprocessor::State& Preprocessor::state() const

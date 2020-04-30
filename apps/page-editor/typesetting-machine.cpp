@@ -120,10 +120,10 @@ void TypesettingMachine::leaveCurrentMode()
 
 void TypesettingMachine::sendToken()
 {
-  if (m_preprocessor.output().empty())
+  if (m_preprocessor.output.empty())
     return;
 
-  tex::parsing::Token t = tex::parsing::read(m_preprocessor.output());
+  tex::parsing::Token t = tex::parsing::read(m_preprocessor.output);
 
   send_token(std::move(t), m_tokens, m_assignment_processor);
 }
@@ -198,9 +198,9 @@ void TypesettingMachine::advance()
     {
       m_preprocessor.advance();
 
-      if (!m_preprocessor.output().empty())
+      if (!m_preprocessor.output.empty())
         m_state = State::SendToken;
-      else if (!m_preprocessor.input().empty())
+      else if (!m_preprocessor.input.empty())
         m_state = State::Preprocess;
       else
         m_state = State::ReadChar;
@@ -216,7 +216,7 @@ void TypesettingMachine::advance()
     {
       while (digestToken());
 
-      if (!m_preprocessor.input().empty())
+      if (!m_preprocessor.input.empty())
         m_state = State::Preprocess;
       else
         m_state = State::ReadToken;
