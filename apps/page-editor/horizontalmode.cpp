@@ -17,7 +17,20 @@ HorizontalMode::HorizontalMode(TypesettingMachine& m)
     m_hlist(m.typesetEngine(), m.memory().font)
 {
   m_is_restricted = parent().kind() == Mode::Kind::Horizontal;
+
+  output_routine = [](HorizontalMode&) {
+    throw std::runtime_error{ "HorizontalMode::writeOutput()" };
+  };
 }
+
+HorizontalMode::HorizontalMode(TypesettingMachine& m, std::function<void(HorizontalMode&)> o_routine)
+  : Mode(m),
+  m_hlist(m.typesetEngine(), m.memory().font),
+  output_routine(std::move(o_routine))
+{
+  m_is_restricted = parent().kind() == Mode::Kind::Horizontal;
+}
+
 
 tex::FontMetrics HorizontalMode::metrics() const
 {
@@ -101,7 +114,10 @@ void HorizontalMode::write_mathshift(tex::parsing::Token& t)
   }
   else
   {
-    machine().enter<MathMode>();
+    machine().enter<MathMode>([this](MathMode& mm) {
+      MathMode::writeToHorizontalMode(*this, mm);
+      });
+
     machine().insert(std::move(t));
   }
 }
@@ -175,6 +191,10 @@ void HorizontalMode::kern_callback()
 void HorizontalMode::hbox_callback()
 {
   machine().enter<HorizontalMode>();
+
+  machine().currentMode().as<HorizontalMode>().output_routine = [this](HorizontalMode& hm) {
+    HorizontalMode::writeToHorizontalMode(*this, hm);
+  };
 }
 
 void HorizontalMode::lower_callback()
@@ -257,30 +277,29 @@ tex::HListBuilder& HorizontalMode::hlist()
 
 void HorizontalMode::writeOutput()
 {
-  if (parent().kind() == Mode::Kind::Vertical)
-  {
-    VerticalMode* vm = static_cast<VerticalMode*>(&parent());
-
-    tex::Paragraph p;
-    p.prevdepth = vm->vlist().prevdepth;
-    p.baselineskip = machine().memory().baselineskip;
-    p.lineskip = machine().memory().lineskip;
-    p.lineskiplimit = machine().memory().lineskiplimit;
-    p.hsize = machine().memory().hsize;
-    p.parshape = machine().memory().parshape;
-    p.prepare(hlist().result);
-    tex::List l = p.create(hlist().result);
-
-    vm->vlist().result.insert(vm->vlist().result.end(), l.cbegin(), l.cend());
-    vm->vlist().prevdepth = p.prevdepth;
-  }
-  else
-  {
-    HorizontalMode* hm = static_cast<HorizontalMode*>(&parent());
-
-    auto b = tex::hbox(std::move(hlist().result));
-    hm->write(b);
-  }
-
+  output_routine(*this);
   machine().leaveCurrentMode();
 }
+
+void HorizontalMode::writeToHorizontalMode(HorizontalMode& output, HorizontalMode& self)
+{
+  auto b = tex::hbox(std::move(self.hlist().result));
+  output.write(b);
+}
+
+void HorizontalMode::writeToVerticalMode(tex::VListBuilder& output, HorizontalMode& self)
+{
+  tex::Paragraph p;
+  p.prevdepth = output.prevdepth;
+  p.baselineskip = self.machine().memory().baselineskip;
+  p.lineskip = self.machine().memory().lineskip;
+  p.lineskiplimit = self.machine().memory().lineskiplimit;
+  p.hsize = self.machine().memory().hsize;
+  p.parshape = self.machine().memory().parshape;
+  p.prepare(self.hlist().result);
+  tex::List l = p.create(self.hlist().result);
+
+  output.result.insert(output.result.end(), l.cbegin(), l.cend());
+  output.prevdepth = p.prevdepth;
+}
+

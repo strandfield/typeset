@@ -18,18 +18,24 @@
 #include <cassert>
 
 MathMode::MathMode(TypesettingMachine& m)
-  : Mode(m)
+  : MathMode(m, [](MathMode&) { throw std::runtime_error{ "MathMode::writeOutput()" }; })
+{
+
+}
+
+MathMode::MathMode(TypesettingMachine& m, std::function<void(MathMode&)> o_routine)
+  : Mode(m),
+    output_routine(std::move(o_routine))
 {
   // @TODO: handle fonts correctly
   {
     for (size_t i(0); i < 16; ++i)
     {
-      m_fonts[i].textfont = tex::Font(3 * i );
+      m_fonts[i].textfont = tex::Font(3 * i);
       m_fonts[i].scriptfont = tex::Font(3 * i + 1);
       m_fonts[i].scriptscriptfont = tex::Font(3 * i + 2);
     }
   }
-
 }
 
 Mode::Kind MathMode::kind() const
@@ -83,37 +89,36 @@ tex::MathList& MathMode::mlist()
 
 void MathMode::writeOutput()
 {
-  if (parent().kind() == Mode::Kind::Vertical)
-  {
-    auto& vm = parent().as<VerticalMode>();
-
-    tex::MathTypesetter mt{ machine().typesetEngine() };
-    mt.setFonts(m_fonts);
-
-    tex::List hlist = mt.mlist2hlist(mlist(), tex::math::Style::D);
-
-    auto hfil = tex::glue(0.f, tex::Stretch(1.f, tex::GlueOrder::Fil));
-    hlist.insert(hlist.begin(), hfil);
-    hlist.insert(hlist.end(), hfil);
-
-    std::shared_ptr<tex::HBox> box = tex::hbox(std::move(hlist), machine().memory().hsize);
-
-    vm.vlist().push_back(box);
-  }
-  else
-  {
-    auto& hm = parent().as<HorizontalMode>();
-
-    tex::MathTypesetter mt{ machine().typesetEngine() };
-    mt.setFonts(m_fonts);
-
-    tex::List hlist = mt.mlist2hlist(mlist(), tex::math::Style::T);
-
-    hm.hlist().result.insert(hm.hlist().result.end(), hlist.begin(), hlist.end());
-    hm.hlist().spacefactor = 1000;
-  }
+  output_routine(*this);
 
   machine().leaveCurrentMode();
+}
+
+void MathMode::writeToHorizontalMode(HorizontalMode& output, MathMode& self)
+{
+  tex::MathTypesetter mt{ self.machine().typesetEngine() };
+  mt.setFonts(self.m_fonts);
+
+  tex::List hlist = mt.mlist2hlist(self.mlist(), tex::math::Style::T);
+
+  output.hlist().result.insert(output.hlist().result.end(), hlist.begin(), hlist.end());
+  output.hlist().spacefactor = 1000;
+}
+
+void MathMode::writeToVerticalMode(tex::VListBuilder& output, MathMode& self)
+{
+  tex::MathTypesetter mt{ self.machine().typesetEngine() };
+  mt.setFonts(self.m_fonts);
+
+  tex::List hlist = mt.mlist2hlist(self.mlist(), tex::math::Style::D);
+
+  auto hfil = tex::glue(0.f, tex::Stretch(1.f, tex::GlueOrder::Fil));
+  hlist.insert(hlist.begin(), hfil);
+  hlist.insert(hlist.end(), hfil);
+
+  std::shared_ptr<tex::HBox> box = tex::hbox(std::move(hlist), self.machine().memory().hsize);
+
+  output.push_back(box);
 }
 
 void MathMode::write_main(tex::parsing::Token& t)

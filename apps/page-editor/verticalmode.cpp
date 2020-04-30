@@ -91,7 +91,10 @@ void VerticalMode::write_main(tex::parsing::Token& t)
     }
     else
     {
-      machine().enter<HorizontalMode>();
+      machine().enter<HorizontalMode>([this](HorizontalMode& hm) {
+        HorizontalMode::writeToVerticalMode(vlist(), hm);
+        });
+
       machine().insert(std::move(t));
     }
   }
@@ -124,11 +127,17 @@ void VerticalMode::write_mathshift(tex::parsing::Token& t)
 
   if (t == tex::parsing::CharCategory::MathShift)
   {
-    machine().enter<MathMode>();
+    machine().enter<MathMode>([this](MathMode& mm) {
+      MathMode::writeToVerticalMode(vlist(), mm);
+      });
   }
   else
   {
     machine().enter<HorizontalMode>();
+
+    machine().enter<HorizontalMode>([this](HorizontalMode& hm) {
+      HorizontalMode::writeToVerticalMode(vlist(), hm);
+      });
 
     machine().insert(std::move(t));
 

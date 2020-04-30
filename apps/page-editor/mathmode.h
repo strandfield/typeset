@@ -17,10 +17,15 @@
 #include "tex/fontmetrics.h"
 #include "tex/typeset.h"
 
+#include <functional>
+
+class HorizontalMode;
+
 class MathMode : public Mode
 {
 public:
   MathMode(TypesettingMachine& m);
+  MathMode(TypesettingMachine& m, std::function<void(MathMode&)> o_routine);
   ~MathMode() = default;
 
   typedef void(MathMode::*Callback)(tex::parsing::Token&&);
@@ -46,6 +51,11 @@ public:
   tex::MathList& mlist();
 
   void writeOutput();
+
+  static void writeToHorizontalMode(HorizontalMode& output, MathMode& self);
+  static void writeToVerticalMode(tex::VListBuilder& output, MathMode& self);
+
+  std::function<void(MathMode&)> output_routine;
 
 protected:
   void write_main(tex::parsing::Token&);

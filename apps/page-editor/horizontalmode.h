@@ -18,10 +18,13 @@
 
 #include "tex/parsing/kernparser.h"
 
+#include <functional>
+
 class HorizontalMode : public Mode
 {
 public:
   HorizontalMode(TypesettingMachine& m);
+  HorizontalMode(TypesettingMachine& m, std::function<void(HorizontalMode&)> o_routine);
   ~HorizontalMode() = default;
 
   enum class State
@@ -55,6 +58,11 @@ public:
   tex::HListBuilder& hlist();
 
   void writeOutput();
+ 
+  static void writeToHorizontalMode(HorizontalMode& output, HorizontalMode& self);
+  static void writeToVerticalMode(tex::VListBuilder& output, HorizontalMode& self);
+
+  std::function<void(HorizontalMode&)> output_routine;
 
 protected:
   void write_main(tex::parsing::Token&);
