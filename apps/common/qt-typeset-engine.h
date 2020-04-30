@@ -14,7 +14,7 @@
 #include <QFontMetricsF>
 #include <QRawFont>
 
-#include <array>
+#include <vector>
 
 class QtFontMetrics : public QFontMetricsF
 {
@@ -33,7 +33,7 @@ struct Font
   tex::FontDimen fontdimen;
 };
 
-using FontTable = std::array<Font, 12>;
+using FontTable = std::vector<Font>;
 
 class QtFontMetricsProdiver : public tex::FontMetricsProvider
 {
@@ -87,6 +87,8 @@ public:
     mMetrics = std::make_shared<T>(m_fonts);
   }
 
+  tex::Font loadFont(const std::string fontname, const std::string& spec);
+
   const FontTable& fonts() const;
 
   std::array<tex::MathFont, 16> mathfonts() const;
@@ -105,7 +107,8 @@ public:
 protected:
 
   QFont& font(tex::Font f);
-  void initFont(int id, const QString& displayname, const QString & fontname, int size, bool italic, tex::TFM tfm);
+  int initFont(const QString& displayname, const QString & fontname, int size, bool italic, tex::TFM tfm);
+  int initFont(const QString& displayname, const QFont& qfont, tex::TFM tfm);
 
 private:
   float m_mag;

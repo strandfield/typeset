@@ -50,7 +50,7 @@ public:
   TypesettingMachine(const TypesettingMachine&) = delete;
   ~TypesettingMachine() = default;
 
-  TypesettingMachine(std::shared_ptr<tex::TypesetEngine> te, tex::Font f);
+  TypesettingMachine(std::shared_ptr<TypesetEngine> te, tex::Font f);
 
   enum State
   {
@@ -66,7 +66,7 @@ public:
 
   std::shared_ptr<tex::VBox> typeset(std::string text);
 
-  const std::shared_ptr<tex::TypesetEngine>& typesetEngine() const;
+  const std::shared_ptr<TypesetEngine>& typesetEngine() const;
 
   typedef TypesettingMachineMemory Memory;
   Memory& memory();
@@ -111,7 +111,7 @@ private:
   std::vector<tex::parsing::Token> m_tokens;
   std::vector<std::unique_ptr<Mode>> m_modes;
   bool m_leave_current_mode = false;
-  std::shared_ptr<tex::TypesetEngine> m_typeset_engine;
+  std::shared_ptr<TypesetEngine> m_typeset_engine;
   State m_state = State::Idle;
 };
 
@@ -120,7 +120,7 @@ inline TypesettingMachine::State TypesettingMachine::state() const
   return m_state;
 }
 
-inline const std::shared_ptr<tex::TypesetEngine>& TypesettingMachine::typesetEngine() const
+inline const std::shared_ptr<TypesetEngine>& TypesettingMachine::typesetEngine() const
 {
   return m_typeset_engine;
 }

@@ -62,6 +62,7 @@ void HorizontalMode::write_main(tex::parsing::Token& t)
       if (m_buffer.ready())
       {
         tex::Character c = m_buffer.read();
+        m_hlist.font = machine().memory().font;
         m_hlist.push_back(c);
       }
     }
@@ -71,6 +72,7 @@ void HorizontalMode::write_main(tex::parsing::Token& t)
       {
         tex::FontMetrics m = metrics();
         auto g = glue(m.interwordSpace(), tex::Stretch{ m.interwordStretch() }, tex::Shrink{ m.interwordShrink() });
+        m_hlist.font = machine().memory().font;
         m_hlist.push_back(g);
       }
       else if (ctok.category == tex::parsing::CharCategory::GroupBegin)

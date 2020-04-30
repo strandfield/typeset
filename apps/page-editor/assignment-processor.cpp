@@ -4,6 +4,7 @@
 
 #include "assignment-processor.h"
 
+#include "fontparser.h"
 #include "typesetting-machine.h"
 
 AssignmentProcessor::AssignmentProcessor(TypesettingMachine& m)
@@ -12,10 +13,16 @@ AssignmentProcessor::AssignmentProcessor(TypesettingMachine& m)
 
 }
 
+AssignmentProcessor::~AssignmentProcessor()
+{
+
+}
+
 const std::map<std::string, AssignmentProcessor::CS>& AssignmentProcessor::csmap()
 {
   static const std::map<std::string, AssignmentProcessor::CS> map = {
     {"parshape", CS::PARSHAPE},
+    {"font", CS::font},
   };
 
   return map;
@@ -39,39 +46,69 @@ void AssignmentProcessor::write(tex::parsing::Token& t)
     return write_main(t);
   case State::Parshape:
     return write_parshape(t);
+  case State::Font:
+    return write_font(t);
   default:
     assert(false);
     break;
   }
 }
 
+bool AssignmentProcessor::handleCs(const std::string& csname)
+{
+  auto it = csmap().find(csname);
+
+  if (it == csmap().end())
+    return false;
+
+  CS cs = it->second;
+
+  switch (cs)
+  {
+  case CS::PARSHAPE:
+  {
+    tex::UnitSystem us = m_machine.unitSystem();
+    m_parshape.reset(new tex::parsing::ParshapeParser(us));
+    m_state = State::Parshape;
+  }
+  break;
+  case CS::font:
+  {
+    m_font.reset(new FontParser());
+    m_state = State::Font;
+  }
+  break;
+  default:
+    assert(false);
+    break;
+  }
+
+  return true;
+}
+
+bool AssignmentProcessor::changeFont(const std::string& csname)
+{
+  auto it = m_font_map.find(csname);
+
+  if (it == m_font_map.end())
+    return false;
+
+  m_machine.memory().font = it->second;
+
+  return true;
+}
+
 void AssignmentProcessor::write_main(tex::parsing::Token& t)
 {
   if (t.isControlSequence())
   {
-    auto it = csmap().find(t.controlSequence());
-
-    if (it == csmap().end())
-    {
-      m_output.push_back(std::move(t));
+    if (handleCs(t.controlSequence()))
       return;
-    }
 
-    CS cs = it->second;
-    
-    switch (cs)
-    {
-    case CS::PARSHAPE:
-    {
-      tex::UnitSystem us = m_machine.unitSystem();
-      m_parshape.reset(new tex::parsing::ParshapeParser(us));
-      m_state = State::Parshape;
-    }
-      break;
-    default:
-      assert(false);
-      break;
-    }
+    if (changeFont(t.controlSequence()))
+      return;
+
+    m_output.push_back(std::move(t));
   }
   else
   {
@@ -95,5 +132,24 @@ void AssignmentProcessor::write_parshape(tex::parsing::Token& t)
 
     if (t.isControlSequence())
       write(t);
+  }
+}
+
+void AssignmentProcessor::write_font(tex::parsing::Token& t)
+{
+  if (t.isControlSequence())
+  {
+    m_font->write(t.controlSequence());
+  }
+  else
+  {
+    m_font->write(t.characterToken().value);
+  }
+
+  if (m_font->isFinished())
+  {
+    tex::Font f = m_machine.typesetEngine()->loadFont(m_font->fontname(), m_font->fontspec());
+    m_font_map[m_font->fontname()] = f;
+    m_state = State::Main;
   }
 }
