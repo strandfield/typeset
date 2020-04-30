@@ -71,8 +71,6 @@ namespace tex
 namespace parsing
 {
 
-struct Registers;
-
 namespace preprocessor
 {
 
@@ -117,12 +115,13 @@ struct ExpandAfter
 class LIBTYPESET_API Preprocessor
 {
 public:
-  Preprocessor() = delete;
+  bool br = false;
+
+public:
+  Preprocessor();
   Preprocessor(const Preprocessor&) = delete;
   Preprocessor(Preprocessor&&) = delete;
   ~Preprocessor() = default;
-
-  explicit Preprocessor(Registers& r);
 
   struct Definitions
   {
@@ -228,7 +227,6 @@ protected:
   void expandafter();
 
 private:
-  Registers& m_registers;
   std::list<Definitions> m_defs;
   std::vector<Token> m_input;
   std::vector<Token> m_output;

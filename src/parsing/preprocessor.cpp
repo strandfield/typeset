@@ -4,8 +4,6 @@
 
 #include "tex/parsing/preprocessor.h"
 
-#include "tex/parsing/registers.h"
-
 #include <cassert>
 #include <numeric>
 
@@ -303,8 +301,7 @@ Preprocessor::State::Frame::~Frame()
   }
 }
 
-Preprocessor::Preprocessor(Registers& r)
-  : m_registers(r)
+Preprocessor::Preprocessor()
 {
   m_state.frames.emplace_back(State::Idle);
   m_defs.push_front(Definitions{});
@@ -406,7 +403,7 @@ void Preprocessor::processControlSeq(const std::string& cs)
   else if (cs == "ifbr")
   {
     enter(State::Branching);
-    currentFrame().branching->success = m_registers.br;
+    currentFrame().branching->success = br;
   }
   else if (cs == "csname")
   {

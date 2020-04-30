@@ -46,7 +46,7 @@ TypesettingException::TypesettingException(size_t l, size_t c, const char* mssg)
 TypesettingMachine::TypesettingMachine(std::shared_ptr<TypesetEngine> te, tex::Font f)
   : m_memory{},
   m_inputstream{},
-  m_preprocessor{ m_registers },
+  m_preprocessor{},
   m_assignment_processor{*this},
   m_typeset_engine(te)
 {

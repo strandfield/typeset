@@ -12,7 +12,6 @@
 #include "common/qt-typeset-engine.h"
 
 #include "tex/parsing/preprocessor.h"
-#include "tex/parsing/registers.h"
 #include "tex/lexer.h"
 
 #include "tex/parshape.h"
@@ -102,7 +101,6 @@ protected:
   bool digestToken();
 
 private:
-  tex::parsing::Registers m_registers;
   std::vector<Memory> m_memory;
   InputStream m_inputstream;
   tex::parsing::Lexer m_lexer;
