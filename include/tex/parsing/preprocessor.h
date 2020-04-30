@@ -135,8 +135,7 @@ public:
   void beginGroup();
   void endGroup();
 
-  void write(const Token& t);
-  void write(Token&& t);
+  void write(Token t);
 
   void advance();
 
@@ -202,9 +201,6 @@ public:
   const Macro* find(const std::string& cs) const;
   void define(Macro m);
 
-  void processControlSeq();
-  void processControlSeq(const std::string& cs);
-
   Preprocessor& operator=(const Preprocessor&) = delete;
 
 protected:
@@ -213,16 +209,21 @@ protected:
 
   State::Frame& currentFrame();
 
-  void readMacro();
+  void process(Token& tok);
 
-  void expandMacro();
+  void processControlSeq(const std::string& cs);
+
+  void readMacro(Token& tok);
+
+  void expandMacro(Token& tok);
+
   void updateExpandMacroState();
 
-  void branch();
+  void branch(Token& tok);
 
-  void formCs();
-  
-  void expandafter();
+  void formCs(Token& tok);
+
+  void expandafter(Token& tok);
 
 private:
   std::list<Definitions> m_defs;
@@ -279,17 +280,12 @@ inline void Preprocessor::endGroup()
   m_defs.pop_front();
 }
 
-inline void Preprocessor::write(const Token& t)
+inline void Preprocessor::write(Token t)
 {
-  write(Token{ t });
-}
-
-inline void Preprocessor::write(Token&& t)
-{
-  input.emplace_back(std::move(t));
-
-  if (input.size() == 1)
-    advance();
+  if (input.empty())
+    process(t);
+  else
+    input.push_back(std::move(t));
 }
 
 inline const Preprocessor::State& Preprocessor::state() const

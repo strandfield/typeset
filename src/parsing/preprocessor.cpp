@@ -310,39 +310,10 @@ Preprocessor::Preprocessor()
 void Preprocessor::advance()
 {
   if (input.empty())
-  {
     return;
-  }
 
-  switch (m_state.frames.back().type)
-  {
-  case State::ReadingMacro:
-    return readMacro();
-  case State::ExpandingMacro:
-    return expandMacro();
-  case State::Branching:
-    return branch();
-  case State::FormingCS:
-    return formCs();
-  case State::ExpandingAfter:
-    return expandafter();
-  default:
-  {
-    if (peek(input).isCharacterToken())
-    {
-      parsing::write(read(input), output);
-    }
-    else if (peek(input).isControlSequence())
-    {
-      processControlSeq();
-    }
-    else
-    {
-      throw std::runtime_error{ "Illegal parameter token in token stream" };
-    }
-  }
-    break;
-  }
+  Token tok = parsing::read(input);
+  process(tok);
 }
 
 void Preprocessor::enter(State::FrameType s)
@@ -388,10 +359,37 @@ void Preprocessor::define(Macro m)
   m_defs.front().macros[m.controlSequence()] = std::move(m);
 }
 
-void Preprocessor::processControlSeq()
+void Preprocessor::process(Token& tok)
 {
-  Token cs = read(input);
-  processControlSeq(cs.controlSequence());
+  switch (m_state.frames.back().type)
+  {
+  case State::ReadingMacro:
+    return readMacro(tok);
+  case State::ExpandingMacro:
+    return expandMacro(tok);
+  case State::Branching:
+    return branch(tok);
+  case State::FormingCS:
+    return formCs(tok);
+  case State::ExpandingAfter:
+    return expandafter(tok);
+  default:
+  {
+    if (tok.isCharacterToken())
+    {
+      output.push_back(std::move(tok));
+    }
+    else if (tok.isControlSequence())
+    {
+      processControlSeq(tok.controlSequence());
+    }
+    else
+    {
+      throw std::runtime_error{ "Illegal parameter token in token stream" };
+    }
+  }
+  break;
+  }
 }
 
 void Preprocessor::processControlSeq(const std::string& cs)
@@ -437,9 +435,8 @@ void Preprocessor::processControlSeq(const std::string& cs)
   }
 }
 
-void Preprocessor::readMacro()
+void Preprocessor::readMacro(Token& tok)
 {
-  Token tok = parsing::read(input);
   State::Frame& frame = currentFrame();
   auto& macro_definition = *(frame.macro_definition);
 
@@ -469,7 +466,7 @@ void Preprocessor::readMacro()
 
       macro_definition.parameter_index += 1;
     }
-    
+
     macro_definition.parameter_text.push_back(tok);
   }
   break;
@@ -542,9 +539,8 @@ void Preprocessor::updateExpandMacroState()
   }
 }
 
-void Preprocessor::expandMacro()
+void Preprocessor::expandMacro(Token& tok)
 {
-  Token tok = parsing::read(input);
   State::Frame& frame = currentFrame();
   auto& macro_expansion = *(frame.macro_expansion);
 
@@ -566,7 +562,7 @@ void Preprocessor::expandMacro()
 
     advance_pattern();
   }
-    break;
+  break;
   case State::EXPM_ReadingDelimitedMacroArgument:
   {
     const Token& delimiter_pat = macro_expansion.def->parameterText().at(macro_expansion.pattern_index + 1);
@@ -598,7 +594,7 @@ void Preprocessor::expandMacro()
       }
     }
   }
-    break;
+  break;
   case State::EXPM_ReadingUndelimitedMacroArgument:
   {
     std::vector<Token>& current_arg_content = macro_expansion.arguments[macro_expansion.current_arg_index];
@@ -620,7 +616,7 @@ void Preprocessor::expandMacro()
       }
     }
   }
-    break;
+  break;
   case State::EXPM_ReadingBracedDelimitedMacroArgument:
   {
     std::vector<Token>& current_arg_content = macro_expansion.arguments[macro_expansion.current_arg_index];
@@ -678,9 +674,8 @@ inline static bool is_fi(const Token& tok)
   return tok.isControlSequence() && tok.controlSequence() == "fi";
 }
 
-void Preprocessor::branch()
+void Preprocessor::branch(Token& tok)
 {
-  Token tok = parsing::read(input);
   State::Frame& frame = currentFrame();
   auto& branching = *(frame.branching);
 
@@ -716,9 +711,8 @@ void Preprocessor::branch()
   }
 }
 
-void Preprocessor::formCs()
+void Preprocessor::formCs(Token& tok)
 {
-  Token tok = parsing::read(input);
   State::Frame& frame = currentFrame();
   auto& csname = *(frame.csname);
 
@@ -727,7 +721,7 @@ void Preprocessor::formCs()
     if (tok.controlSequence() != "endcsname")
       throw std::runtime_error{ "Bad csname" };
 
-    input.insert(input.begin(), Token{std::move(csname.name)});
+    input.insert(input.begin(), Token{ std::move(csname.name) });
     leave();
   }
   else
@@ -736,7 +730,7 @@ void Preprocessor::formCs()
   }
 }
 
-void Preprocessor::expandafter()
+void Preprocessor::expandafter(Token& tok)
 {
   const size_t framecount = state().frames.size();
   auto& data = *(currentFrame().expandafter);
@@ -745,8 +739,6 @@ void Preprocessor::expandafter()
   {
   case State::EXPAFTER_ReadingCs:
   {
-    Token tok = parsing::read(input);
-
     if (!tok.isControlSequence())
       throw std::runtime_error{ "Expected cs name after expandafter" };
 
@@ -756,8 +748,6 @@ void Preprocessor::expandafter()
   break;
   case State::EXPAFTER_ExpandingCs:
   {
-    Token tok = parsing::read(input);
-
     if (!tok.isControlSequence())
       throw std::runtime_error{ "Expected cs name after expandafter" };
 
