@@ -26,6 +26,8 @@ public:
   const char* bytecode() const;
 
   static std::vector<Macro> load(const Format& fmt);
+
+  static std::vector<Macro> parse(const std::string& src);
 };
 
 } // namespace parsing

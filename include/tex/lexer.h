@@ -177,8 +177,16 @@ inline void Lexer::parseCS(char c, CharCategory cc)
 {
   if (cc == CharCategory::EndOfLine)
   {
-    produceCSToken();
-    state() = LexerState::StateM;
+    if (m_csbuffer.empty())
+    {
+      produceCSToken();
+      state() = LexerState::StateM;
+    }
+    else
+    {
+      produceCSToken();
+      state() = LexerState::StateS;
+    }
   }
   else if (cc != CharCategory::Letter)
   {

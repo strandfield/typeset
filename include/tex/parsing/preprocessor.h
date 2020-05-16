@@ -201,6 +201,8 @@ public:
   const Macro* find(const std::string& cs) const;
   void define(Macro m);
 
+  const std::list<Definitions>& macros() const;
+
   Preprocessor& operator=(const Preprocessor&) = delete;
 
 protected:
@@ -291,6 +293,11 @@ inline void Preprocessor::write(Token t)
 inline const Preprocessor::State& Preprocessor::state() const
 {
   return m_state;
+}
+
+inline const std::list<Preprocessor::Definitions>& Preprocessor::macros() const
+{
+  return m_defs;
 }
 
 } // namespace parsing
