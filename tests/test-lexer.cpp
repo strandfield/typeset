@@ -55,3 +55,34 @@ TEST_CASE("Tokens can be produced by the Lexer", "[lexer]")
   REQUIRE(toks.size() == 1);
   REQUIRE(toks.at(0).characterToken().value == 'L');
 }
+
+TEST_CASE("The Lexer correctly ignores spaces", "[lexer]")
+{
+  using namespace tex;
+
+  parsing::Lexer lex;
+  std::vector<parsing::Token>& toks = lex.output();
+
+  auto write = [&lex](const std::string& str) ->void {
+    for (char c : str)
+      lex.write(c);
+  };
+
+  write("\\def\\ifnextchar#1#2#3{%\n"
+        "  \\testnextchar #1\\ifbr #2\\else #3\\fi\n"
+        " }");
+
+  REQUIRE(toks.size() == 14);
+  
+  for (const parsing::Token& tok : toks)
+  {
+    if (tok.isCharacterToken())
+    {
+      REQUIRE(tok.characterToken().category != parsing::CharCategory::Space);
+    }
+    else if (tok.isControlSequence())
+    {
+      REQUIRE(tok.controlSequence() != "par");
+    }
+  }
+}

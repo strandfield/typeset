@@ -185,7 +185,7 @@ Macro::MatchResult Macro::match(const std::vector<Token>& text) const
 std::vector<Token> Macro::expand(const std::array<std::vector<Token>, 9>& arguments) const
 {
   std::vector<Token> result;
-  result.reserve(replacementText().size() + std::accumulate(arguments.begin(), arguments.end(), 0, [](size_t n, const std::vector<Token>& arg) -> size_t {
+  result.reserve(replacementText().size() + std::accumulate(arguments.begin(), arguments.end(), size_t(0), [](size_t n, const std::vector<Token>& arg) -> size_t {
     return n + arg.size();
     }));
 
