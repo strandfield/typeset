@@ -4,24 +4,9 @@
 
 #include "pageeditor-format.h"
 
-const char* pageeditor_fmt_src =
-  "" // 0
-  "\\def\\begin#1{\\csname #1\\endcsname}"
-  ""
-  "\\def\\end#1{\\csname end#1\\endcsname}"
-  ""
-  ;
-
-const char* pageeditor_fmt_bytecode =
-  "v0"
-  "" // 0
-  "d5prc6>1pc9s"
-  ""
-  "d3prc6>1tttpc9s"
-  ""
-  "e";
-
-tex::parsing::Format pageeditor_format()
+std::string pageeditor_format()
 {
-  return tex::parsing::Format(pageeditor_fmt_src, pageeditor_fmt_bytecode);
+  return 
+    "\\def\\begin#1{\\csname #1\\endcsname}\n"
+    "\\def\\end#1{\\csname end#1\\endcsname}";
 }

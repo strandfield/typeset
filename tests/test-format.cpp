@@ -8,37 +8,20 @@
 
 using namespace tex;
 
-const char* fmt_src =
-  "" // 0
-  "\\def\\begin#1{"
-  "  \\csname #1 \\endcsname"
-  "}"
-  ""
-  "\\def\\end#1{" // 5
-  "  \\csname end#1\\endcsname "
-  "}"
-  ""
-;
-
-const char* fmt_bytecode =
-  "v0"
-  "" // 0
-  "d5pr"
-  ">2c6>1p>1c9"
-  "s"
-  ""
-  "d3pr" // 5
-  ">2c6>1tttpc9>1"
-  "s"
-  ""
-  "e";
-
-
-TEST_CASE("Formats can be loaded", "[format]")
+TEST_CASE("A simple format can be parsed", "[format]")
 {
  using namespace parsing;
 
- auto result = Format::load(Format(fmt_src, fmt_bytecode));
+ std::string src =
+   "\\def\\begin#1{%\n"
+   "  \\csname #1\\endcsname\n"
+   "}\n"
+   "\n"
+   "\\def\\end#1{%\n"
+   "  \\csname end#1\\endcsname\n"
+   "}\n";
+
+ auto result = Format::parse(src);
 
  REQUIRE(result.size() == 2);
 

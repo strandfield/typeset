@@ -7,6 +7,6 @@
 
 #include "tex/parsing/format.h"
 
-tex::parsing::Format pageeditor_format();
+std::string pageeditor_format();
 
 #endif // TYPESET_PAGEEDITOR_FORMAT_H

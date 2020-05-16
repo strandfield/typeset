@@ -15,18 +15,7 @@ namespace parsing
 
 class LIBTYPESET_API Format
 {
-private:
-  const char* m_src;
-  const char* m_bytecode;
-
 public:
-  Format(const char* src, const char* bytecode);
-
-  const char* source() const;
-  const char* bytecode() const;
-
-  static std::vector<Macro> load(const Format& fmt);
-
   static std::vector<Macro> parse(const std::string& src);
 };
 

@@ -60,7 +60,7 @@ TypesettingMachine::TypesettingMachine(std::shared_ptr<TypesetEngine> te, tex::F
   memory().baselineskip = tex::glue(1.2f * (metrics.height + metrics.depth));
   memory().lineskip = tex::glue(0.1f * (metrics.height + metrics.depth));
 
-  for (const tex::parsing::Macro m : tex::parsing::Format::load(pageeditor_format()))
+  for (const tex::parsing::Macro m : tex::parsing::Format::parse(pageeditor_format()))
   {
     m_preprocessor.define(m);
   }
