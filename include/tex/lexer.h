@@ -42,6 +42,13 @@ private:
   State m_state;
   std::string m_csbuffer;
   std::vector<Token> m_tokens;
+  
+  // @TODO:
+  // add std::string charbuf in which the control sequence are saved;
+  // use some kind of std::map to avoid duplication of the cs in the charbuf 
+  // as they are likely to be used several time.
+  // the size of charbuf is reserved at construction time & must be large enough
+  // for all the control seq that will be parsed
 
 public:
 

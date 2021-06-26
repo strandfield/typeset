@@ -75,6 +75,11 @@ private:
 
   TokenType m_type = TokenType::CharacterToken;
   Data m_data;
+  
+  // TODO: avoid std::string, use string_view
+  // 3 fields: string_view & TokenType & CharCategory
+  // if tokentype is chartok or paramtok, string_view size is 1
+  // use the constexpr char literal "123456789" & "abcdefghij" (all ascii chars)
 
 public:
   Token() = default;
