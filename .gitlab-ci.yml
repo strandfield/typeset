@@ -1,12 +1,9 @@
-image: localhost:5000/cpp-runner:latest
+image: localhost:5000/qt-runner:v1
 
 build-job:
   stage: build
   script:
     - echo "Hello, $GITLAB_USER_LOGIN!"
-    - add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
-    - apt-get update -qq
-    - apt-get install qt5-default qttools5-dev-tools
     - gcc --version
     - cmake --version
     - qmake -v
