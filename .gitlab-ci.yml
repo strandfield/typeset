@@ -1,0 +1,14 @@
+image: localhost:5000/qt-runner:v1
+
+build-job:
+  stage: build
+  script:
+    - echo "Hello, $GITLAB_USER_LOGIN!"
+    - gcc --version
+    - cmake --version
+    - qmake -v
+    - mkdir build && cd build
+    - cmake ..
+    - make
+    - cd tests
+    - ./tests
